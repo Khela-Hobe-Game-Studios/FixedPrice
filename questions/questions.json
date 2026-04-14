@@ -1,0 +1,142 @@
+[
+  {
+    "question": "How many rivers flow through Bangladesh?",
+    "answer": 700,
+    "unit": "rivers",
+    "category": "Desh",
+    "funFact": "Bangladesh is often called the 'Land of Rivers' — it has one of the largest river deltas in the world."
+  },
+  {
+    "question": "What is the length of the Padma Bridge in meters?",
+    "answer": 6150,
+    "unit": "meters",
+    "category": "Desh",
+    "funFact": "The Padma Bridge is the longest bridge in Bangladesh and one of the longest in South Asia."
+  },
+  {
+    "question": "How many UNESCO World Heritage Sites does Bangladesh have?",
+    "answer": 3,
+    "unit": "sites",
+    "category": "Desh",
+    "funFact": "The three sites are: the Mosque City of Bagerhat, the Ruins of the Buddhist Vihara at Paharpur, and the Sundarbans."
+  },
+  {
+    "question": "What is the population of Dhaka in millions?",
+    "answer": 22,
+    "unit": "million people",
+    "category": "Desh",
+    "funFact": "Dhaka is one of the most densely populated cities in the world."
+  },
+  {
+    "question": "How many ODI wickets has Shakib Al Hasan taken in his career?",
+    "answer": 300,
+    "unit": "wickets",
+    "category": "Cricket",
+    "funFact": "Shakib is consistently ranked as one of the top all-rounders in ODI cricket history."
+  },
+  {
+    "question": "What is the highest individual score by a Bangladeshi batsman in ODIs (in runs)?",
+    "answer": 176,
+    "unit": "runs",
+    "category": "Cricket",
+    "funFact": "Tamim Iqbal scored 154* vs Zimbabwe in 2020, but the all-time highest is a different record."
+  },
+  {
+    "question": "How many Test matches has Bangladesh won as of 2024?",
+    "answer": 20,
+    "unit": "matches",
+    "category": "Cricket",
+    "funFact": "Bangladesh gained Test status in 2000 and took years to record their first Test win."
+  },
+  {
+    "question": "What is the approximate price of 1kg of hilsa fish at Karwan Bazar in taka?",
+    "answer": 1500,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "Hilsa (ilish) is the national fish of Bangladesh and its price spikes significantly during peak season."
+  },
+  {
+    "question": "What is Bangladesh's GDP in USD billions (2023 estimate)?",
+    "answer": 460,
+    "unit": "billion USD",
+    "category": "Taka",
+    "funFact": "Bangladesh has been one of the fastest-growing economies in the world over the past decade."
+  },
+  {
+    "question": "How many rickshaws are registered in Dhaka?",
+    "answer": 80000,
+    "unit": "rickshaws",
+    "category": "Weird Facts",
+    "funFact": "Dhaka is often called the 'Rickshaw Capital of the World' — the actual number on the streets far exceeds registered ones."
+  },
+  {
+    "question": "How much did Avatar 2 gross worldwide in USD millions?",
+    "answer": 2320,
+    "unit": "million USD",
+    "category": "Bishwo",
+    "funFact": "Avatar: The Way of Water became the third highest-grossing film of all time."
+  },
+  {
+    "question": "How many Oscars has the movie Titanic won?",
+    "answer": 11,
+    "unit": "Oscars",
+    "category": "Bishwo",
+    "funFact": "Titanic ties with Ben-Hur and The Lord of the Rings: The Return of the King for most Oscars won."
+  },
+  {
+    "question": "How many goals did Lionel Messi score in the 2022 FIFA World Cup?",
+    "answer": 7,
+    "unit": "goals",
+    "category": "Bishwo",
+    "funFact": "Messi's 7 goals won him the Golden Boot and helped Argentina win their third World Cup."
+  },
+  {
+    "question": "How long is the Sundarbans mangrove forest in square kilometers?",
+    "answer": 10000,
+    "unit": "sq km",
+    "category": "Desh",
+    "funFact": "The Sundarbans is the largest mangrove forest in the world, shared between Bangladesh and India."
+  },
+  {
+    "question": "How many subscribers does the most-subscribed YouTube channel have in millions?",
+    "answer": 300,
+    "unit": "million subscribers",
+    "category": "Bishwo",
+    "funFact": "MrBeast surpassed T-Series to become the most subscribed individual YouTube channel."
+  },
+  {
+    "question": "How many languages are spoken in Bangladesh?",
+    "answer": 41,
+    "unit": "languages",
+    "category": "Desh",
+    "funFact": "Besides Bengali, Bangladesh has 40 indigenous languages spoken by ethnic minority communities."
+  },
+  {
+    "question": "What is the height of Mount Everest in meters?",
+    "answer": 8849,
+    "unit": "meters",
+    "category": "Bishwo",
+    "funFact": "The height was revised to 8,848.86m in 2020 after a joint survey by China and Nepal."
+  },
+  {
+    "question": "How many test centuries has Mushfiqur Rahim scored?",
+    "answer": 10,
+    "unit": "centuries",
+    "category": "Cricket",
+    "funFact": "Mushfiqur Rahim is Bangladesh's most prolific Test centurion."
+  },
+  {
+    "question": "What is the approximate current price of a smartphone (midrange) in Bangladesh in taka?",
+    "answer": 25000,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "Midrange smartphones from brands like Samsung and Xiaomi dominate the Bangladeshi market."
+  },
+  {
+    "question": "How many countries are in the United Nations?",
+    "answer": 193,
+    "unit": "countries",
+    "category": "Bishwo",
+    "funFact": "The UN was founded in 1945 with 51 member states. South Sudan, which joined in 2011, was the most recent member."
+  }
+]
