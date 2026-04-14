@@ -1,7 +1,21 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import socket from '../socket';
 import styles from './PlayerGame.module.css';
+
+const CAT_COLORS = {
+  'Desh':        '#4ade80',
+  'Cricket':     '#fb923c',
+  'Taka':        '#fbbf24',
+  'Bishwo':      '#818cf8',
+  'Weird Facts': '#e879f9',
+};
+
+const WAITING_PHRASES = [
+  "Others are still thinking…",
+  "Will anyone beat you?",
+  "Fingers crossed 🤞",
+];
 
 export default function PlayerGame({ me, initialRound }) {
   const [phase, setPhase] = useState('question');
@@ -12,6 +26,24 @@ export default function PlayerGame({ me, initialRound }) {
   const [myRank, setMyRank] = useState(null);
   const [answer, setAnswer] = useState('');
   const [betTarget, setBetTarget] = useState(null);
+  const [inputFocused, setInputFocused] = useState(false);
+
+  // Pick a waiting phrase once per component mount
+  const waitingPhrase = useMemo(
+    () => WAITING_PHRASES[Math.floor(Math.random() * WAITING_PHRASES.length)],
+    []
+  );
+
+  // Count-up animation for scoreboard score
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, v => Math.round(v));
+
+  useEffect(() => {
+    if (phase === 'scoreboard') {
+      const controls = animate(count, myScore, { duration: 0.8, ease: 'easeOut' });
+      return controls.stop;
+    }
+  }, [phase, myScore]);
 
   useEffect(() => {
     socket.on('round:start', (data) => {
@@ -63,6 +95,7 @@ export default function PlayerGame({ me, initialRound }) {
     setPhase('locked');
   }
 
+  const catColor = CAT_COLORS[roundData?.category] ?? 'var(--accent3)';
   const myResult = revealData?.ranked.find(r => r.id === me?.id);
   const isWinner = revealData?.ranked[0]?.id === me?.id;
 
@@ -77,11 +110,20 @@ export default function PlayerGame({ me, initialRound }) {
           <motion.div key="question" className={styles.card}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <div className={styles.meta}>
-              <span className={styles.category}>{roundData.category}</span>
+              <span
+                className={styles.category}
+                style={{
+                  color: catColor,
+                  background: `${catColor}1a`,
+                  borderColor: `${catColor}40`,
+                }}
+              >{roundData.category}</span>
               <span className={styles.roundNum}>Round {roundData.round}/{roundData.total}</span>
             </div>
             <p className={styles.question}>{roundData.question}</p>
             <p className={styles.unit}>Answer in <strong>{roundData.unit}</strong></p>
+            {/* Accent strip above input */}
+            <div className={styles.inputAccent} style={{ background: catColor }} />
             <input
               type="number"
               inputMode="numeric"
@@ -90,12 +132,18 @@ export default function PlayerGame({ me, initialRound }) {
               onChange={e => setAnswer(e.target.value)}
               className={styles.answerInput}
               onKeyDown={e => e.key === 'Enter' && submitAnswer()}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+              style={inputFocused
+                ? { borderColor: catColor, boxShadow: `0 0 0 4px ${catColor}26` }
+                : { borderColor: catColor }}
               autoFocus
             />
             <button
               className={styles.submitBtn}
               onClick={submitAnswer}
               disabled={!answer.trim()}
+              style={{ background: catColor }}
             >Lock In</button>
           </motion.div>
         )}
@@ -104,9 +152,15 @@ export default function PlayerGame({ me, initialRound }) {
         {phase === 'locked' && (
           <motion.div key="locked" className={styles.card}
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-            <div className={styles.lockedIcon}>✓</div>
-            <p className={styles.lockedTitle}>Locked in</p>
-            <p className={styles.lockedSub}>Waiting for everyone else…</p>
+            <motion.div
+              className={styles.lockedIcon}
+              initial={{ scale: 0.8 }}
+              animate={{ scale: [0.8, 1.1, 1] }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >✓</motion.div>
+            <p className={styles.lockedTitle}>জমা দেওয়া হয়েছে!</p>
+            <p className={styles.lockedSub}>Answer submitted</p>
+            <p className={styles.waitingPhrase}>{waitingPhrase}</p>
           </motion.div>
         )}
 
@@ -125,8 +179,14 @@ export default function PlayerGame({ me, initialRound }) {
                     className={`${styles.betCard} ${betTarget === p.id ? styles.betSelected : ''}`}
                     onClick={() => setBetTarget(p.id)}
                   >
-                    <span className={styles.betAvatar}>{p.name[0].toUpperCase()}</span>
-                    <span className={styles.betName}>{p.name}</span>
+                    <span
+                      className={styles.betAvatar}
+                      style={{ background: catColor }}
+                    >{p.name[0].toUpperCase()}</span>
+                    <span className={styles.betNameBlock}>
+                      <span className={styles.betName}>{p.name}</span>
+                      <span className={styles.betHint}>bet = +1 pt if they win</span>
+                    </span>
                     {betTarget === p.id && <span className={styles.betCheck}>✓</span>}
                   </button>
                 ))}
@@ -135,6 +195,7 @@ export default function PlayerGame({ me, initialRound }) {
               className={styles.submitBtn}
               onClick={submitBet}
               disabled={!betTarget}
+              style={{ background: catColor }}
             >Place Bet</button>
           </motion.div>
         )}
@@ -172,9 +233,18 @@ export default function PlayerGame({ me, initialRound }) {
           <motion.div key="scoreboard" className={styles.card}
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
             <p className={styles.scoreLabel}>Your Score</p>
-            <p className={styles.myScore}>{myScore}</p>
+            <p className={styles.myScore}>
+              <motion.span>{rounded}</motion.span>
+            </p>
             <p className={styles.scoreUnit}>points</p>
-            {myRank && <p className={styles.myRank}>Rank #{myRank}</p>}
+            {myRank && (
+              <>
+                <p className={styles.myRank}>Rank #{myRank}</p>
+                {myRank === 1 && (
+                  <p className={styles.topRank}>👑 এক নম্বর!</p>
+                )}
+              </>
+            )}
             <p className={styles.nextRound}>Next round starting…</p>
           </motion.div>
         )}

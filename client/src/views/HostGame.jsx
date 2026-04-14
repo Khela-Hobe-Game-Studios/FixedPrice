@@ -1,7 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import socket from '../socket';
 import styles from './HostGame.module.css';
+
+// Returns border color and bg tint based on position in the reversed reveal array.
+// index 0 = furthest, index total-1 = winner (closest).
+function getRevealColor(index, total) {
+  if (total <= 1) return { border: '#4ade80', bg: 'rgba(74,222,128,0.08)' };
+  const rank = index; // 0 = furthest
+  if (rank === total - 1) return { border: '#4ade80', bg: 'rgba(74,222,128,0.08)' };   // winner
+  if (rank === total - 2) return { border: '#a3e635', bg: 'rgba(163,230,53,0.06)' };    // 2nd closest
+  if (rank === total - 3) return { border: '#facc15', bg: 'rgba(250,204,21,0.06)' };    // 3rd closest
+  if (rank === 0)         return { border: '#ef4444', bg: 'transparent' };              // furthest
+  return { border: '#fb923c', bg: 'transparent' };                                      // mid positions
+}
 
 export default function HostGame({ room, initialRound }) {
   const [phase, setPhase] = useState('question');
@@ -66,9 +79,21 @@ export default function HostGame({ room, initialRound }) {
     return () => clearInterval(timerRef.current);
   }, [phase, roundData]);
 
+  // Confetti fires after all reveal cards have animated in
+  useEffect(() => {
+    if (!revealData) return;
+    const delay = (revealData.ranked.length * 0.45 + 0.5) * 1000;
+    const t = setTimeout(() => {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 }, colors: ['#fbbf24', '#4ade80', '#006A4E', '#F42A41'] });
+    }, delay);
+    return () => clearTimeout(t);
+  }, [revealData]);
+
   const maxTime = phase === 'betting' ? 20 : (roundData?.timer ?? 30);
   const timerPct = maxTime > 0 ? timeLeft / maxTime : 0;
   const timerColor = timerPct > 0.5 ? '#4ade80' : timerPct > 0.25 ? '#facc15' : '#ef4444';
+
+  const answerUrgent = answerCount.total > 0 && answerCount.count >= answerCount.total * 0.7;
 
   return (
     <div className={styles.page}>
@@ -79,7 +104,9 @@ export default function HostGame({ room, initialRound }) {
         <div className={styles.topBar}>
           <span className={styles.category}>{roundData.category}</span>
           <span className={styles.roundNum}>Round {roundData.round} / {roundData.total}</span>
-          {roundData.isBettingRound && <span className={styles.bettingBadge}>BETTING ROUND</span>}
+          {roundData.isBettingRound && (
+            <span className={`${styles.bettingBadge}`}>BETTING ROUND</span>
+          )}
 
           {/* Timer ring */}
           {(phase === 'question' || phase === 'betting') && (
@@ -124,7 +151,12 @@ export default function HostGame({ room, initialRound }) {
                 style={{ width: answerCount.total > 0 ? `${(answerCount.count / answerCount.total) * 100}%` : '0%' }}
               />
             </div>
-            <p className={styles.answerCount}>{answerCount.count} / {answerCount.total} answered</p>
+            <p
+              className={styles.answerCount}
+              style={answerUrgent ? { color: 'var(--accent)' } : undefined}
+            >
+              {answerCount.count} / {answerCount.total} answered
+            </p>
           </motion.div>
         )}
 
@@ -132,15 +164,17 @@ export default function HostGame({ room, initialRound }) {
         {phase === 'betting' && bettingData && (
           <motion.div key="betting" className={styles.bettingPhase}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <p className={styles.bettingPrompt}>Who do you trust?</p>
-            <p className={styles.bettingSubtitle}>Players are betting on phones</p>
-            <div className={styles.bettingGrid}>
-              {bettingData.ranked.map(p => (
-                <div key={p.id} className={styles.bettingCard}>
-                  <span className={styles.bettingAvatar}>{p.name[0].toUpperCase()}</span>
-                  <span>{p.name}</span>
-                </div>
-              ))}
+            <div className={styles.bettingInner}>
+              <p className={styles.bettingPrompt}>Who do you trust?</p>
+              <p className={styles.bettingSubtitle}>Players are betting on phones</p>
+              <div className={styles.bettingGrid}>
+                {bettingData.ranked.map(p => (
+                  <div key={p.id} className={styles.bettingCard}>
+                    <span className={styles.bettingAvatar}>{p.name[0].toUpperCase()}</span>
+                    <span>{p.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
@@ -157,21 +191,33 @@ export default function HostGame({ room, initialRound }) {
             )}
             <div className={styles.revealList}>
               {[...revealData.ranked].reverse().map((r, i) => {
-                const isWinner = i === revealData.ranked.length - 1;
+                const total = revealData.ranked.length;
+                const isWinner = i === total - 1;
                 const distance = r.distance === Infinity ? '—' : r.distance.toLocaleString();
+                const { border, bg } = getRevealColor(i, total);
                 return (
                   <motion.div
                     key={r.id}
                     className={`${styles.revealCard} ${isWinner ? styles.winner : ''}`}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.35, duration: 0.3 }}
+                    style={{ borderLeft: `4px solid ${border}`, background: bg }}
+                    initial={isWinner
+                      ? { opacity: 0, scale: 0.7, y: 40 }
+                      : { opacity: 0, y: 60 }
+                    }
+                    animate={isWinner
+                      ? { opacity: 1, scale: 1, y: 0 }
+                      : { opacity: 1, y: 0 }
+                    }
+                    transition={isWinner
+                      ? { delay: i * 0.45, type: 'spring', stiffness: 200, damping: 18 }
+                      : { delay: i * 0.45, duration: 0.35 }
+                    }
                   >
-                    <span className={styles.revealRank}>#{revealData.ranked.length - i}</span>
+                    <span className={styles.revealRank}>#{total - i}</span>
                     <span className={styles.revealName}>{r.name}</span>
                     <span className={styles.revealGuess}>{r.guess?.toLocaleString() ?? '—'}</span>
                     <span className={styles.revealDist}>off by {distance}</span>
-                    {isWinner && <span className={styles.crown}>👑</span>}
+                    {isWinner && <span className={`${styles.crown} ${styles.winnerGlow}`}>👑</span>}
                   </motion.div>
                 );
               })}
