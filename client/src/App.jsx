@@ -22,15 +22,40 @@ function clearSession() {
   localStorage.removeItem(SESSION_KEY);
 }
 
+// Read session once at module load so lazy initialisers all see the same snapshot
+const _session = loadSession();
+
 export default function App() {
-  const [screen, setScreen] = useState('landing');
-  const [room, setRoom] = useState(null);
-  const [me, setMe] = useState(null);
+  // Initialise state directly from localStorage so the right screen shows immediately on refresh
+  const [screen, setScreen] = useState(() => {
+    if (_session?.role === 'host') return 'host-lobby';
+    if (_session?.role === 'player') return 'player-lobby';
+    return 'landing';
+  });
+  const [room, setRoom] = useState(() =>
+    _session?.code ? { code: _session.code, players: [], settings: _session.settings || {} } : null
+  );
+  const [me, setMe] = useState(() =>
+    _session?.role === 'player' ? { id: null, name: _session.name } : null
+  );
   const [final, setFinal] = useState(null);
-  const [roundData, setRoundData] = useState(null); // captured from round:start, passed to game views
+  const [roundData, setRoundData] = useState(null);
 
   useEffect(() => {
     socket.connect();
+
+    // If there's a saved session, rejoin once the socket is connected
+    if (_session) {
+      socket.once('connect', () => {
+        if (_session.role === 'host') {
+          socket.emit('host:rejoin', { code: _session.code });
+        } else if (_session.role === 'player') {
+          // Update me.id now that we have a socket id
+          setMe({ id: socket.id, name: _session.name });
+          socket.emit('player:rejoin', { code: _session.code, name: _session.name });
+        }
+      });
+    }
 
     socket.on('room:created', ({ code }) => {
       setRoom(r => ({ ...r, code, players: [] }));
@@ -39,26 +64,16 @@ export default function App() {
 
     socket.on('player:joined', ({ room }) => {
       setRoom(room);
-      // Only transition to lobby if we're not already in-game (handles rejoin sync)
-      setScreen(s => s === 'landing' || s === 'player-lobby' ? 'player-lobby' : s);
+      setScreen(s => ['landing', 'player-lobby'].includes(s) ? 'player-lobby' : s);
     });
 
     socket.on('room:updated', ({ players }) => {
       setRoom(r => r ? { ...r, players } : r);
     });
 
-    // Capture round data here so game views get it even on first mount
     socket.on('round:start', (data) => {
       setRoundData(data);
-      setScreen(s => s === 'host-lobby' || s === 'host-game' ? 'host-game' : 'player-game');
-    });
-
-    socket.on('round:reveal', () => {
-      setScreen(s => s === 'host-game' ? 'host-game' : 'player-game');
-    });
-
-    socket.on('round:scoreboard', () => {
-      setScreen(s => s === 'host-game' ? 'host-game' : 'player-game');
+      setScreen(s => ['host-lobby', 'host-game'].includes(s) ? 'host-game' : 'player-game');
     });
 
     socket.on('game:over', ({ final }) => {
@@ -69,32 +84,15 @@ export default function App() {
 
     socket.on('error', ({ message }) => alert(message));
 
-    // Attempt to restore session on connect
-    socket.on('connect', () => {
-      const session = loadSession();
-      if (!session) return;
-
-      if (session.role === 'host') {
-        setRoom({ code: session.code, players: [], settings: session.settings });
-        setScreen('host-lobby');
-        socket.emit('host:rejoin', { code: session.code });
-      } else if (session.role === 'player') {
-        setMe({ id: socket.id, name: session.name });
-        setRoom({ code: session.code, players: [], settings: {} });
-        setScreen('player-lobby');
-        socket.emit('player:rejoin', { code: session.code, name: session.name });
-      }
-    });
-
     return () => socket.disconnect();
   }, []);
 
-  // Persist session whenever room/me changes
+  // Persist session whenever relevant state changes
   useEffect(() => {
     if (!room?.code) return;
-    if (screen === 'host-lobby' || screen === 'host-game') {
+    if (['host-lobby', 'host-game'].includes(screen)) {
       saveSession({ role: 'host', code: room.code, settings: room.settings });
-    } else if ((screen === 'player-lobby' || screen === 'player-game') && me?.name) {
+    } else if (['player-lobby', 'player-game'].includes(screen) && me?.name) {
       saveSession({ role: 'player', code: room.code, name: me.name });
     }
   }, [screen, room?.code, me?.name]);

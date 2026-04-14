@@ -118,7 +118,7 @@ export default function PlayerGame({ me, initialRound }) {
             <p className={styles.bettingSubtitle}>Tap to place your bet</p>
             <div className={styles.bettingList}>
               {bettingData.ranked
-                .filter(p => p.id !== me?.id)
+                .filter(p => p.id !== me?.id && p.name !== me?.name)
                 .map(p => (
                   <button
                     key={p.id}
