@@ -1,0 +1,197 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2rem;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 60% at 10% 50%, rgba(251,191,36,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 90% 20%, rgba(34,211,238,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Large-screen layout: two columns */
+.layout {
+  position: relative;
+  display: flex;
+  gap: 3rem;
+  width: 100%;
+  max-width: 1000px;
+  align-items: flex-start;
+}
+
+/* LEFT */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 0 0 280px;
+}
+
+.codeBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.codeLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Code is the main thing people need to see from across the room */
+.code {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.codeSub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.settingsBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.settingKey { color: var(--muted); }
+.settingVal { font-weight: 700; color: var(--text); }
+.on  { font-weight: 700; color: #4ade80; }
+.off { font-weight: 700; color: var(--muted); }
+
+/* RIGHT */
+.right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.playerHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.playerTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-weight: 800;
+}
+
+.playerCount {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.playerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  min-height: 100px;
+}
+
+.playerCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.playerName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.waiting {
+  color: var(--muted);
+  font-size: 0.9rem;
+  grid-column: 1 / -1;
+  padding-top: 0.5rem;
+}
+
+.startBtn {
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  width: 100%;
+  letter-spacing: 0.03em;
+}
+
+.startBtn:not(:disabled):hover { opacity: 0.9; }
+
+/* Collapse to single column on mobile (host on phone) */
+@media (max-width: 640px) {
+  .layout {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .left {
+    flex: none;
+    width: 100%;
+  }
+
+  .code {
+    font-size: 3rem;
+  }
+
+  .playerGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
