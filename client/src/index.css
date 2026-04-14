@@ -1,15 +1,18 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0f0f13;
-  --surface: #1a1a24;
-  --border: #2e2e40;
-  --accent: #f5c842;
-  --accent2: #e05c3a;
-  --text: #f0eff5;
-  --muted: #7a7a9a;
-  --radius: 12px;
-  --font: 'Segoe UI', system-ui, sans-serif;
+  --bg: #08090f;
+  --surface: #13141f;
+  --surface2: #1c1d2e;
+  --border: #2a2b3d;
+  --accent: #fbbf24;
+  --accent2: #ef4444;
+  --accent3: #22d3ee;
+  --text: #f8f7ff;
+  --muted: #6b6b8a;
+  --radius: 10px;
+  --font-display: 'Unbounded', sans-serif;
+  --font: 'Nunito', sans-serif;
 }
 
 html, body, #root {
@@ -17,6 +20,10 @@ html, body, #root {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
 }
 
 button {
