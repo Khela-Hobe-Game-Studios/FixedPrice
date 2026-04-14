@@ -1,9 +1,9 @@
 const questions = require('../../questions/questions.json');
 
-const QUESTION_TIME = 30000;  // 30s
-const REVEAL_TIME = 5000;     // 5s
-const SCOREBOARD_TIME = 5000; // 5s
-const BETTING_TIME = 20000;   // 20s
+const QUESTION_TIME = 30000;
+const REVEAL_TIME = 5000;
+const SCOREBOARD_TIME = 5000;
+const BETTING_TIME = 20000;
 
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -11,12 +11,9 @@ function shuffle(arr) {
 
 function handleGameEvent(io, room, event, payload = {}) {
   switch (event) {
-    case 'START':
-      return startGame(io, room);
-    case 'ANSWER':
-      return submitAnswer(io, room, payload);
-    case 'BET':
-      return submitBet(io, room, payload);
+    case 'START':  return startGame(io, room);
+    case 'ANSWER': return submitAnswer(io, room, payload);
+    case 'BET':    return submitBet(io, room, payload);
   }
 }
 
@@ -40,18 +37,23 @@ function startRound(io, room) {
   room.answers = {};
   room.bets = {};
   room.isBettingRound = isBettingRound;
+  room._phaseStartedAt = Date.now();
+  room._phaseDuration = QUESTION_TIME;
 
   const activePlayers = room.players.filter(p => !p.eliminated);
-
-  io.to(room.code).emit('round:start', {
+  room._lastRoundStart = {
     round: currentRound + 1,
     total: questionIndices.length,
     question: q.question,
     category: q.category,
     unit: q.unit,
     isBettingRound,
-    timer: QUESTION_TIME / 1000,
     players: activePlayers.map(p => ({ id: p.id, name: p.name })),
+  };
+
+  io.to(room.code).emit('round:start', {
+    ...room._lastRoundStart,
+    timer: QUESTION_TIME / 1000,
   });
 
   room._questionTimer = setTimeout(() => endQuestion(io, room), QUESTION_TIME);
@@ -93,23 +95,20 @@ function endQuestion(io, room) {
     }))
     .sort((a, b) => a.distance - b.distance);
 
-  // Award points
   if (ranked.length > 0 && ranked[0].distance !== Infinity) {
     const minDist = ranked[0].distance;
-    // Handle ties for first
     const firstPlacers = ranked.filter(r => r.distance === minDist);
     firstPlacers.forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 3; });
 
     if (firstPlacers.length === 1 && ranked.length > 1) {
       const secondDist = ranked[firstPlacers.length].distance;
       if (secondDist !== Infinity) {
-        const secondPlacers = ranked.filter(r => r.distance === secondDist);
-        secondPlacers.forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 1; });
+        ranked.filter(r => r.distance === secondDist)
+          .forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 1; });
       }
     }
   }
 
-  // Elimination mode: strike the furthest
   if (room.settings.eliminationMode && ranked.length > 0) {
     const worst = ranked[ranked.length - 1];
     if (worst.distance !== Infinity) {
@@ -117,21 +116,22 @@ function endQuestion(io, room) {
       if (player) {
         player.strikes++;
         room.strikes[worst.id] = player.strikes;
-        if (player.strikes >= 3) {
-          player.eliminated = true;
-        }
+        if (player.strikes >= 3) player.eliminated = true;
       }
     }
   }
 
-  // Sync scores back to player objects
   players.forEach(p => { p.score = room.scores[p.id] || 0; });
 
   room.state = room.isBettingRound ? 'BETTING' : 'REVEAL';
 
   if (room.isBettingRound) {
+    room._phaseStartedAt = Date.now();
+    room._phaseDuration = BETTING_TIME;
+    room._lastBettingData = { ranked: ranked.map(r => ({ id: r.id, name: r.name })) };
+
     io.to(room.code).emit('round:betting', {
-      ranked: ranked.map(r => ({ id: r.id, name: r.name })), // don't reveal guesses yet
+      ...room._lastBettingData,
       timer: BETTING_TIME / 1000,
     });
     room._bettingTimer = setTimeout(() => endBetting(io, room, ranked), BETTING_TIME);
@@ -154,28 +154,22 @@ function submitBet(io, room, { socketId, targetId }) {
 }
 
 function endBetting(io, room, preRanked) {
-  // If we don't have ranked (timer fired after betting), recompute
   const ranked = preRanked || computeRanked(room);
-
-  // Apply betting bonuses
   const winner = ranked[0];
   if (winner && winner.distance !== Infinity) {
     const bettersOnWinner = Object.entries(room.bets).filter(([, t]) => t === winner.id);
-    // Winner gets +1 per bettor on them
     room.scores[winner.id] = (room.scores[winner.id] || 0) + bettersOnWinner.length;
-    // Each correct bettor gets +1
     bettersOnWinner.forEach(([bettorId]) => {
       room.scores[bettorId] = (room.scores[bettorId] || 0) + 1;
     });
   }
-
   room.players.forEach(p => { p.score = room.scores[p.id] || 0; });
   revealAnswers(io, room, ranked, room.bets);
 }
 
 function revealAnswers(io, room, ranked, bets = {}) {
   room.state = 'REVEAL';
-  io.to(room.code).emit('round:reveal', {
+  room._lastRevealData = {
     ranked,
     correctAnswer: room.currentQuestion.answer,
     unit: room.currentQuestion.unit,
@@ -183,8 +177,8 @@ function revealAnswers(io, room, ranked, bets = {}) {
     bets,
     scores: room.scores,
     strikes: room.strikes,
-  });
-
+  };
+  io.to(room.code).emit('round:reveal', room._lastRevealData);
   room._revealTimer = setTimeout(() => showScoreboard(io, room), REVEAL_TIME);
 }
 
@@ -194,15 +188,13 @@ function showScoreboard(io, room) {
     .map(p => ({ id: p.id, name: p.name, score: p.score, strikes: p.strikes, eliminated: p.eliminated }))
     .sort((a, b) => b.score - a.score);
 
-  io.to(room.code).emit('round:scoreboard', { scoreboard });
+  room._lastScoreboardData = { scoreboard };
+  io.to(room.code).emit('round:scoreboard', room._lastScoreboardData);
 
   room._scoreboardTimer = setTimeout(() => {
     room.currentRound++;
-    // Check if only one player left (elimination mode)
     const remaining = room.players.filter(p => !p.eliminated);
-    if (room.settings.eliminationMode && remaining.length <= 1) {
-      return endGame(io, room);
-    }
+    if (room.settings.eliminationMode && remaining.length <= 1) return endGame(io, room);
     startRound(io, room);
   }, SCOREBOARD_TIME);
 }
@@ -213,7 +205,44 @@ function endGame(io, room) {
     .map(p => ({ id: p.id, name: p.name, score: p.score, strikes: p.strikes }))
     .sort((a, b) => b.score - a.score);
 
-  io.to(room.code).emit('game:over', { final });
+  room._lastFinal = { final };
+  io.to(room.code).emit('game:over', room._lastFinal);
+}
+
+// Re-emit current game state to a single reconnecting socket
+function syncPlayerState(socket, room) {
+  const timeLeft = room._phaseStartedAt
+    ? Math.max(0, Math.round((room._phaseDuration - (Date.now() - room._phaseStartedAt)) / 1000))
+    : 0;
+
+  switch (room.state) {
+    case 'LOBBY':
+      socket.emit('room:updated', { players: room.players });
+      break;
+    case 'QUESTION':
+      if (room._lastRoundStart) {
+        socket.emit('round:start', { ...room._lastRoundStart, timer: timeLeft });
+        socket.emit('round:answer_count', {
+          count: Object.keys(room.answers).length,
+          total: room.players.filter(p => !p.eliminated).length,
+        });
+      }
+      break;
+    case 'BETTING':
+      if (room._lastBettingData) {
+        socket.emit('round:betting', { ...room._lastBettingData, timer: timeLeft });
+      }
+      break;
+    case 'REVEAL':
+      if (room._lastRevealData) socket.emit('round:reveal', room._lastRevealData);
+      break;
+    case 'SCOREBOARD':
+      if (room._lastScoreboardData) socket.emit('round:scoreboard', room._lastScoreboardData);
+      break;
+    case 'GAME_OVER':
+      if (room._lastFinal) socket.emit('game:over', room._lastFinal);
+      break;
+  }
 }
 
 function computeRanked(room) {
@@ -231,4 +260,4 @@ function computeRanked(room) {
     .sort((a, b) => a.distance - b.distance);
 }
 
-module.exports = { handleGameEvent };
+module.exports = { handleGameEvent, syncPlayerState };

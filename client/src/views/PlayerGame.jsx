@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import socket from '../socket';
 import styles from './PlayerGame.module.css';
 
-export default function PlayerGame({ me }) {
-  const [phase, setPhase] = useState('question'); // question | locked | betting | reveal | scoreboard
-  const [roundData, setRoundData] = useState(null);
+export default function PlayerGame({ me, initialRound }) {
+  const [phase, setPhase] = useState('question');
+  const [roundData, setRoundData] = useState(initialRound ?? null);
   const [revealData, setRevealData] = useState(null);
   const [bettingData, setBettingData] = useState(null);
   const [myScore, setMyScore] = useState(0);

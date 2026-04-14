@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import socket from '../socket';
 import styles from './HostGame.module.css';
 
-export default function HostGame({ room }) {
-  const [phase, setPhase] = useState('question'); // question | reveal | betting | scoreboard
-  const [roundData, setRoundData] = useState(null);      // from round:start
+export default function HostGame({ room, initialRound }) {
+  const [phase, setPhase] = useState('question');
+  const [roundData, setRoundData] = useState(initialRound ?? null);
   const [revealData, setRevealData] = useState(null);    // from round:reveal
   const [bettingData, setBettingData] = useState(null);  // from round:betting
   const [scoreboard, setScoreboard] = useState([]);      // from round:scoreboard

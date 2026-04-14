@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { createRoom, getRoom, removePlayer, addPlayer } = require('./roomManager');
-const { handleGameEvent } = require('./gameManager');
+const { handleGameEvent, syncPlayerState } = require('./gameManager');
 
 const app = express();
 app.use(cors());
@@ -22,6 +22,7 @@ io.on('connection', (socket) => {
   socket.on('host:create_room', ({ questionCount, eliminationMode, bettingRounds }) => {
     const room = createRoom({ hostSocketId: socket.id, questionCount, eliminationMode, bettingRounds });
     socket.join(room.code);
+    socket.data.roomCode = room.code;
     socket.emit('room:created', { code: room.code });
     console.log('room created:', room.code);
   });
@@ -41,8 +42,42 @@ io.on('connection', (socket) => {
     console.log(`${name} joined room ${code}`);
   });
 
+  // Reconnect handler for players who refreshed mid-game
+  socket.on('player:rejoin', ({ code, name }) => {
+    const room = getRoom(code);
+    if (!room) return socket.emit('error', { message: 'Room not found' });
+
+    const player = room.players.find(p => p.name === name);
+    if (!player) return socket.emit('error', { message: 'Player not found in room' });
+
+    // Update socket id on the player record
+    player.id = socket.id;
+    socket.join(code);
+    socket.data.roomCode = code;
+    socket.data.name = name;
+
+    socket.emit('player:joined', { room: sanitizeRoom(room) });
+    syncPlayerState(socket, room);
+    console.log(`${name} rejoined room ${code}`);
+  });
+
+  // Reconnect handler for host who refreshed mid-game
+  socket.on('host:rejoin', ({ code }) => {
+    const room = getRoom(code);
+    if (!room) return socket.emit('error', { message: 'Room not found' });
+
+    room.hostSocketId = socket.id;
+    socket.join(code);
+    socket.data.roomCode = code;
+
+    socket.emit('room:created', { code: room.code });
+    syncPlayerState(socket, room);
+    console.log(`host rejoined room ${code}`);
+  });
+
   socket.on('host:start_game', () => {
-    const room = getRoom(socket.data?.roomCode || findRoomByHost(socket.id));
+    const code = socket.data?.roomCode || findRoomCodeByHost(socket.id);
+    const room = getRoom(code);
     if (!room || room.hostSocketId !== socket.id) return;
     handleGameEvent(io, room, 'START');
   });
@@ -64,14 +99,17 @@ io.on('connection', (socket) => {
     if (!code) return;
     const room = getRoom(code);
     if (!room) return;
-    removePlayer(room, socket.id);
-    io.to(code).emit('room:updated', { players: room.players });
+
+    // Only fully remove the player if the game hasn't started — during a game they can rejoin
+    if (room.state === 'LOBBY') {
+      removePlayer(room, socket.id);
+      io.to(code).emit('room:updated', { players: room.players });
+    }
     console.log('disconnected:', socket.id);
   });
 });
 
-function findRoomByHost(socketId) {
-  // Used as fallback if roomCode not set on host socket
+function findRoomCodeByHost(socketId) {
   const { rooms } = require('./roomManager');
   for (const [code, room] of rooms) {
     if (room.hostSocketId === socketId) return code;
