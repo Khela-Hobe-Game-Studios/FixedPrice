@@ -5,7 +5,7 @@ import styles from './Landing.module.css';
 
 const fade = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -16 } };
 
-export default function Landing({ setRoom }) {
+export default function Landing({ setRoom, setMe }) {
   const [mode, setMode] = useState('home'); // home | host | join
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -19,6 +19,7 @@ export default function Landing({ setRoom }) {
 
   function joinRoom() {
     if (!name.trim() || code.length !== 4) return;
+    setMe({ id: socket.id, name: name.trim() });
     socket.emit('player:join', { code: code.toUpperCase(), name: name.trim() });
   }
 
