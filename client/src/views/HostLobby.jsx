@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import socket from '../socket';
 import styles from './HostLobby.module.css';
 
+const AVATAR_COLORS = ['#fbbf24', '#4ade80', '#fb923c', '#818cf8', '#e879f9'];
+
 export default function HostLobby({ room }) {
   const players = room?.players ?? [];
   const settings = room?.settings ?? {};
@@ -46,7 +48,10 @@ export default function HostLobby({ room }) {
         {/* Right: Player list + start button */}
         <div className={styles.right}>
           <div className={styles.playerHeader}>
-            <h2 className={styles.playerTitle}>Players</h2>
+            <div className={styles.playerTitleWrap}>
+              <span className={styles.playerLabelBengali}>খেলোয়াড়</span>
+              <h2 className={styles.playerTitle}>Players</h2>
+            </div>
             <span className={styles.playerCount}>{players.length} joined</span>
           </div>
 
@@ -59,7 +64,7 @@ export default function HostLobby({ room }) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05, duration: 0.2 }}
               >
-                <span className={styles.avatar}>{p.name[0].toUpperCase()}</span>
+                <span className={styles.avatar} style={{ background: AVATAR_COLORS[i % 5] }}>{p.name[0].toUpperCase()}</span>
                 <span className={styles.playerName}>{p.name}</span>
               </motion.div>
             ))}

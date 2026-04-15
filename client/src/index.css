@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@700;800;900&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -13,6 +15,14 @@
   --radius: 10px;
   --font-display: 'Unbounded', sans-serif;
   --font: 'Nunito', sans-serif;
+  --font-bengali: 'Hind Siliguri', sans-serif;
+  --green-bd: #006A4E;
+  --red-bd: #F42A41;
+  --cat-desh: #4ade80;
+  --cat-cricket: #fb923c;
+  --cat-taka: #fbbf24;
+  --cat-bishwo: #818cf8;
+  --cat-weird: #e879f9;
 }
 
 html, body, #root {

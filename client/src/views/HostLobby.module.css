@@ -37,6 +37,7 @@
 .codeBox {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--green-bd);
   border-radius: 16px;
   padding: 2rem;
   text-align: center;
@@ -56,7 +57,7 @@
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 5vw, 4.5rem);
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2em;
   color: var(--accent);
   line-height: 1;
   margin-bottom: 0.5rem;
@@ -102,6 +103,20 @@
   display: flex;
   align-items: baseline;
   gap: 1rem;
+}
+
+.playerTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.playerLabelBengali {
+  font-family: var(--font-bengali);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1;
 }
 
 .playerTitle {
@@ -162,8 +177,8 @@
 }
 
 .startBtn {
-  background: var(--accent);
-  color: #000;
+  background: var(--green-bd);
+  color: #ffffff;
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 800;

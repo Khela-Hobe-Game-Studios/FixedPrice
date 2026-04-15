@@ -11,7 +11,9 @@
 .bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(34,211,238,0.08) 0%, transparent 70%);
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,106,78,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 35% at 100% 100%, rgba(244,42,65,0.07) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -56,7 +58,8 @@
 }
 
 .youBadge strong {
-  color: var(--text);
+  color: var(--accent);
+  font-size: 1.1rem;
   font-weight: 700;
 }
 
@@ -72,8 +75,15 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent3);
+  background: var(--green-bd);
   flex-shrink: 0;
+}
+
+.waitSubtext {
+  font-family: var(--font-bengali);
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: -0.75rem;
 }
 
 .playerList {

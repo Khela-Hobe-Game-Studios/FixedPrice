@@ -1,10 +1,16 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import styles from './GameOver.module.css';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 const MEDAL_COLORS = ['#fbbf24', '#9ca3af', '#b45309'];
 
 export default function GameOver({ final, setScreen }) {
+  useEffect(() => {
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.4 }, colors: ['#006A4E', '#F42A41', '#fbbf24', '#ffffff'] });
+  }, []);
+
   if (!final) return null;
 
   const podium = final.slice(0, 3);
@@ -21,8 +27,8 @@ export default function GameOver({ final, setScreen }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <span className={styles.bengali}>এক দাম</span>
-          <h1 className={styles.title}>Game Over</h1>
+          <h1 className={styles.title}>শেষ!</h1>
+          <span className={styles.titleSub}>GAME OVER</span>
         </motion.div>
 
         {/* Podium */}
