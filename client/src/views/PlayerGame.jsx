@@ -7,7 +7,7 @@ const CAT_COLORS = {
   'Desh':        '#4ade80',
   'Cricket':     '#fb923c',
   'Taka':        '#fbbf24',
-  'Bishwo':      '#818cf8',
+  'Global':      '#818cf8',
   'Weird Facts': '#e879f9',
 };
 

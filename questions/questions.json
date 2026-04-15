@@ -73,21 +73,21 @@
     "question": "How much did Avatar 2 gross worldwide in USD millions?",
     "answer": 2320,
     "unit": "million USD",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "Avatar: The Way of Water became the third highest-grossing film of all time."
   },
   {
     "question": "How many Oscars has the movie Titanic won?",
     "answer": 11,
     "unit": "Oscars",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "Titanic ties with Ben-Hur and The Lord of the Rings: The Return of the King for most Oscars won."
   },
   {
     "question": "How many goals did Lionel Messi score in the 2022 FIFA World Cup?",
     "answer": 7,
     "unit": "goals",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "Messi's 7 goals won him the Golden Boot and helped Argentina win their third World Cup."
   },
   {
@@ -101,7 +101,7 @@
     "question": "How many subscribers does the most-subscribed YouTube channel have in millions?",
     "answer": 300,
     "unit": "million subscribers",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "MrBeast surpassed T-Series to become the most subscribed individual YouTube channel."
   },
   {
@@ -115,7 +115,7 @@
     "question": "What is the height of Mount Everest in meters?",
     "answer": 8849,
     "unit": "meters",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "The height was revised to 8,848.86m in 2020 after a joint survey by China and Nepal."
   },
   {
@@ -136,7 +136,7 @@
     "question": "How many countries are in the United Nations?",
     "answer": 193,
     "unit": "countries",
-    "category": "Bishwo",
+    "category": "Global",
     "funFact": "The UN was founded in 1945 with 51 member states. South Sudan, which joined in 2011, was the most recent member."
   }
 ]
