@@ -212,16 +212,15 @@ async function runPlayer(ctx, player, codePromise) {
 
     // Scoreboard lasts 5s — catch it if we can, then move on
     await page.waitForFunction(
-      () => document.body.textContent.includes('Your Score') ||
+      () => document.body.textContent.includes('Scoreboard') ||
             document.body.textContent.includes('Lock In') ||
             document.body.textContent.includes('Play Again'),
       null,
       { timeout: 20000 }
     ).catch(() => {});
 
-    const score = await page.locator('[class*="myScore"]').textContent().catch(() => '?');
-    const rank  = await page.locator('[class*="myRank"]').textContent().catch(() => '?');
-    log(name, `Score: ${score.trim()} — ${rank.trim()}`);
+    const myRow = await page.locator('[class*="miniBoardMe"]').first().textContent().catch(() => '?');
+    log(name, `Standing: ${myRow.trim()}`);
   }
 
   log(name, '✓ Done');

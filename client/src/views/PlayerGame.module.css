@@ -158,89 +158,73 @@
 .bettingList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
+/* Compact leaderboard-style row */
 .betCard {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
   text-align: left;
   width: 100%;
-  transition: border-color 0.15s, background 0.15s, transform 0.15s;
-  overflow: hidden;
-  position: relative;
-}
-
-.betCard::after {
-  content: '';
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  transform: scale(0);
-  pointer-events: none;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-}
-
-.betCard:active::after {
-  animation: ripple 0.4s ease-out;
-}
-
-@keyframes ripple {
-  to { transform: scale(4); opacity: 0; }
+  transition: border-color 0.12s, background 0.12s;
 }
 
 .betCard.betSelected {
   border-color: #f59e0b;
-  background: rgba(245,158,11,0.1);
-  transform: scale(1.02);
+  background: rgba(245,158,11,0.08);
+}
+
+.betRank {
+  width: 24px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .betAvatar {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
-/* Wraps name + hint text */
-.betNameBlock {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
 .betName {
-  font-weight: 700;
-  font-size: 1rem;
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.betHint {
+.betScore {
+  font-family: var(--font-display);
   font-size: 0.7rem;
+  font-weight: 700;
   color: var(--muted);
-  font-weight: 400;
+  flex-shrink: 0;
 }
 
 .betCheck {
   color: #f59e0b;
   font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  margin-left: 0.15rem;
 }
 
 /* REVEAL */
@@ -314,34 +298,76 @@
   text-align: center;
 }
 
-.myScore {
-  font-family: var(--font-display);
-  font-size: 4rem;
-  font-weight: 900;
-  color: var(--accent);
-  text-align: center;
-  line-height: 1;
+.miniBoard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
 }
 
-.scoreUnit {
-  text-align: center;
-  color: var(--muted);
+.miniBoardRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
   font-size: 0.9rem;
-  margin-top: -0.75rem;
 }
 
-.myRank {
-  text-align: center;
-  font-size: 1.1rem;
+.miniBoardRow.miniBoardMe {
+  border-color: var(--accent);
+  background: rgba(251,191,36,0.07);
+}
+
+.miniBoardRank {
+  width: 28px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.miniBoardName {
+  flex: 1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.miniBoardMe .miniBoardName {
+  color: var(--accent);
   font-weight: 700;
 }
 
+.miniBoardScore {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.miniBoardMe .miniBoardScore {
+  color: var(--accent);
+}
+
+.miniBoardSep {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  padding: 0.1rem 0;
+}
+
+/* kept for crown label */
 .topRank {
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: #fbbf24;
-  margin-top: -0.5rem;
 }
 
 .nextRound {

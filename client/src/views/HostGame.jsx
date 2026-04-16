@@ -231,7 +231,7 @@ export default function HostGame({ room, initialRound }) {
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
             <h2 className={styles.scoreboardTitle}>Scoreboard</h2>
             <div className={styles.scoreList}>
-              {scoreboard.map((p, i) => (
+              {scoreboard.slice(0, 5).map((p, i) => (
                 <motion.div
                   key={p.id}
                   className={`${styles.scoreRow} ${p.eliminated ? styles.eliminated : ''}`}
@@ -248,6 +248,9 @@ export default function HostGame({ room, initialRound }) {
                 </motion.div>
               ))}
             </div>
+            {scoreboard.length > 5 && (
+              <p className={styles.moreCount}>+{scoreboard.length - 5} more players</p>
+            )}
           </motion.div>
         )}
 

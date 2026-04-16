@@ -24,6 +24,7 @@ export default function PlayerGame({ me, initialRound }) {
   const [bettingData, setBettingData] = useState(null);
   const [myScore, setMyScore] = useState(0);
   const [myRank, setMyRank] = useState(null);
+  const [scoreboardData, setScoreboardData] = useState([]);
   const [answer, setAnswer] = useState('');
   const [betTarget, setBetTarget] = useState(null);
   const [inputFocused, setInputFocused] = useState(false);
@@ -52,6 +53,7 @@ export default function PlayerGame({ me, initialRound }) {
       setBetTarget(null);
       setRevealData(null);
       setBettingData(null);
+      setScoreboardData([]);
       setPhase('question');
     });
 
@@ -72,6 +74,7 @@ export default function PlayerGame({ me, initialRound }) {
         setMyScore(entry.score);
         setMyRank(scoreboard.indexOf(entry) + 1);
       }
+      setScoreboardData(scoreboard);
       setPhase('scoreboard');
     });
 
@@ -169,24 +172,25 @@ export default function PlayerGame({ me, initialRound }) {
           <motion.div key="betting" className={styles.card}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <p className={styles.bettingTitle}>Who do you trust?</p>
-            <p className={styles.bettingSubtitle}>Tap to place your bet</p>
+            <p className={styles.bettingSubtitle}>Pick one — +1 pt if they win this round</p>
             <div className={styles.bettingList}>
               {bettingData.ranked
+                .map((p, i) => ({ ...p, rank: i + 1 }))
                 .filter(p => p.id !== me?.id && p.name !== me?.name)
+                .slice(0, 10)
                 .map(p => (
                   <button
                     key={p.id}
                     className={`${styles.betCard} ${betTarget === p.id ? styles.betSelected : ''}`}
                     onClick={() => setBetTarget(p.id)}
                   >
+                    <span className={styles.betRank}>#{p.rank}</span>
                     <span
                       className={styles.betAvatar}
                       style={{ background: catColor }}
                     >{p.name[0].toUpperCase()}</span>
-                    <span className={styles.betNameBlock}>
-                      <span className={styles.betName}>{p.name}</span>
-                      <span className={styles.betHint}>bet = +1 pt if they win</span>
-                    </span>
+                    <span className={styles.betName}>{p.name}</span>
+                    <span className={styles.betScore}>{p.score} pts</span>
                     {betTarget === p.id && <span className={styles.betCheck}>✓</span>}
                   </button>
                 ))}
@@ -232,19 +236,45 @@ export default function PlayerGame({ me, initialRound }) {
         {phase === 'scoreboard' && (
           <motion.div key="scoreboard" className={styles.card}
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-            <p className={styles.scoreLabel}>Your Score</p>
-            <p className={styles.myScore}>
-              <motion.span>{rounded}</motion.span>
-            </p>
-            <p className={styles.scoreUnit}>points</p>
-            {myRank && (
-              <>
-                <p className={styles.myRank}>Rank #{myRank}</p>
-                {myRank === 1 && (
-                  <p className={styles.topRank}>👑 এক নম্বর!</p>
-                )}
-              </>
-            )}
+            <p className={styles.scoreLabel}>Scoreboard</p>
+            <div className={styles.miniBoard}>
+              {scoreboardData.slice(0, 5).map((p, i) => {
+                const isMe = p.id === me?.id;
+                return (
+                  <motion.div
+                    key={p.id}
+                    className={`${styles.miniBoardRow} ${isMe ? styles.miniBoardMe : ''}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                  >
+                    <span className={styles.miniBoardRank}>#{i + 1}</span>
+                    <span className={styles.miniBoardName}>{isMe ? 'You' : p.name}</span>
+                    <span className={styles.miniBoardScore}>
+                      <motion.span>{isMe ? rounded : p.score}</motion.span> pts
+                    </span>
+                  </motion.div>
+                );
+              })}
+              {myRank > 5 && (
+                <>
+                  <div className={styles.miniBoardSep}>· · ·</div>
+                  <motion.div
+                    className={`${styles.miniBoardRow} ${styles.miniBoardMe}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35 }}
+                  >
+                    <span className={styles.miniBoardRank}>#{myRank}</span>
+                    <span className={styles.miniBoardName}>You</span>
+                    <span className={styles.miniBoardScore}>
+                      <motion.span>{rounded}</motion.span> pts
+                    </span>
+                  </motion.div>
+                </>
+              )}
+            </div>
+            {myRank === 1 && <p className={styles.topRank}>👑 এক নম্বর!</p>}
             <p className={styles.nextRound}>Next round starting…</p>
           </motion.div>
         )}
