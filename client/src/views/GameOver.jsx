@@ -10,6 +10,22 @@ function fireworks() {
   confetti({ particleCount: 100, spread: 70, origin: { x: 0.7, y: 0.5 }, colors: BD_COLORS });
 }
 
+// Group players into rank tiers accounting for ties
+function computeTiers(players) {
+  const tiers = [];
+  let rank = 1;
+  for (let i = 0; i < players.length; ) {
+    const score = players[i].score;
+    const tied = [];
+    while (i < players.length && players[i].score === score) {
+      tied.push(players[i++]);
+    }
+    tiers.push({ rank, score, players: tied });
+    rank += tied.length;
+  }
+  return tiers;
+}
+
 export default function GameOver({ final, setScreen }) {
   useEffect(() => {
     fireworks();
@@ -19,15 +35,23 @@ export default function GameOver({ final, setScreen }) {
 
   if (!final) return null;
 
-  const [first, second, third] = final;
-  const rest = final.slice(3);
+  const tiers = computeTiers(final);
+  const [tier1, tier2, tier3] = tiers;
+  const rest = tiers.slice(3).flatMap(t => t.players.map(p => ({ ...p, rank: t.rank })));
+
+  const medals  = ['', '🥇', '🥈', '🥉'];
+  const colors  = ['', '#fbbf24', '#9ca3af', '#cd7f32'];
+  const heights = [0, 120, 80, 55];
 
   // Podium order: 2nd | 1st | 3rd
   const podiumOrder = [
-    { player: second, rank: 2, height: 80,  delay: 0.45 },
-    { player: first,  rank: 1, height: 120, delay: 0.2  },
-    { player: third,  rank: 3, height: 55,  delay: 0.65 },
-  ];
+    tier2 && { tier: tier2, rank: 2, height: heights[2], delay: 0.45 },
+    tier1 && { tier: tier1, rank: 1, height: heights[1], delay: 0.2  },
+    tier3 && { tier: tier3, rank: 3, height: heights[3], delay: 0.65 },
+  ].filter(Boolean);
+
+  const champions = tier1?.players ?? [];
+  const isTied = champions.length > 1;
 
   return (
     <div className={styles.page}>
@@ -47,54 +71,59 @@ export default function GameOver({ final, setScreen }) {
         </motion.div>
 
         {/* ── WINNER HERO ── */}
-        {first && (
+        {champions.length > 0 && (
           <motion.div
             className={styles.winner}
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15, duration: 0.4, ease: 'backOut' }}
           >
-            <span className={styles.winnerLabel}>Today's Champion 🏆</span>
-            <div className={styles.winnerAvatar}>{first.name[0].toUpperCase()}</div>
-            <span className={styles.winnerName}>{first.name}</span>
-            <span className={styles.winnerScore}>{first.score} pts</span>
+            <span className={styles.winnerLabel}>
+              {isTied ? 'Co-Champions 🏆' : "Today's Champion 🏆"}
+            </span>
+            <div className={styles.winnerAvatars}>
+              {champions.map(p => (
+                <div key={p.id} className={styles.winnerAvatar}>{p.name[0].toUpperCase()}</div>
+              ))}
+            </div>
+            <span className={styles.winnerName}>
+              {champions.map(p => p.name).join(' & ')}
+            </span>
+            <span className={styles.winnerScore}>{champions[0].score} pts</span>
           </motion.div>
         )}
 
         {/* ── PODIUM ── */}
         <div className={styles.podiumRow}>
-          {podiumOrder.map(({ player, rank, height, delay }) => {
-            if (!player) return null;
-            const medals = ['', '🥇', '🥈', '🥉'];
-            const colors = ['', '#fbbf24', '#9ca3af', '#cd7f32'];
-            return (
-              <div key={rank} className={styles.podiumCol}>
-                <motion.div
-                  className={styles.podiumInfo}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay, duration: 0.3 }}
-                >
-                  <span className={styles.podiumMedal}>{medals[rank]}</span>
-                  <span className={styles.podiumName}>{player.name}</span>
-                  <span className={styles.podiumPts} style={{ color: colors[rank] }}>
-                    {player.score}
-                  </span>
-                </motion.div>
-                <motion.div
-                  className={styles.podiumBlock}
-                  style={{ height, background: `${colors[rank]}22`, borderColor: colors[rank] }}
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ delay: delay + 0.1, duration: 0.4, ease: 'backOut' }}
-                >
-                  <span className={styles.podiumRank} style={{ color: colors[rank] }}>
-                    #{rank}
-                  </span>
-                </motion.div>
-              </div>
-            );
-          })}
+          {podiumOrder.map(({ tier, rank, height, delay }) => (
+            <div key={rank} className={styles.podiumCol}>
+              <motion.div
+                className={styles.podiumInfo}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay, duration: 0.3 }}
+              >
+                <span className={styles.podiumMedal}>{medals[rank]}</span>
+                <span className={styles.podiumName}>
+                  {tier.players.map(p => p.name).join(' & ')}
+                </span>
+                <span className={styles.podiumPts} style={{ color: colors[rank] }}>
+                  {tier.score}
+                </span>
+              </motion.div>
+              <motion.div
+                className={styles.podiumBlock}
+                style={{ height, background: `${colors[rank]}22`, borderColor: colors[rank] }}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: delay + 0.1, duration: 0.4, ease: 'backOut' }}
+              >
+                <span className={styles.podiumRank} style={{ color: colors[rank] }}>
+                  #{rank}
+                </span>
+              </motion.div>
+            </div>
+          ))}
         </div>
 
         {/* ── REST ── */}
@@ -108,7 +137,7 @@ export default function GameOver({ final, setScreen }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 + i * 0.07 }}
               >
-                <span className={styles.restRank}>#{i + 4}</span>
+                <span className={styles.restRank}>#{p.rank}</span>
                 <span className={styles.restName}>{p.name}</span>
                 <span className={styles.restScore}>{p.score} pts</span>
               </motion.div>

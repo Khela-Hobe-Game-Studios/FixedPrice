@@ -94,6 +94,12 @@
   color: #fbbf24;
 }
 
+.winnerAvatars {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
 .winnerAvatar {
   width: 64px;
   height: 64px;
