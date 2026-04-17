@@ -1,12 +1,17 @@
 const rooms = new Map();
 
+const WORD_BANK = [
+  'AMMU','GHOR','JHOL','LEBU','MEOW','ALOO','CHOP','GORU','MACH','BHAT',
+  'MEYE','BHAI','TUMI','BABA','DADA','NANA','NANI','KAKA','MAMA','MAMI',
+  'PANI','DAAL','RUTI','JUTA','KOLA','SUJI','GHEE','MURI','CHAI','BIRI',
+  'LOHA','PATA','PHUL','MALA','GOLA','DOSH','KHUB','TARA','MEGH','JHOR',
+  'BATI','THAK','GHUM','CHUL','BURA','MODH','KALO','SHOB',
+];
+
 function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  let code;
-  do {
-    code = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  } while (rooms.has(code));
-  return code;
+  const available = WORD_BANK.filter(w => !rooms.has(w));
+  const pool = available.length > 0 ? available : WORD_BANK;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function createRoom({ hostSocketId, questionCount = 10, eliminationMode = false, bettingRounds = false }) {
