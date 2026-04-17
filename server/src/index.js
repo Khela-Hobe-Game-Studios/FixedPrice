@@ -50,7 +50,11 @@ io.on('connection', (socket) => {
     const player = room.players.find(p => p.name === name);
     if (!player) return socket.emit('error', { message: 'Player not found in room' });
 
-    // Update socket id and mark as reconnected
+    if (player._disconnectTimer) {
+      clearTimeout(player._disconnectTimer);
+      delete player._disconnectTimer;
+    }
+
     player.id = socket.id;
     player.connected = true;
     socket.join(code);
@@ -101,18 +105,23 @@ io.on('connection', (socket) => {
     const room = getRoom(code);
     if (!room) return;
 
-    if (room.state === 'LOBBY') {
-      // Pre-game: fully remove the player
-      removePlayer(room, socket.id);
-      io.to(code).emit('room:updated', { players: room.players });
-    } else {
-      // Mid-game: mark as disconnected so they don't block phase progression
-      const player = room.players.find(p => p.id === socket.id);
-      if (player) {
-        player.connected = false;
-        handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { socketId: socket.id });
-      }
+    const player = room.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    player.connected = false;
+
+    if (room.state !== 'LOBBY') {
+      handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { socketId: socket.id });
     }
+
+    io.to(code).emit('room:updated', { players: room.players });
+
+    player._disconnectTimer = setTimeout(() => {
+      if (player.connected === false) {
+        removePlayer(room, player.id);
+        io.to(code).emit('room:updated', { players: room.players });
+      }
+    }, 15000);
     console.log('disconnected:', socket.id);
   });
 });
