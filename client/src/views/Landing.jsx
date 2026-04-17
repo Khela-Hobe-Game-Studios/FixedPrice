@@ -27,6 +27,11 @@ export default function Landing({ setRoom, setMe }) {
     <div className={styles.page}>
       <div className={styles.bg} />
 
+      <div className={styles.studio}>
+        <span className={styles.studioBy}>A game by</span>
+        <span className={styles.studioName}>Khela Hobe Game Studios</span>
+      </div>
+
       <AnimatePresence mode="wait">
         {mode === 'home' && (
           <motion.div key="home" className={styles.center} {...fade} transition={{ duration: 0.3 }}>
