@@ -17,14 +17,21 @@ const WAITING_PHRASES = [
   "Fingers crossed 🤞",
 ];
 
-export default function PlayerGame({ me, initialRound }) {
-  const [phase, setPhase] = useState('question');
+export default function PlayerGame({ me, initialRound, initialPhase = 'question', initialBetting = null, initialReveal = null, initialScoreboard = null }) {
+  const [phase, setPhase] = useState(initialPhase);
   const [roundData, setRoundData] = useState(initialRound ?? null);
-  const [revealData, setRevealData] = useState(null);
-  const [bettingData, setBettingData] = useState(null);
-  const [myScore, setMyScore] = useState(0);
-  const [myRank, setMyRank] = useState(null);
-  const [scoreboardData, setScoreboardData] = useState([]);
+  const [revealData, setRevealData] = useState(initialReveal ?? null);
+  const [bettingData, setBettingData] = useState(initialBetting ?? null);
+  const [myScore, setMyScore] = useState(() => {
+    const entry = initialScoreboard?.scoreboard?.find(p => p.name === me?.name);
+    return entry?.score ?? 0;
+  });
+  const [myRank, setMyRank] = useState(() => {
+    if (!initialScoreboard?.scoreboard) return null;
+    const idx = initialScoreboard.scoreboard.findIndex(p => p.name === me?.name);
+    return idx >= 0 ? idx + 1 : null;
+  });
+  const [scoreboardData, setScoreboardData] = useState(initialScoreboard?.scoreboard ?? []);
   const [answer, setAnswer] = useState('');
   const [betTarget, setBetTarget] = useState(null);
   const [inputFocused, setInputFocused] = useState(false);
@@ -69,7 +76,7 @@ export default function PlayerGame({ me, initialRound }) {
     });
 
     socket.on('round:scoreboard', ({ scoreboard }) => {
-      const entry = scoreboard.find(p => p.id === me?.id);
+      const entry = scoreboard.find(p => p.id === me?.id || p.name === me?.name);
       if (entry) {
         setMyScore(entry.score);
         setMyRank(scoreboard.indexOf(entry) + 1);

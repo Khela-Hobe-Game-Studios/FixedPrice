@@ -40,6 +40,10 @@ export default function App() {
   );
   const [final, setFinal] = useState(null);
   const [roundData, setRoundData] = useState(null);
+  const [initialPhase, setInitialPhase] = useState('question');
+  const [initialBetting, setInitialBetting] = useState(null);
+  const [initialReveal, setInitialReveal] = useState(null);
+  const [initialScoreboard, setInitialScoreboard] = useState(null);
 
   useEffect(() => {
     socket.connect();
@@ -73,7 +77,43 @@ export default function App() {
 
     socket.on('round:start', (data) => {
       setRoundData(data);
+      setInitialPhase('question');
+      setInitialBetting(null);
+      setInitialReveal(null);
+      setInitialScoreboard(null);
       setScreen(s => ['host-lobby', 'host-game'].includes(s) ? 'host-game' : 'player-game');
+    });
+
+    // These also fire on rejoin when PlayerGame/HostGame isn't mounted yet —
+    // handle them here so the screen transitions and initial state is set.
+    socket.on('round:betting', (data) => {
+      setInitialBetting(data);
+      setInitialPhase('betting');
+      setScreen(s => {
+        if (s === 'host-lobby') return 'host-game';
+        if (s === 'player-lobby' || s === 'landing') return 'player-game';
+        return s;
+      });
+    });
+
+    socket.on('round:reveal', (data) => {
+      setInitialReveal(data);
+      setInitialPhase('reveal');
+      setScreen(s => {
+        if (s === 'host-lobby') return 'host-game';
+        if (s === 'player-lobby' || s === 'landing') return 'player-game';
+        return s;
+      });
+    });
+
+    socket.on('round:scoreboard', (data) => {
+      setInitialScoreboard(data);
+      setInitialPhase('scoreboard');
+      setScreen(s => {
+        if (s === 'host-lobby') return 'host-game';
+        if (s === 'player-lobby' || s === 'landing') return 'player-game';
+        return s;
+      });
     });
 
     socket.on('game:over', ({ final }) => {
@@ -82,7 +122,15 @@ export default function App() {
       clearSession();
     });
 
-    socket.on('error', ({ message }) => alert(message));
+    socket.on('error', ({ message }) => {
+      // Rejoin failed (server restarted and lost state) — clear stale session and go home
+      if (message === 'Room not found' || message === 'Player not found in room') {
+        clearSession();
+        setScreen('landing');
+      } else {
+        alert(message);
+      }
+    });
 
     return () => socket.disconnect();
   }, []);
@@ -102,7 +150,7 @@ export default function App() {
   if (screen === 'landing')       return <Landing {...props} />;
   if (screen === 'host-lobby')    return <HostLobby {...props} />;
   if (screen === 'player-lobby')  return <PlayerLobby {...props} />;
-  if (screen === 'host-game')     return <HostGame {...props} initialRound={roundData} />;
-  if (screen === 'player-game')   return <PlayerGame {...props} initialRound={roundData} />;
+  if (screen === 'host-game')     return <HostGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
+  if (screen === 'player-game')   return <PlayerGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
   if (screen === 'game-over')     return <GameOver final={final} setScreen={setScreen} />;
 }

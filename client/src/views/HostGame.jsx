@@ -16,12 +16,12 @@ function getRevealColor(index, total) {
   return { border: '#fb923c', bg: 'transparent' };                                      // mid positions
 }
 
-export default function HostGame({ room, initialRound }) {
-  const [phase, setPhase] = useState('question');
+export default function HostGame({ room, initialRound, initialPhase = 'question', initialBetting = null, initialReveal = null, initialScoreboard = null }) {
+  const [phase, setPhase] = useState(initialPhase);
   const [roundData, setRoundData] = useState(initialRound ?? null);
-  const [revealData, setRevealData] = useState(null);    // from round:reveal
-  const [bettingData, setBettingData] = useState(null);  // from round:betting
-  const [scoreboard, setScoreboard] = useState([]);      // from round:scoreboard
+  const [revealData, setRevealData] = useState(initialReveal ?? null);
+  const [bettingData, setBettingData] = useState(initialBetting ?? null);
+  const [scoreboard, setScoreboard] = useState(initialScoreboard?.scoreboard ?? []);
   const [answerCount, setAnswerCount] = useState({ count: 0, total: 0 });
   const [timeLeft, setTimeLeft] = useState(0);
   const timerRef = useRef(null);
