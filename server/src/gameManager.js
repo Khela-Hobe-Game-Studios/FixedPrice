@@ -11,9 +11,10 @@ function shuffle(arr) {
 
 function handleGameEvent(io, room, event, payload = {}) {
   switch (event) {
-    case 'START':  return startGame(io, room);
-    case 'ANSWER': return submitAnswer(io, room, payload);
-    case 'BET':    return submitBet(io, room, payload);
+    case 'START':               return startGame(io, room);
+    case 'ANSWER':              return submitAnswer(io, room, payload);
+    case 'BET':                 return submitBet(io, room, payload);
+    case 'PLAYER_DISCONNECTED': return onPlayerDisconnected(io, room, payload);
   }
 }
 
@@ -66,8 +67,8 @@ function submitAnswer(io, room, { socketId, answer }) {
 
   room.answers[socketId] = Number(answer);
 
-  const activePlayers = room.players.filter(p => !p.eliminated);
-  const allAnswered = activePlayers.every(p => room.answers[p.id] !== undefined);
+  const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+  const allAnswered = activePlayers.length > 0 && activePlayers.every(p => room.answers[p.id] !== undefined);
 
   io.to(room.code).emit('round:answer_count', {
     count: Object.keys(room.answers).length,
@@ -145,8 +146,8 @@ function submitBet(io, room, { socketId, targetId }) {
   if (socketId === targetId) return;
   room.bets[socketId] = targetId;
 
-  const activePlayers = room.players.filter(p => !p.eliminated);
-  const allBet = activePlayers.every(p => room.bets[p.id] !== undefined || p.id === targetId);
+  const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+  const allBet = activePlayers.length > 0 && activePlayers.every(p => room.bets[p.id] !== undefined || p.id === targetId);
   if (allBet) {
     clearTimeout(room._bettingTimer);
     endBetting(io, room, null);
@@ -207,6 +208,24 @@ function endGame(io, room) {
 
   room._lastFinal = { final };
   io.to(room.code).emit('game:over', room._lastFinal);
+}
+
+// When a player drops mid-game, re-check if the remaining connected players have already
+// completed the current phase — if so, advance immediately rather than waiting for the timer.
+function onPlayerDisconnected(io, room, { socketId }) {
+  if (room.state === 'QUESTION') {
+    const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+    if (activePlayers.length > 0 && activePlayers.every(p => room.answers[p.id] !== undefined)) {
+      clearTimeout(room._questionTimer);
+      endQuestion(io, room);
+    }
+  } else if (room.state === 'BETTING') {
+    const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+    if (activePlayers.length > 0 && activePlayers.every(p => room.bets[p.id] !== undefined || p.id === socketId)) {
+      clearTimeout(room._bettingTimer);
+      endBetting(io, room, null);
+    }
+  }
 }
 
 // Re-emit current game state to a single reconnecting socket

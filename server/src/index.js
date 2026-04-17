@@ -50,8 +50,9 @@ io.on('connection', (socket) => {
     const player = room.players.find(p => p.name === name);
     if (!player) return socket.emit('error', { message: 'Player not found in room' });
 
-    // Update socket id on the player record
+    // Update socket id and mark as reconnected
     player.id = socket.id;
+    player.connected = true;
     socket.join(code);
     socket.data.roomCode = code;
     socket.data.name = name;
@@ -100,10 +101,17 @@ io.on('connection', (socket) => {
     const room = getRoom(code);
     if (!room) return;
 
-    // Only fully remove the player if the game hasn't started — during a game they can rejoin
     if (room.state === 'LOBBY') {
+      // Pre-game: fully remove the player
       removePlayer(room, socket.id);
       io.to(code).emit('room:updated', { players: room.players });
+    } else {
+      // Mid-game: mark as disconnected so they don't block phase progression
+      const player = room.players.find(p => p.id === socket.id);
+      if (player) {
+        player.connected = false;
+        handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { socketId: socket.id });
+      }
     }
     console.log('disconnected:', socket.id);
   });
