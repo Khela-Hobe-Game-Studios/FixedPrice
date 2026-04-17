@@ -3,7 +3,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { createRoom, getRoom, removePlayer, addPlayer } = require('./roomManager');
-const { handleGameEvent, syncPlayerState } = require('./gameManager');
+const { handleGameEvent, syncPlayerState, setQuestions } = require('./gameManager');
+const { loadQuestions } = require('./questionsLoader');
 
 const app = express();
 app.use(cors());
@@ -144,4 +145,12 @@ function sanitizeRoom(room) {
 }
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+loadQuestions()
+  .then(q => {
+    setQuestions(q);
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(err => {
+    console.error('[questions] Failed to load questions:', err.message);
+    process.exit(1);
+  });

@@ -1,4 +1,6 @@
-const questions = require('../../questions/questions.json');
+let questions = [];
+
+function setQuestions(q) { questions = q; }
 
 const QUESTION_TIME = 30000;
 const REVEAL_TIME = 5000;
@@ -279,4 +281,4 @@ function computeRanked(room) {
     .sort((a, b) => a.distance - b.distance);
 }
 
-module.exports = { handleGameEvent, syncPlayerState };
+module.exports = { handleGameEvent, syncPlayerState, setQuestions };
