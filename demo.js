@@ -13,7 +13,7 @@
 const { chromium } = require('playwright');
 
 const URL = 'http://localhost:5173';
-const ROUNDS = 5;
+const ROUNDS = 10;
 
 // Each player has a guess generator: (round) => number string
 // Since we don't know answers in advance, these produce "personality-flavored" numbers.
@@ -113,7 +113,7 @@ async function runHost(ctx, resolveCode) {
       await page.waitForFunction(
         () => document.body.textContent.includes('Play Again'),
         null,
-        { timeout: 20000 }
+        { timeout: 25000 }
       );
     }
   }
