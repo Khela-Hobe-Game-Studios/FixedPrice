@@ -205,10 +205,11 @@
 .betName {
   flex: 1;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .betScore {
@@ -332,9 +333,11 @@
 .miniBoardName {
   flex: 1;
   font-weight: 600;
+  font-size: 0.8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .miniBoardMe .miniBoardName {
