@@ -147,7 +147,7 @@ function submitBet(io, room, { socketId, targetId }) {
   room.bets[socketId] = targetId;
 
   const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
-  const allBet = activePlayers.length > 0 && activePlayers.every(p => room.bets[p.id] !== undefined || p.id === targetId);
+  const allBet = activePlayers.length > 0 && activePlayers.every(p => room.bets[p.id] !== undefined);
   if (allBet) {
     clearTimeout(room._bettingTimer);
     endBetting(io, room, null);

@@ -54,7 +54,7 @@ export default function PlayerGame({ me, initialRound, initialPhase = 'question'
   }, [phase, myScore]);
 
   useEffect(() => {
-    socket.on('round:start', (data) => {
+    const onStart = (data) => {
       setRoundData(data);
       setAnswer('');
       setBetTarget(null);
@@ -62,20 +62,17 @@ export default function PlayerGame({ me, initialRound, initialPhase = 'question'
       setBettingData(null);
       setScoreboardData([]);
       setPhase('question');
-    });
-
-    socket.on('round:betting', (data) => {
+    };
+    const onBetting = (data) => {
       setBettingData(data);
       setBetTarget(null);
       setPhase('betting');
-    });
-
-    socket.on('round:reveal', (data) => {
+    };
+    const onReveal = (data) => {
       setRevealData(data);
       setPhase('reveal');
-    });
-
-    socket.on('round:scoreboard', ({ scoreboard }) => {
+    };
+    const onScoreboard = ({ scoreboard }) => {
       const entry = scoreboard.find(p => p.id === me?.id || p.name === me?.name);
       if (entry) {
         setMyScore(entry.score);
@@ -83,13 +80,18 @@ export default function PlayerGame({ me, initialRound, initialPhase = 'question'
       }
       setScoreboardData(scoreboard);
       setPhase('scoreboard');
-    });
+    };
+
+    socket.on('round:start', onStart);
+    socket.on('round:betting', onBetting);
+    socket.on('round:reveal', onReveal);
+    socket.on('round:scoreboard', onScoreboard);
 
     return () => {
-      socket.off('round:start');
-      socket.off('round:betting');
-      socket.off('round:reveal');
-      socket.off('round:scoreboard');
+      socket.off('round:start', onStart);
+      socket.off('round:betting', onBetting);
+      socket.off('round:reveal', onReveal);
+      socket.off('round:scoreboard', onScoreboard);
     };
   }, [me?.id]);
 

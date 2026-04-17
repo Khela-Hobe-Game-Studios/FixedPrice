@@ -116,12 +116,13 @@ io.on('connection', (socket) => {
 
     io.to(code).emit('room:updated', { players: room.players });
 
+    const timeout = room.state === 'LOBBY' ? 15000 : 60000;
     player._disconnectTimer = setTimeout(() => {
       if (player.connected === false) {
         removePlayer(room, player.id);
         io.to(code).emit('room:updated', { players: room.players });
       }
-    }, 15000);
+    }, timeout);
     console.log('disconnected:', socket.id);
   });
 });
