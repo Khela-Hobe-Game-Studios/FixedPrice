@@ -5,27 +5,44 @@
   justify-content: center;
   position: relative;
   padding: 2rem 1rem;
+  overflow: hidden;
 }
 
+/* Nakshi kantha-inspired geometric background */
 .bg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(251,191,36,0.1) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 80% 90%, rgba(239,68,68,0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(251,191,36,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 10% 100%, rgba(0,106,78,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 90% 80%, rgba(244,42,65,0.07) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Subtle repeating diamond/cross pattern like nakshi kantha stitching */
+.bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image:
+    repeating-linear-gradient(45deg, var(--text) 0, var(--text) 1px, transparent 0, transparent 50%),
+    repeating-linear-gradient(-45deg, var(--text) 0, var(--text) 1px, transparent 0, transparent 50%);
+  background-size: 28px 28px;
   pointer-events: none;
 }
 
 .content {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1.75rem;
 }
 
+/* ── TITLE ── */
 .titleBlock {
   text-align: center;
   display: flex;
@@ -35,7 +52,7 @@
 
 .title {
   font-family: var(--font-bengali);
-  font-size: clamp(2.5rem, 7vw, 3.5rem);
+  font-size: clamp(2.5rem, 8vw, 3.8rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.1;
@@ -44,53 +61,131 @@
 
 .titleSub {
   font-family: var(--font-display);
-  font-size: clamp(0.7rem, 2vw, 1rem);
+  font-size: clamp(0.65rem, 1.8vw, 0.85rem);
   font-weight: 700;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.22em;
   color: var(--muted);
   text-transform: uppercase;
 }
 
-/* PODIUM */
-.podium {
+/* ── WINNER HERO CARD ── */
+.winner {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1.5px solid #fbbf24;
+  border-radius: 20px;
+  padding: 1.5rem 1.25rem 1.25rem;
+  box-shadow:
+    0 0 0 4px rgba(251,191,36,0.08),
+    0 0 32px rgba(251,191,36,0.18),
+    0 4px 20px rgba(0,0,0,0.4);
+}
+
+.winnerLabel {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fbbf24;
+}
+
+.winnerAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1200;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(251,191,36,0.4);
+  margin: 0.25rem 0;
+}
+
+.winnerName {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.winnerScore {
+  font-family: var(--font-bengali);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* ── PODIUM ── */
+.podiumRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
 }
 
-.podiumCard {
+.podiumCol {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  background: var(--surface);
-  border: 1px solid;
-  border-radius: 14px;
-  padding: 1rem 1.25rem;
+  gap: 0.4rem;
+  flex: 1;
 }
 
-.podiumFirst {
-  box-shadow: 0 0 24px rgba(251,191,36,0.35);
+.podiumInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
 }
 
-.medal {
-  font-size: 1.5rem;
-  flex-shrink: 0;
+.podiumMedal {
+  font-size: 1.4rem;
 }
 
 .podiumName {
-  flex: 1;
+  font-size: 0.8rem;
   font-weight: 700;
-  font-size: 1.05rem;
+  text-align: center;
+  color: var(--text);
 }
 
-.podiumScore {
+.podiumPts {
   font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
-/* REST */
+.podiumBlock {
+  width: 100%;
+  border: 1.5px solid;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.4rem;
+  transform-origin: bottom;
+}
+
+.podiumRank {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+/* ── REST OF PLAYERS ── */
 .restList {
   display: flex;
   flex-direction: column;
@@ -116,30 +211,25 @@
   flex-shrink: 0;
 }
 
-.restName {
-  flex: 1;
-  font-weight: 600;
-}
+.restName { flex: 1; font-weight: 600; }
 
 .restScore {
   font-weight: 700;
   color: var(--muted);
 }
 
-.strikes {
-  font-size: 0.75rem;
-}
-
+/* ── PLAY AGAIN ── */
 .playAgain {
   background: var(--green-bd);
   color: #ffffff;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 800;
-  padding: 1.1rem 3rem;
-  border-radius: 12px;
-  letter-spacing: 0.03em;
-  margin-top: 0.5rem;
+  font-family: var(--font-bengali);
+  font-size: 1.15rem;
+  font-weight: 700;
+  padding: 1rem 3rem;
+  border-radius: 14px;
+  letter-spacing: 0.02em;
+  margin-top: 0.25rem;
+  box-shadow: 0 4px 16px rgba(0,106,78,0.35);
 }
 
 .playAgain:hover { opacity: 0.9; }
