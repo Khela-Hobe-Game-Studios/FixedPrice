@@ -141,7 +141,7 @@ export default function App() {
 
   // Background music: play during game, stop on game over
   useEffect(() => {
-    const isInGame = screen === 'host-game';
+    const isInGame = screen === 'host-game' && room?.settings?.backgroundMusic !== false;
     if (isInGame) {
       if (!bgMusic.current) {
         const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
@@ -156,7 +156,7 @@ export default function App() {
         bgMusic.current.currentTime = 0;
       }
     }
-  }, [screen]);
+  }, [screen, room?.settings?.backgroundMusic]);
 
   // Persist session whenever relevant state changes
   useEffect(() => {

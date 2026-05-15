@@ -9,7 +9,7 @@ export default function Landing({ setRoom, setMe }) {
   const [mode, setMode] = useState('home'); // home | host | join
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
-  const [settings, setSettings] = useState({ questionCount: 10, eliminationMode: false, bettingRounds: true });
+  const [settings, setSettings] = useState({ questionCount: 10, eliminationMode: false, bettingRounds: true, backgroundMusic: true });
 
   function createRoom() {
     if (!settings.questionCount) return;
@@ -75,6 +75,12 @@ export default function Landing({ setRoom, setMe }) {
                 className={`${styles.toggle} ${settings.bettingRounds ? styles.toggleOn : ''}`}
                 onClick={() => setSettings(s => ({ ...s, bettingRounds: !s.bettingRounds }))}
               >{settings.bettingRounds ? 'ON' : 'OFF'}</button>
+
+              <label className={styles.settingLabel}>Background Music</label>
+              <button
+                className={`${styles.toggle} ${settings.backgroundMusic ? styles.toggleOn : ''}`}
+                onClick={() => setSettings(s => ({ ...s, backgroundMusic: !s.backgroundMusic }))}
+              >{settings.backgroundMusic ? 'ON' : 'OFF'}</button>
             </div>
 
             <button className={styles.btnHost} onClick={createRoom}>Create Room</button>
