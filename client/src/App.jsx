@@ -142,17 +142,24 @@ export default function App() {
     return () => socket.disconnect();
   }, []);
 
+  // Called from HostLobby's Start Game button — user gesture unlocks autoplay
+  function primeMusic() {
+    if (room?.settings?.backgroundMusic === false) return;
+    const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
+    const audio = new Audio(url);
+    audio.loop = true;
+    audio.volume = 0.4;
+    audio.play().catch(() => {});
+    bgMusic.current = audio;
+  }
+
   // Background music: play during game, stop on game over
   useEffect(() => {
     const isInGame = screen === 'host-game' && room?.settings?.backgroundMusic !== false;
     if (isInGame) {
-      if (!bgMusic.current) {
-        const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
-        bgMusic.current = new Audio(url);
-        bgMusic.current.loop = true;
-        bgMusic.current.volume = 0.4;
+      if (bgMusic.current) {
+        bgMusic.current.play().catch(() => {});
       }
-      bgMusic.current.play().catch(() => {});
     } else {
       if (bgMusic.current) {
         bgMusic.current.pause();
@@ -174,7 +181,7 @@ export default function App() {
   const props = { room, setRoom, me, setMe, setScreen };
 
   if (screen === 'landing')       return <Landing {...props} />;
-  if (screen === 'host-lobby')    return <HostLobby {...props} />;
+  if (screen === 'host-lobby')    return <HostLobby {...props} onStartGame={primeMusic} />;
   if (screen === 'player-lobby')  return <PlayerLobby {...props} />;
   if (screen === 'host-game')     return <HostGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
   if (screen === 'player-game')   return <PlayerGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;

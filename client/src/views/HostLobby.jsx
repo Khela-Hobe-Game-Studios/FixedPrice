@@ -4,11 +4,12 @@ import styles from './HostLobby.module.css';
 
 const AVATAR_COLORS = ['#fbbf24', '#4ade80', '#fb923c', '#818cf8', '#e879f9'];
 
-export default function HostLobby({ room }) {
+export default function HostLobby({ room, onStartGame }) {
   const players = room?.players ?? [];
   const settings = room?.settings ?? {};
 
   function startGame() {
+    onStartGame?.();
     socket.emit('host:start_game');
   }
 
