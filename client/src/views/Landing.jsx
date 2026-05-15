@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Input,
+  StudioCredit,
 } from '@khelahobe/kui';
 import socket from '../socket';
 
@@ -172,68 +173,7 @@ export default function Landing({ setRoom, setMe }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <StudioCredit />
-    </div>
-  );
-}
-
-function StudioCredit() {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        left: '50%',
-        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
-        opacity: 0.9,
-        pointerEvents: 'none',
-        zIndex: 2,
-      }}
-    >
-      <div
-        aria-hidden
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          width: 'min(220px, 70vw)',
-        }}
-      >
-        <span style={{ flex: 1, height: 1, background: 'var(--kui-text-muted)', opacity: 0.4 }} />
-        <span style={{ color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)', opacity: 0.7 }}>✦</span>
-        <span style={{ flex: 1, height: 1, background: 'var(--kui-text-muted)', opacity: 0.4 }} />
-      </div>
-      <span
-        style={{
-          fontFamily: 'var(--kui-font-sans)',
-          fontSize: 'var(--kui-text-xs)',
-          fontWeight: 700,
-          letterSpacing: '0.22em',
-          textTransform: 'uppercase',
-          color: 'var(--kui-text-muted)',
-        }}
-      >
-        A game by
-      </span>
-      <span
-        style={{
-          fontFamily: 'var(--kui-font-display)',
-          fontSize: 'var(--kui-text-base)',
-          fontWeight: 700,
-          letterSpacing: '0.06em',
-          color: 'var(--kui-text)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
-        Khela Hobe Game Studios
-      </span>
+      <StudioCredit studio="Khela Hobe Game Studios" fixed />
     </div>
   );
 }
