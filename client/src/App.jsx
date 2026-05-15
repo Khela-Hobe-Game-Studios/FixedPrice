@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Howl } from 'howler';
 import socket from './socket';
 
 const soundUrls = [
@@ -146,25 +147,17 @@ export default function App() {
   function primeMusic() {
     if (room?.settings?.backgroundMusic === false) return;
     const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
-    const audio = new Audio(url);
-    audio.loop = true;
-    audio.volume = 0.4;
-    audio.play().catch(() => {});
-    bgMusic.current = audio;
+    bgMusic.current = new Howl({ src: [url], loop: true, volume: 0.4, html5: true });
+    bgMusic.current.play();
   }
 
   // Background music: play during game, stop on game over
   useEffect(() => {
     const isInGame = screen === 'host-game' && room?.settings?.backgroundMusic !== false;
     if (isInGame) {
-      if (bgMusic.current) {
-        bgMusic.current.play().catch(() => {});
-      }
+      bgMusic.current?.play();
     } else {
-      if (bgMusic.current) {
-        bgMusic.current.pause();
-        bgMusic.current.currentTime = 0;
-      }
+      bgMusic.current?.stop();
     }
   }, [screen, room?.settings?.backgroundMusic]);
 
