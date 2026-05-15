@@ -21,9 +21,10 @@ export default function HostLobby({ room, onStartGame }) {
   }
 
   const settingRows = [
-    { key: 'Questions',      value: String(settings.questionCount ?? 10) },
-    { key: 'Elimination',    value: settings.eliminationMode ? 'ON' : 'OFF', isActive: !!settings.eliminationMode },
-    { key: 'Betting Rounds', value: settings.bettingRounds   ? 'ON' : 'OFF', isActive: !!settings.bettingRounds   },
+    { key: 'Questions',        value: String(settings.questionCount ?? 10) },
+    { key: 'Elimination',      value: settings.eliminationMode  ? 'ON' : 'OFF', isActive: !!settings.eliminationMode  },
+    { key: 'Betting Rounds',   value: settings.bettingRounds    ? 'ON' : 'OFF', isActive: !!settings.bettingRounds    },
+    { key: 'Background Music', value: settings.backgroundMusic  ? 'ON' : 'OFF', isActive: !!settings.backgroundMusic  },
   ];
 
   return (
