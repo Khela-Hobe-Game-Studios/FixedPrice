@@ -1,15 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Button,
+  Card,
+  Input,
+  TitleBlock,
+} from '@khelahobe/kui';
 import socket from '../socket';
-import styles from './Landing.module.css';
 
 const fade = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -16 } };
 
 export default function Landing({ setRoom, setMe }) {
-  const [mode, setMode] = useState('home'); // home | host | join
+  const [mode, setMode] = useState('home');
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
-  const [settings, setSettings] = useState({ questionCount: 10, eliminationMode: false, bettingRounds: true, backgroundMusic: true });
+  const [settings, setSettings] = useState({
+    questionCount: 10,
+    eliminationMode: false,
+    bettingRounds: true,
+    backgroundMusic: true,
+  });
 
   function createRoom() {
     if (!settings.questionCount) return;
@@ -23,97 +33,215 @@ export default function Landing({ setRoom, setMe }) {
     socket.emit('player:join', { code: code.toUpperCase(), name: name.trim() });
   }
 
+  function toggle(key) {
+    setSettings(s => ({ ...s, [key]: !s[key] }));
+  }
+
   return (
-    <div className={styles.page}>
-      <div className={styles.bg} />
-
-      <div className={styles.studio}>
-        <span className={styles.studioBy}>A game by</span>
-        <span className={styles.studioName}>Khela Hobe Game Studios</span>
-      </div>
-
+    <div className="ek-page ek-page--center" style={{ gap: 24 }}>
       <AnimatePresence mode="wait">
         {mode === 'home' && (
-          <motion.div key="home" className={styles.center} {...fade} transition={{ duration: 0.3 }}>
-            <div className={styles.titleBlock}>
-              <span className={styles.bengali}>এক দাম</span>
-              <h1 className={styles.title}>FIXED PRICE</h1>
-              <p className={styles.tagline}>The closest guess wins. No multiple choice. Pure instinct.</p>
-            </div>
-            <div className={styles.actions}>
-              <button className={styles.btnHost} onClick={() => setMode('host')}>Host a Game</button>
-              <button className={styles.btnJoin} onClick={() => setMode('join')}>Join a Game</button>
+          <motion.div
+            key="home"
+            {...fade}
+            transition={{ duration: 0.3 }}
+            style={{ width: '100%', maxWidth: 520, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}
+          >
+            <TitleBlock
+              title="এক দাম"
+              subtitle="FIXED PRICE"
+              tagline="The closest guess wins. No multiple choice. Pure instinct."
+              watermark="Khela Hobe Game Studios"
+            />
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Button variant="primary" size="lg" onClick={() => setMode('host')}>Host a Game</Button>
+              <Button variant="secondary" size="lg" onClick={() => setMode('join')}>Join a Game</Button>
             </div>
           </motion.div>
         )}
 
         {mode === 'host' && (
-          <motion.div key="host" className={styles.center} {...fade} transition={{ duration: 0.25 }}>
-            <button className={styles.back} onClick={() => setMode('home')}>← Back</button>
-            <h2 className={styles.sectionTitle}>Game Settings</h2>
-
-            <div className={styles.settingsGrid}>
-              <label className={styles.settingLabel}>Questions</label>
-              <div className={styles.segmented}>
-                {[10, 15, 20].map(n => (
-                  <button
-                    key={n}
-                    className={`${styles.seg} ${settings.questionCount === n ? styles.segActive : ''}`}
-                    onClick={() => setSettings(s => ({ ...s, questionCount: n }))}
-                  >{n}</button>
-                ))}
-              </div>
-
-              <label className={styles.settingLabel}>Elimination Mode</label>
-              <button
-                className={`${styles.toggle} ${settings.eliminationMode ? styles.toggleOn : ''}`}
-                onClick={() => setSettings(s => ({ ...s, eliminationMode: !s.eliminationMode }))}
-              >{settings.eliminationMode ? 'ON' : 'OFF'}</button>
-
-              <label className={styles.settingLabel}>Betting Rounds</label>
-              <button
-                className={`${styles.toggle} ${settings.bettingRounds ? styles.toggleOn : ''}`}
-                onClick={() => setSettings(s => ({ ...s, bettingRounds: !s.bettingRounds }))}
-              >{settings.bettingRounds ? 'ON' : 'OFF'}</button>
-
-              <label className={styles.settingLabel}>Background Music</label>
-              <button
-                className={`${styles.toggle} ${settings.backgroundMusic ? styles.toggleOn : ''}`}
-                onClick={() => setSettings(s => ({ ...s, backgroundMusic: !s.backgroundMusic }))}
-              >{settings.backgroundMusic ? 'ON' : 'OFF'}</button>
-            </div>
-
-            <button className={styles.btnHost} onClick={createRoom}>Create Room</button>
+          <motion.div
+            key="host"
+            {...fade}
+            transition={{ duration: 0.25 }}
+            style={{ width: '100%', maxWidth: 480 }}
+          >
+            <Card>
+              <Card.Header>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <Button variant="ghost" size="sm" onClick={() => setMode('home')}>← Back</Button>
+                  <strong style={{ fontFamily: 'var(--kui-font-display)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Game Settings</strong>
+                  <span style={{ width: 60 }} />
+                </div>
+              </Card.Header>
+              <Card.Body>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <SettingRow label="Questions">
+                    <Segmented
+                      options={[10, 15, 20]}
+                      value={settings.questionCount}
+                      onChange={n => setSettings(s => ({ ...s, questionCount: n }))}
+                    />
+                  </SettingRow>
+                  <SettingRow label="Elimination Mode">
+                    <Toggle on={settings.eliminationMode} onClick={() => toggle('eliminationMode')} />
+                  </SettingRow>
+                  <SettingRow label="Betting Rounds">
+                    <Toggle on={settings.bettingRounds} onClick={() => toggle('bettingRounds')} />
+                  </SettingRow>
+                  <SettingRow label="Background Music">
+                    <Toggle on={settings.backgroundMusic} onClick={() => toggle('backgroundMusic')} />
+                  </SettingRow>
+                </div>
+              </Card.Body>
+              <Card.Footer>
+                <Button variant="primary" size="lg" onClick={createRoom} style={{ width: '100%' }}>
+                  Create Room
+                </Button>
+              </Card.Footer>
+            </Card>
           </motion.div>
         )}
 
         {mode === 'join' && (
-          <motion.div key="join" className={styles.center} {...fade} transition={{ duration: 0.25 }}>
-            <button className={styles.back} onClick={() => setMode('home')}>← Back</button>
-            <h2 className={styles.sectionTitle}>Join a Game</h2>
-            <div className={styles.form}>
-              <input
-                placeholder="Room Code"
-                value={code}
-                maxLength={4}
-                onChange={e => setCode(e.target.value.toUpperCase())}
-                className={styles.codeInput}
-              />
-              <input
-                placeholder="Your Name"
-                value={name}
-                maxLength={16}
-                onChange={e => setName(e.target.value)}
-              />
-              <button
-                className={styles.btnJoin}
-                onClick={joinRoom}
-                disabled={!name.trim() || code.length !== 4}
-              >Join</button>
-            </div>
+          <motion.div
+            key="join"
+            {...fade}
+            transition={{ duration: 0.25 }}
+            style={{ width: '100%', maxWidth: 420 }}
+          >
+            <Card>
+              <Card.Header>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <Button variant="ghost" size="sm" onClick={() => setMode('home')}>← Back</Button>
+                  <strong style={{ fontFamily: 'var(--kui-font-display)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Join a Game</strong>
+                  <span style={{ width: 60 }} />
+                </div>
+              </Card.Header>
+              <Card.Body>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <Input
+                    id="room-code"
+                    label="Room Code"
+                    placeholder="ABCD"
+                    value={code}
+                    maxLength={4}
+                    autoCapitalize="characters"
+                    style={{ textTransform: 'uppercase', textAlign: 'center', letterSpacing: '0.4em', fontFamily: 'var(--kui-font-display)', fontWeight: 800, fontSize: '1.5rem' }}
+                    onChange={e => setCode(e.target.value.toUpperCase())}
+                  />
+                  <Input
+                    id="player-name"
+                    label="Your Name"
+                    placeholder="e.g. Karim"
+                    value={name}
+                    maxLength={16}
+                    onChange={e => setName(e.target.value)}
+                  />
+                </div>
+              </Card.Body>
+              <Card.Footer>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={joinRoom}
+                  disabled={!name.trim() || code.length !== 4}
+                  style={{ width: '100%' }}
+                >
+                  Join
+                </Button>
+              </Card.Footer>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SettingRow({ label, children }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+      <span style={{ fontWeight: 700, fontSize: 'var(--kui-text-md)' }}>{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function Segmented({ options, value, onChange }) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      padding: 4,
+      gap: 4,
+      borderRadius: 'var(--kui-radius-md)',
+      background: 'var(--kui-surface-2)',
+      border: '2px solid var(--kui-border)',
+    }}>
+      {options.map(n => {
+        const active = value === n;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-pressed={active}
+            style={{
+              minWidth: 38,
+              padding: '6px 12px',
+              border: 'none',
+              borderRadius: 'var(--kui-radius-sm)',
+              background: active ? 'var(--kui-primary)' : 'transparent',
+              color: active ? 'var(--kui-text)' : 'var(--kui-text-muted)',
+              fontFamily: 'var(--kui-font-display)',
+              fontWeight: 800,
+              fontSize: 'var(--kui-text-sm)',
+              cursor: 'pointer',
+              boxShadow: active ? '2px 2px 0 var(--kui-shadow-color)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {n}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Toggle({ on, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      style={{
+        position: 'relative',
+        width: 60,
+        height: 32,
+        borderRadius: 999,
+        border: '2.5px solid var(--kui-border)',
+        background: on ? 'var(--kui-primary)' : 'var(--kui-surface-2)',
+        boxShadow: on ? '2px 2px 0 var(--kui-shadow-color)' : 'inset 1px 1px 0 rgba(0,0,0,0.15)',
+        cursor: 'pointer',
+        padding: 0,
+        transition: 'background 0.15s ease',
+      }}
+    >
+      <span
+        style={{
+          position: 'absolute',
+          top: 2,
+          left: on ? 30 : 2,
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          background: 'var(--kui-text)',
+          boxShadow: '1px 1px 0 var(--kui-shadow-color)',
+          transition: 'left 0.18s var(--kui-easing-bounce)',
+        }}
+      />
+    </button>
   );
 }

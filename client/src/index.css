@@ -1,66 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@700;800;900&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg: #08090f;
-  --surface: #13141f;
-  --surface2: #1c1d2e;
-  --border: #2a2b3d;
-  --accent: #fbbf24;
-  --accent2: #ef4444;
-  --accent3: #22d3ee;
-  --text: #f8f7ff;
-  --muted: #6b6b8a;
-  --radius: 10px;
-  --font-display: 'Unbounded', sans-serif;
-  --font: 'Nunito', sans-serif;
-  --font-bengali: 'Hind Siliguri', sans-serif;
-  --green-bd: #006A4E;
-  --red-bd: #F42A41;
-  --cat-desh: #4ade80;
-  --cat-cricket: #fb923c;
-  --cat-taka: #fbbf24;
-  --cat-global: #818cf8;
-  --cat-weird: #e879f9;
-}
-
 html, body, #root {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
-}
-
-h1, h2, h3 {
-  font-family: var(--font-display);
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-  border: none;
-  border-radius: var(--radius);
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: opacity 0.15s, transform 0.1s;
-}
-
-button:active { transform: scale(0.97); }
-button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-input {
-  font-family: inherit;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
   width: 100%;
-  outline: none;
-  transition: border-color 0.15s;
+  min-height: 100%;
+  background: var(--kui-bg);
+  color: var(--kui-text);
+  font-family: var(--kui-font-sans);
 }
 
-input:focus { border-color: var(--accent); }
+.kui-root {
+  width: 100%;
+  min-height: 100%;
+  background: var(--kui-bg);
+  color: var(--kui-text);
+}
+
+/* App-level page background: warm radial glow in BD-flag colors */
+.ek-page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(0, 106, 78, 0.55), transparent 60%),
+    radial-gradient(circle at 88% 82%, rgba(244, 42, 65, 0.45), transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.18), transparent 70%),
+    var(--kui-bg);
+  padding: clamp(20px, 4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Vertical centering modifier */
+.ek-page--center {
+  justify-content: center;
+}
+
+/* Subtle paper-texture grain overlay for warmth */
+.ek-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(252, 211, 77, 0.015) 0 2px, transparent 2px 5px);
+  z-index: 0;
+}
+.ek-page > * { position: relative; z-index: 1; }
+
+.ek-bengali { font-family: var(--kui-font-bengali); }
+
+/* Host lobby responsive grid */
+.ek-host-lobby { width: 100%; max-width: 1100px; margin: 0 auto; }
+@media (max-width: 720px) {
+  .ek-host-lobby { grid-template-columns: 1fr !important; }
+}
+
+/* Utility motion */
+@keyframes ek-fadein {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ek-fadein { animation: ek-fadein 0.35s var(--kui-easing-bounce) both; }
