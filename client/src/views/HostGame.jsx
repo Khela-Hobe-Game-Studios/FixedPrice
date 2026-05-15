@@ -36,8 +36,8 @@ export default function HostGame({
   const [revealData, setRevealData] = useState(initialReveal ?? null);
   const [bettingData, setBettingData] = useState(initialBetting ?? null);
   const [scoreboard, setScoreboard] = useState(initialScoreboard?.scoreboard ?? []);
-  const [answerCount, setAnswerCount] = useState({ count: 0, total: 0 });
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [answerCount, setAnswerCount] = useState({ count: 0, total: initialRound?.players?.length ?? 0 });
+  const [timeLeft, setTimeLeft] = useState(initialRound?.timer ?? 0);
   const timerRef = useRef(null);
 
   useEffect(() => {
