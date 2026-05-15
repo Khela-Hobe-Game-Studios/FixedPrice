@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import socket from './socket';
 
-const soundModules = import.meta.glob('../assets/sounds/*.mp3', { eager: true });
-const soundUrls = Object.values(soundModules).map(m => m.default);
+const soundUrls = [
+  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/the_scoring_bell.mp3',
+  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/the_dhaka_lobby.mp3',
+  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/square_wave_bazaar.mp3',
+];
 import Landing from './views/Landing';
 import HostLobby from './views/HostLobby';
 import PlayerLobby from './views/PlayerLobby';
