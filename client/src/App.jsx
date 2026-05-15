@@ -13,6 +13,7 @@ import PlayerLobby from './views/PlayerLobby';
 import HostGame from './views/HostGame';
 import PlayerGame from './views/PlayerGame';
 import GameOver from './views/GameOver';
+import EkBrandLine from './components/EkBrandLine';
 
 const SESSION_KEY = 'ek_daam_session';
 
@@ -174,10 +175,18 @@ export default function App() {
 
   const props = { room, setRoom, me, setMe, setScreen };
 
-  if (screen === 'landing')       return <Landing {...props} />;
-  if (screen === 'host-lobby')    return <HostLobby {...props} onStartGame={primeMusic} />;
-  if (screen === 'player-lobby')  return <PlayerLobby {...props} />;
-  if (screen === 'host-game')     return <HostGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
-  if (screen === 'player-game')   return <PlayerGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
-  if (screen === 'game-over')     return <GameOver final={final} setScreen={setScreen} />;
+  let view = null;
+  if (screen === 'landing')       view = <Landing {...props} />;
+  else if (screen === 'host-lobby')    view = <HostLobby {...props} onStartGame={primeMusic} />;
+  else if (screen === 'player-lobby')  view = <PlayerLobby {...props} />;
+  else if (screen === 'host-game')     view = <HostGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
+  else if (screen === 'player-game')   view = <PlayerGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
+  else if (screen === 'game-over')     view = <GameOver final={final} setScreen={setScreen} />;
+
+  return (
+    <>
+      {view}
+      <EkBrandLine />
+    </>
+  );
 }
