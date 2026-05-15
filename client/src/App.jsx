@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import socket from './socket';
-import bellSound from '../assets/sounds/the_scoring_bell.mp3';
+
+const soundModules = import.meta.glob('../assets/sounds/*.mp3', { eager: true });
+const soundUrls = Object.values(soundModules).map(m => m.default);
 import Landing from './views/Landing';
 import HostLobby from './views/HostLobby';
 import PlayerLobby from './views/PlayerLobby';
@@ -142,7 +144,8 @@ export default function App() {
     const isInGame = screen === 'host-game';
     if (isInGame) {
       if (!bgMusic.current) {
-        bgMusic.current = new Audio(bellSound);
+        const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
+        bgMusic.current = new Audio(url);
         bgMusic.current.loop = true;
         bgMusic.current.volume = 0.4;
       }
