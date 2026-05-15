@@ -157,7 +157,8 @@ export default function App() {
     if (isInGame) {
       bgMusic.current?.play();
     } else {
-      bgMusic.current?.stop();
+      bgMusic.current?.unload();
+      bgMusic.current = null;
     }
   }, [screen, room?.settings?.backgroundMusic]);
 
