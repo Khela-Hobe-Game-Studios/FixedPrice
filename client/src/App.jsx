@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import socket from './socket';
+import bellSound from '../assets/sounds/the_scoring_bell.mp3';
 import Landing from './views/Landing';
 import HostLobby from './views/HostLobby';
 import PlayerLobby from './views/PlayerLobby';
@@ -41,6 +42,7 @@ export default function App() {
   const [final, setFinal] = useState(null);
   const [roundData, setRoundData] = useState(null);
   const [initialPhase, setInitialPhase] = useState('question');
+  const bgMusic = useRef(null);
   const [initialBetting, setInitialBetting] = useState(null);
   const [initialReveal, setInitialReveal] = useState(null);
   const [initialScoreboard, setInitialScoreboard] = useState(null);
@@ -134,6 +136,24 @@ export default function App() {
 
     return () => socket.disconnect();
   }, []);
+
+  // Background music: play during game, stop on game over
+  useEffect(() => {
+    const isInGame = screen === 'host-game';
+    if (isInGame) {
+      if (!bgMusic.current) {
+        bgMusic.current = new Audio(bellSound);
+        bgMusic.current.loop = true;
+        bgMusic.current.volume = 0.4;
+      }
+      bgMusic.current.play().catch(() => {});
+    } else {
+      if (bgMusic.current) {
+        bgMusic.current.pause();
+        bgMusic.current.currentTime = 0;
+      }
+    }
+  }, [screen]);
 
   // Persist session whenever relevant state changes
   useEffect(() => {
