@@ -109,7 +109,8 @@ export default function PlayerGame({ me, initialRound, initialPhase = 'question'
 
   const catColor = CAT_COLORS[roundData?.category] ?? 'var(--accent3)';
   const myResult = revealData?.ranked.find(r => r.id === me?.id);
-  const isWinner = revealData?.ranked[0]?.id === me?.id;
+  const minDist = revealData?.ranked[0]?.distance;
+  const isWinner = minDist !== null && myResult?.distance === minDist;
 
   return (
     <div className={styles.page}>

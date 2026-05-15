@@ -110,7 +110,8 @@ function endQuestion(io, room) {
   if (ranked.length > 0 && ranked[0].distance !== null) {
     const minDist = ranked[0].distance;
     const firstPlacers = ranked.filter(r => r.distance === minDist);
-    firstPlacers.forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 3; });
+    const firstPts = firstPlacers.length === 1 ? 3 : 2;
+    firstPlacers.forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + firstPts; });
 
     if (firstPlacers.length === 1 && ranked.length > 1) {
       const secondDist = ranked[firstPlacers.length].distance;
