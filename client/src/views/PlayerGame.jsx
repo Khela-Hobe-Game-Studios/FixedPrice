@@ -232,7 +232,7 @@ export default function PlayerGame({ me, initialRound, initialPhase = 'question'
                 <div className={styles.myResultRow}>
                   <span className={styles.myResultLabel}>Off by</span>
                   <span className={styles.myResultVal}>
-                    {myResult.distance === Infinity ? '—' : myResult.distance.toLocaleString()}
+                    {myResult.distance == null ? '—' : myResult.distance.toLocaleString()}
                   </span>
                 </div>
                 {isWinner && <p className={styles.winMsg}>You won this round!</p>}

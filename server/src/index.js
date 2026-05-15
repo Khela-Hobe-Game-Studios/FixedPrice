@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
     socket.data.roomCode = code;
     socket.data.name = name;
 
-    io.to(code).emit('room:updated', { players: room.players });
+    io.to(code).emit('room:updated', { players: sanitizePlayers(room.players) });
     socket.emit('player:joined', { room: sanitizeRoom(room) });
     console.log(`${name} joined room ${code}`);
   });
@@ -115,13 +115,13 @@ io.on('connection', (socket) => {
       handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { socketId: socket.id });
     }
 
-    io.to(code).emit('room:updated', { players: room.players });
+    io.to(code).emit('room:updated', { players: sanitizePlayers(room.players) });
 
     const timeout = room.state === 'LOBBY' ? 15000 : 60000;
     player._disconnectTimer = setTimeout(() => {
       if (player.connected === false) {
         removePlayer(room, player.id);
-        io.to(code).emit('room:updated', { players: room.players });
+        io.to(code).emit('room:updated', { players: sanitizePlayers(room.players) });
       }
     }, timeout);
     console.log('disconnected:', socket.id);
@@ -135,11 +135,16 @@ function findRoomCodeByHost(socketId) {
   }
 }
 
+function sanitizePlayers(players) {
+  return players.map(({ id, name, score, strikes, eliminated, connected }) =>
+    ({ id, name, score, strikes, eliminated, connected }));
+}
+
 function sanitizeRoom(room) {
   return {
     code: room.code,
     state: room.state,
-    players: room.players,
+    players: sanitizePlayers(room.players),
     settings: room.settings,
   };
 }

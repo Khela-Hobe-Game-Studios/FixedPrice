@@ -195,7 +195,7 @@ export default function HostGame({ room, initialRound, initialPhase = 'question'
               {[...revealData.ranked].reverse().map((r, i) => {
                 const total = revealData.ranked.length;
                 const isWinner = i === total - 1;
-                const distance = r.distance === Infinity ? '—' : r.distance.toLocaleString();
+                const distance = r.distance == null ? '—' : r.distance.toLocaleString();
                 const { border, bg } = getRevealColor(i, total);
                 return (
                   <motion.div

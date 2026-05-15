@@ -1,5 +1,10 @@
 let questions = [];
 
+function sanitizePlayers(players) {
+  return players.map(({ id, name, score, strikes, eliminated, connected }) =>
+    ({ id, name, score, strikes, eliminated, connected }));
+}
+
 function setQuestions(q) { questions = q; }
 
 const QUESTION_TIME = 30000;
@@ -94,18 +99,22 @@ function endQuestion(io, room) {
       name: p.name,
       submitted: answers[p.id] !== undefined,
       guess: answers[p.id] ?? null,
-      distance: answers[p.id] !== undefined ? Math.abs(answers[p.id] - answer) : Infinity,
+      distance: answers[p.id] !== undefined ? Math.abs(answers[p.id] - answer) : null,
     }))
-    .sort((a, b) => a.distance - b.distance);
+    .sort((a, b) => {
+      if (a.distance === null) return 1;
+      if (b.distance === null) return -1;
+      return a.distance - b.distance;
+    });
 
-  if (ranked.length > 0 && ranked[0].distance !== Infinity) {
+  if (ranked.length > 0 && ranked[0].distance !== null) {
     const minDist = ranked[0].distance;
     const firstPlacers = ranked.filter(r => r.distance === minDist);
     firstPlacers.forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 3; });
 
     if (firstPlacers.length === 1 && ranked.length > 1) {
       const secondDist = ranked[firstPlacers.length].distance;
-      if (secondDist !== Infinity) {
+      if (secondDist !== null) {
         ranked.filter(r => r.distance === secondDist)
           .forEach(r => { room.scores[r.id] = (room.scores[r.id] || 0) + 1; });
       }
@@ -114,7 +123,7 @@ function endQuestion(io, room) {
 
   if (room.settings.eliminationMode && ranked.length > 0) {
     const worst = ranked[ranked.length - 1];
-    if (worst.distance !== Infinity) {
+    if (worst.distance !== null) {
       const player = players.find(p => p.id === worst.id);
       if (player) {
         player.strikes++;
@@ -159,7 +168,7 @@ function submitBet(io, room, { socketId, targetId }) {
 function endBetting(io, room, preRanked) {
   const ranked = preRanked || computeRanked(room);
   const winner = ranked[0];
-  if (winner && winner.distance !== Infinity) {
+  if (winner && winner.distance !== null) {
     const bettersOnWinner = Object.entries(room.bets).filter(([, t]) => t === winner.id);
     room.scores[winner.id] = (room.scores[winner.id] || 0) + bettersOnWinner.length;
     bettersOnWinner.forEach(([bettorId]) => {
@@ -238,7 +247,7 @@ function syncPlayerState(socket, room) {
 
   switch (room.state) {
     case 'LOBBY':
-      socket.emit('room:updated', { players: room.players });
+      socket.emit('room:updated', { players: sanitizePlayers(room.players) });
       break;
     case 'QUESTION':
       if (room._lastRoundStart) {
@@ -276,9 +285,13 @@ function computeRanked(room) {
       name: p.name,
       submitted: answers[p.id] !== undefined,
       guess: answers[p.id] ?? null,
-      distance: answers[p.id] !== undefined ? Math.abs(answers[p.id] - answer) : Infinity,
+      distance: answers[p.id] !== undefined ? Math.abs(answers[p.id] - answer) : null,
     }))
-    .sort((a, b) => a.distance - b.distance);
+    .sort((a, b) => {
+      if (a.distance === null) return 1;
+      if (b.distance === null) return -1;
+      return a.distance - b.distance;
+    });
 }
 
 module.exports = { handleGameEvent, syncPlayerState, setQuestions };
