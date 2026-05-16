@@ -17,7 +17,7 @@ export default function Landing({ setRoom, setMe }) {
   const [settings, setSettings] = useState({
     questionCount: 10,
     eliminationMode: false,
-    bettingRounds: true,
+    bettingRounds: false,
     backgroundMusic: true,
   });
 

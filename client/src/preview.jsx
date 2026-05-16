@@ -15,7 +15,7 @@ const players = [
 const room = {
   code: 'AMMU',
   players,
-  settings: { questionCount: 10, eliminationMode: false, bettingRounds: true, backgroundMusic: true },
+  settings: { questionCount: 10, eliminationMode: false, bettingRounds: false, backgroundMusic: true },
 };
 
 const roundData = {
