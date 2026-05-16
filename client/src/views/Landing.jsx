@@ -173,7 +173,9 @@ export default function Landing({ setRoom, setMe }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <StudioCredit studio="Khela Hobe Game Studios" fixed />
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
+        <StudioCredit studio="Khela Hobe Game Studios" fixed />
+      </div>
     </div>
   );
 }
