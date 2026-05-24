@@ -131,7 +131,7 @@ export default function PlayerGame({
   const myId = scoreboardData.find(p => p.id === me?.id || p.name === me?.name)?.id;
 
   return (
-    <div className="ek-page" style={{ paddingTop: 20 }}>
+    <div className="ek-page" style={{ paddingTop: 64 }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
         <AnimatePresence mode="wait">
 
