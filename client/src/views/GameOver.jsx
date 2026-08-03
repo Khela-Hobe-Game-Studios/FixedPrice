@@ -29,7 +29,7 @@ function computeTiers(players) {
   return tiers;
 }
 
-export default function GameOver({ final, setScreen }) {
+export default function GameOver({ final, setScreen, onForget }) {
   useEffect(() => {
     fireworks();
     const t = setTimeout(fireworks, 900);
@@ -111,7 +111,7 @@ export default function GameOver({ final, setScreen }) {
         <Button
           variant="primary"
           size="lg"
-          onClick={() => setScreen('landing')}
+          onClick={() => { onForget?.(); setScreen('landing'); }}
           className="ek-bengali"
         >
           আবার খেলো · Play Again

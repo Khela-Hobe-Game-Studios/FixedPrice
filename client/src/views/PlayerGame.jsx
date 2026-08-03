@@ -9,26 +9,13 @@ import {
 import {
   AnswerInput,
   BettingPanel,
-  CategoryBadge,
   FunFact,
   MiniLeaderboard,
   QuestionCard,
 } from '@khelahobe/kui/fixedprice';
 import socket from '../socket';
-
-const CAT_COLORS = {
-  desh:    '#15a374',
-  cricket: '#fb923c',
-  taka:    '#fbbf24',
-  global:  '#818cf8',
-  weird:   '#e879f9',
-};
-const CATEGORY_KEYS = Object.keys(CAT_COLORS);
-function normCategory(raw) {
-  if (!raw) return undefined;
-  const v = String(raw).toLowerCase();
-  return CATEGORY_KEYS.find(k => v.includes(k));
-}
+import EkCategoryBadge from '../components/EkCategoryBadge';
+import { normCategory, categoryColor } from '../categories';
 
 const WAITING_PHRASES = [
   'Others are still thinking…',
@@ -67,15 +54,21 @@ export default function PlayerGame({
   );
 
   useEffect(() => {
+    // round:start also arrives on reconnect mid-round. If the server says we
+    // already answered, stay locked instead of offering a second submission.
     const onStart = (data) => {
       setRoundData(data);
-      setAnswer('');
+      setAnswer(data.mySubmission != null ? String(data.mySubmission) : '');
       setBetTarget(null);
       setRevealData(null);
       setBettingData(null);
-      setPhase('question');
+      setPhase(data.alreadySubmitted ? 'locked' : 'question');
     };
-    const onBetting = (data) => { setBettingData(data); setBetTarget(null); setPhase('betting'); };
+    const onBetting = (data) => {
+      setBettingData(data);
+      setBetTarget(null);
+      setPhase(data.alreadySubmitted ? 'locked' : 'betting');
+    };
     const onReveal  = (data) => { setRevealData(data);  setPhase('reveal'); };
     const onScoreboard = ({ scoreboard }) => {
       const entry = scoreboard.find(p => p.id === me?.id || p.name === me?.name);
@@ -113,7 +106,7 @@ export default function PlayerGame({
   }
 
   const category = normCategory(roundData?.category);
-  const catColor = category ? CAT_COLORS[category] : 'var(--kui-accent)';
+  const catColor = categoryColor(category);
   const myResult = revealData?.ranked.find(r => r.id === me?.id || r.name === me?.name);
   const minDist  = revealData?.ranked[0]?.distance;
   const isWinner = minDist != null && myResult?.distance === minDist;
@@ -141,7 +134,7 @@ export default function PlayerGame({
               style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                {category && <CategoryBadge category={category} />}
+                {category && <EkCategoryBadge category={category} />}
                 <span style={{ fontFamily: 'var(--kui-font-display)', fontWeight: 700, color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)' }}>
                   Round {roundData.round}/{roundData.total}
                 </span>

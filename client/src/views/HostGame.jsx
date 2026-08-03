@@ -9,22 +9,17 @@ import {
   Timer,
 } from '@khelahobe/kui';
 import {
-  CategoryBadge,
   FunFact,
   QuestionCard,
   RevealCard,
 } from '@khelahobe/kui/fixedprice';
 import socket from '../socket';
-
-const CATEGORY_KEYS = ['desh', 'cricket', 'taka', 'global', 'weird'];
-function normCategory(raw) {
-  if (!raw) return undefined;
-  const v = String(raw).toLowerCase();
-  return CATEGORY_KEYS.find(k => v.includes(k));
-}
+import EkCategoryBadge from '../components/EkCategoryBadge';
+import { normCategory } from '../categories';
 
 export default function HostGame({
   room,
+  paused = false,
   initialRound,
   initialPhase = 'question',
   initialBetting = null,
@@ -69,9 +64,11 @@ export default function HostGame({
     };
   }, []);
 
+  // Freeze the countdown while the server has the game paused (host dropped),
+  // otherwise the clock runs down against a round that isn't advancing.
   useEffect(() => {
     clearInterval(timerRef.current);
-    if ((phase === 'question' || phase === 'betting') && timeLeft > 0) {
+    if (!paused && (phase === 'question' || phase === 'betting') && timeLeft > 0) {
       timerRef.current = setInterval(() => {
         setTimeLeft(t => {
           if (t <= 1) { clearInterval(timerRef.current); return 0; }
@@ -80,11 +77,15 @@ export default function HostGame({
       }, 1000);
     }
     return () => clearInterval(timerRef.current);
-  }, [phase, roundData]);
+  }, [phase, roundData, paused]);
 
+  // Server sends revealMs sized to the field. Fire the confetti just before the
+  // phase ends so it never lands on top of the scoreboard at high player counts.
   useEffect(() => {
     if (!revealData) return;
-    const delay = (revealData.ranked.length * 0.45 + 0.5) * 1000;
+    const animEnd = (revealData.ranked.length * 0.45 + 0.5) * 1000;
+    const phaseEnd = (revealData.revealMs ?? 5000) - 600;
+    const delay = Math.max(0, Math.min(animEnd, phaseEnd));
     const t = setTimeout(() => {
       confetti({
         particleCount: 120,
@@ -122,7 +123,7 @@ export default function HostGame({
           margin: '0 auto',
         }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            {category && <CategoryBadge category={category} />}
+            {category && <EkCategoryBadge category={category} />}
             <span style={{
               fontFamily: 'var(--kui-font-display)',
               fontWeight: 800,

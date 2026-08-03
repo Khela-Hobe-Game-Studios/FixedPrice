@@ -7,10 +7,11 @@ import {
   StudioCredit,
 } from '@khelahobe/kui';
 import socket from '../socket';
+import { getPlayerId } from '../session';
 
 const fade = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -16 } };
 
-export default function Landing({ setRoom, setMe }) {
+export default function Landing({ setRoom, pending, setPending }) {
   const [mode, setMode] = useState('home');
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -21,16 +22,23 @@ export default function Landing({ setRoom, setMe }) {
     backgroundMusic: true,
   });
 
+  // socket.io buffers emits made while offline and flushes them on connect, so
+  // these work during a cold start — the pending flag is what tells the user.
   function createRoom() {
-    if (!settings.questionCount) return;
+    if (!settings.questionCount || pending) return;
+    setPending('create');
     socket.emit('host:create_room', settings);
     setRoom({ code: null, players: [], settings });
   }
 
   function joinRoom() {
-    if (!name.trim() || code.length !== 4) return;
-    setMe({ id: socket.id, name: name.trim() });
-    socket.emit('player:join', { code: code.toUpperCase(), name: name.trim() });
+    if (!name.trim() || code.length !== 4 || pending) return;
+    setPending('join');
+    socket.emit('player:join', {
+      code: code.toUpperCase(),
+      name: name.trim(),
+      pid: getPlayerId(),
+    });
   }
 
   function toggle(key) {
@@ -96,25 +104,32 @@ export default function Landing({ setRoom, setMe }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <SettingRow label="Questions">
                     <Segmented
+                      label="Number of questions"
                       options={[10, 15, 20]}
                       value={settings.questionCount}
                       onChange={n => setSettings(s => ({ ...s, questionCount: n }))}
                     />
                   </SettingRow>
                   <SettingRow label="Elimination Mode">
-                    <Toggle on={settings.eliminationMode} onClick={() => toggle('eliminationMode')} />
+                    <Toggle label="Elimination Mode" on={settings.eliminationMode} onClick={() => toggle('eliminationMode')} />
                   </SettingRow>
                   <SettingRow label="Betting Rounds">
-                    <Toggle on={settings.bettingRounds} onClick={() => toggle('bettingRounds')} />
+                    <Toggle label="Betting Rounds" on={settings.bettingRounds} onClick={() => toggle('bettingRounds')} />
                   </SettingRow>
                   <SettingRow label="Background Music">
-                    <Toggle on={settings.backgroundMusic} onClick={() => toggle('backgroundMusic')} />
+                    <Toggle label="Background Music" on={settings.backgroundMusic} onClick={() => toggle('backgroundMusic')} />
                   </SettingRow>
                 </div>
               </Card.Body>
               <Card.Footer>
-                <Button variant="primary" size="lg" onClick={createRoom} style={{ width: '100%' }}>
-                  Create Room
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={createRoom}
+                  disabled={!!pending}
+                  style={{ width: '100%' }}
+                >
+                  {pending === 'create' ? 'Creating room…' : 'Create Room'}
                 </Button>
               </Card.Footer>
             </Card>
@@ -163,10 +178,10 @@ export default function Landing({ setRoom, setMe }) {
                   variant="primary"
                   size="lg"
                   onClick={joinRoom}
-                  disabled={!name.trim() || code.length !== 4}
+                  disabled={!name.trim() || code.length !== 4 || !!pending}
                   style={{ width: '100%' }}
                 >
-                  Join
+                  {pending === 'join' ? 'Joining…' : 'Join'}
                 </Button>
               </Card.Footer>
             </Card>
@@ -189,9 +204,9 @@ function SettingRow({ label, children }) {
   );
 }
 
-function Segmented({ options, value, onChange }) {
+function Segmented({ options, value, onChange, label }) {
   return (
-    <div style={{
+    <div role="group" aria-label={label} style={{
       display: 'inline-flex',
       padding: 4,
       gap: 4,
@@ -207,6 +222,7 @@ function Segmented({ options, value, onChange }) {
             type="button"
             onClick={() => onChange(n)}
             aria-pressed={active}
+            aria-label={`${n} questions`}
             style={{
               minWidth: 38,
               padding: '6px 12px',
@@ -230,12 +246,13 @@ function Segmented({ options, value, onChange }) {
   );
 }
 
-function Toggle({ on, onClick }) {
+function Toggle({ on, onClick, label }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={on}
+      aria-label={label}
       style={{
         position: 'relative',
         width: 60,

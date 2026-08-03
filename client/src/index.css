@@ -48,6 +48,24 @@ html, body, #root {
 
 .ek-bengali { font-family: var(--kui-font-bengali); }
 
+/* Local category badge — KUI's only covers 5 of our 6 categories */
+.ek-catbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--kui-radius-full, 999px);
+  border: 2.5px solid var(--kui-border);
+  background: var(--ek-cat-color, var(--kui-accent));
+  color: #0b2a20;
+  font-family: var(--kui-font-display);
+  font-weight: 800;
+  font-size: var(--kui-text-sm);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--kui-shadow-color);
+}
+
 /* Host lobby responsive grid */
 .ek-host-lobby { width: 100%; max-width: 1100px; margin: 0 auto; }
 @media (max-width: 720px) {
