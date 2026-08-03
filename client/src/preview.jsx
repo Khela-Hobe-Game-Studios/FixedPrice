@@ -150,6 +150,8 @@ export function renderPreview(name) {
       return <HostGame room={bigRoom} initialRound={bigRound} initialPhase="question" setRoom={noop} setMe={noop} me={null} setScreen={noop} />;
     case 'player-scale-warning':
       return <PlayerGame me={me} initialRound={scaleRound} initialPhase="question" setRoom={noop} setMe={noop} setScreen={noop} room={room} />;
+    case 'game-over-15':
+      return <GameOver final={bigPlayers.map(p => ({ ...p, strikes: 0 }))} setScreen={noop} room={bigRoom} me={null} />;
     case 'player-locked-guess':
       return <PlayerGame me={me} initialRound={{ ...roundData, alreadySubmitted: true, mySubmission: 148 }} initialPhase="locked" setRoom={noop} setMe={noop} setScreen={noop} room={room} />;
     default:

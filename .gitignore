@@ -5,3 +5,4 @@ dist/
 .continue/
 .windsurf/
 .playwright-mcp/
+.screens/

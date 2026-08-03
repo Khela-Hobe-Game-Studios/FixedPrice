@@ -59,7 +59,10 @@ export default function GameOver({ final, setScreen, onForget, room, me }) {
   }));
 
   return (
-    <div className="ek-page" style={{ gap: 24, paddingTop: 24 }}>
+    // Stacked, the winner + podium + standings + buttons ran past the bottom of
+    // a 16:9 screen and the Rematch button was unreachable without scrolling —
+    // which nobody does on a TV. Use the horizontal space instead.
+    <div className="ek-page ek-gameover" style={{ gap: 18, paddingTop: 18 }}>
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,45 +71,47 @@ export default function GameOver({ final, setScreen, onForget, room, me }) {
         <TitleBlock title="শেষ!" subtitle="GAME OVER" />
       </motion.div>
 
-      {champions.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-          style={{ width: '100%', maxWidth: 600 }}
-        >
-          <WinnerDisplay
-            winners={champions.map(p => ({
-              name: p.name,
-              initial: p.name[0],
-              score: p.score,
-            }))}
-            animated
-          />
-        </motion.div>
-      )}
+      <div className={`ek-gameover__body${restEntries.length > 0 ? ' ek-gameover__body--split' : ''}`}>
+        <div className="ek-gameover__main">
+          {champions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+            >
+              <WinnerDisplay
+                winners={champions.map(p => ({
+                  name: p.name,
+                  initial: p.name[0],
+                  score: p.score,
+                }))}
+                animated
+              />
+            </motion.div>
+          )}
 
-      {podiumWinners.length === 3 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          style={{ width: '100%', maxWidth: 600 }}
-        >
-          <Podium winners={podiumWinners} />
-        </motion.div>
-      )}
+          {podiumWinners.length === 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              <Podium winners={podiumWinners} />
+            </motion.div>
+          )}
+        </div>
 
-      {restEntries.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          style={{ width: '100%', maxWidth: 520 }}
-        >
-          <Leaderboard players={restEntries} />
-        </motion.div>
-      )}
+        {restEntries.length > 0 && (
+          <motion.div
+            className="ek-gameover__rest"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Leaderboard players={restEntries} />
+          </motion.div>
+        )}
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
