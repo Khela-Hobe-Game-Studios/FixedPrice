@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Avatar,
   Badge,
   Button,
   Card,
+  Timer,
 } from '@khelahobe/kui';
 import {
   AnswerInput,
@@ -23,8 +24,26 @@ const WAITING_PHRASES = [
   'Fingers crossed 🤞',
 ];
 
+// 106 questions in the bank carry units like "lakh BDT" or "thousand USD".
+// Without a nudge, one player types 25 and another types 2500000 for the same
+// belief, and the round is decided by who read the unit rather than who guessed
+// best. Show the expected magnitude explicitly.
+const SCALES = [
+  [/\bcrores?\b/i,    { example: '5',  wrong: '50,000,000' }],
+  [/\blakhs?\b/i,     { example: '25', wrong: '2,500,000' }],
+  [/\bthousands?\b/i, { example: '30', wrong: '30,000' }],
+  [/\bmillions?\b/i,  { example: '54', wrong: '54,000,000' }],
+  [/\bbillions?\b/i,  { example: '14', wrong: '14,000,000,000' }],
+];
+
+function scaleHint(unit) {
+  if (!unit) return null;
+  return SCALES.find(([re]) => re.test(unit))?.[1] ?? null;
+}
+
 export default function PlayerGame({
   me,
+  paused = false,
   initialRound,
   initialPhase = 'question',
   initialBetting = null,
@@ -47,6 +66,11 @@ export default function PlayerGame({
   });
   const [answer, setAnswer] = useState('');
   const [betTarget, setBetTarget] = useState(null);
+  // Seed from the initial payload: on reconnect we mount straight into 'locked'
+  // and the live round:start handler never runs for this round.
+  const [lockedGuess, setLockedGuess] = useState(initialRound?.mySubmission ?? null);
+  const [timeLeft, setTimeLeft] = useState(initialRound?.timer ?? 0);
+  const tickRef = useRef(null);
 
   const waitingPhrase = useMemo(
     () => WAITING_PHRASES[Math.floor(Math.random() * WAITING_PHRASES.length)],
@@ -59,14 +83,17 @@ export default function PlayerGame({
     const onStart = (data) => {
       setRoundData(data);
       setAnswer(data.mySubmission != null ? String(data.mySubmission) : '');
+      setLockedGuess(data.mySubmission ?? null);
       setBetTarget(null);
       setRevealData(null);
       setBettingData(null);
+      setTimeLeft(data.timer ?? 0);
       setPhase(data.alreadySubmitted ? 'locked' : 'question');
     };
     const onBetting = (data) => {
       setBettingData(data);
       setBetTarget(null);
+      setTimeLeft(data.timer ?? 0);
       setPhase(data.alreadySubmitted ? 'locked' : 'betting');
     };
     const onReveal  = (data) => { setRevealData(data);  setPhase('reveal'); };
@@ -93,9 +120,25 @@ export default function PlayerGame({
     };
   }, [me?.id]);
 
+  // Players had no clock at all — only the host screen showed one, which is no
+  // help if you are looking down at your phone.
+  useEffect(() => {
+    clearInterval(tickRef.current);
+    if (!paused && (phase === 'question' || phase === 'betting') && timeLeft > 0) {
+      tickRef.current = setInterval(() => {
+        setTimeLeft(t => (t <= 1 ? (clearInterval(tickRef.current), 0) : t - 1));
+      }, 1000);
+    }
+    return () => clearInterval(tickRef.current);
+  }, [phase, roundData, paused, timeLeft > 0]);
+
   function submitAnswer() {
-    if (!answer.toString().trim()) return;
-    socket.emit('player:submit_answer', { answer: Number(answer) });
+    const raw = answer.toString().trim();
+    if (!raw) return;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return;
+    socket.emit('player:submit_answer', { answer: value });
+    setLockedGuess(value);
     setPhase('locked');
   }
 
@@ -107,6 +150,7 @@ export default function PlayerGame({
 
   const category = normCategory(roundData?.category);
   const catColor = categoryColor(category);
+  const scale = scaleHint(roundData?.unit);
   const myResult = revealData?.ranked.find(r => r.id === me?.id || r.name === me?.name);
   const minDist  = revealData?.ranked[0]?.distance;
   const isWinner = minDist != null && myResult?.distance === minDist;
@@ -135,11 +179,20 @@ export default function PlayerGame({
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                 {category && <EkCategoryBadge category={category} />}
-                <span style={{ fontFamily: 'var(--kui-font-display)', fontWeight: 700, color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)' }}>
-                  Round {roundData.round}/{roundData.total}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontFamily: 'var(--kui-font-display)', fontWeight: 700, color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)' }}>
+                    Round {roundData.round}/{roundData.total}
+                  </span>
+                  <Timer seconds={timeLeft} size="sm" />
+                </div>
               </div>
               <QuestionCard question={roundData.question} unit={roundData.unit} />
+              {scale && (
+                <p className="ek-scale-warning">
+                  ⚠️ Type the short number — e.g. <strong>{scale.example}</strong>,
+                  not {scale.wrong}
+                </p>
+              )}
               <AnswerInput
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
@@ -164,10 +217,25 @@ export default function PlayerGame({
           {phase === 'locked' && (
             <motion.div key="locked"
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
             >
+              {/* The question and your own guess used to vanish the moment you
+                  locked in, leaving nothing to talk about while you wait. */}
+              {roundData && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  {category && <EkCategoryBadge category={category} />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontFamily: 'var(--kui-font-display)', fontWeight: 700, color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)' }}>
+                      Round {roundData.round}/{roundData.total}
+                    </span>
+                    <Timer seconds={timeLeft} size="sm" />
+                  </div>
+                </div>
+              )}
+              {roundData && <QuestionCard question={roundData.question} unit={roundData.unit} />}
               <Card>
                 <Card.Body>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '12px 0' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '8px 0' }}>
                     <motion.div
                       initial={{ scale: 0.8 }}
                       animate={{ scale: [0.8, 1.15, 1] }}
@@ -178,7 +246,23 @@ export default function PlayerGame({
                     <h2 className="ek-bengali" style={{ fontFamily: 'var(--kui-font-bengali)', fontWeight: 700, fontSize: 'var(--kui-text-2xl)' }}>
                       জমা দেওয়া হয়েছে!
                     </h2>
-                    <Badge variant="success">Answer submitted</Badge>
+                    {lockedGuess != null ? (
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-xs)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700 }}>
+                          Your guess
+                        </p>
+                        <p style={{ fontFamily: 'var(--kui-font-display)', fontWeight: 800, fontSize: 'var(--kui-text-3xl)', lineHeight: 1.1 }}>
+                          {lockedGuess.toLocaleString()}
+                          {roundData?.unit && (
+                            <em style={{ fontStyle: 'normal', fontSize: 'var(--kui-text-md)', color: 'var(--kui-text-muted)', marginLeft: 8 }}>
+                              {roundData.unit}
+                            </em>
+                          )}
+                        </p>
+                      </div>
+                    ) : (
+                      <Badge variant="success">Answer submitted</Badge>
+                    )}
                     <p style={{ fontStyle: 'italic', color: 'var(--kui-text-muted)' }}>{waitingPhrase}</p>
                   </div>
                 </Card.Body>

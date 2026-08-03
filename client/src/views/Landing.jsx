@@ -7,14 +7,16 @@ import {
   StudioCredit,
 } from '@khelahobe/kui';
 import socket from '../socket';
-import { getPlayerId } from '../session';
+import { getPlayerId, JOIN_CODE } from '../session';
 
 const fade = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -16 } };
 
+// Scanning the host's QR lands here with ?join=CODE (parsed in session.js) — go
+// straight to the join form with the code filled in so the guest only types a name.
 export default function Landing({ setRoom, pending, setPending }) {
-  const [mode, setMode] = useState('home');
+  const [mode, setMode] = useState(JOIN_CODE ? 'join' : 'home');
   const [name, setName] = useState('');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(JOIN_CODE);
   const [settings, setSettings] = useState({
     questionCount: 10,
     eliminationMode: false,
@@ -169,6 +171,7 @@ export default function Landing({ setRoom, pending, setPending }) {
                     placeholder="e.g. Karim"
                     value={name}
                     maxLength={16}
+                    autoFocus={!!JOIN_CODE}
                     onChange={e => setName(e.target.value)}
                   />
                 </div>

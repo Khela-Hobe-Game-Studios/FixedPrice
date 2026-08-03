@@ -70,6 +70,45 @@ const final = [
 
 const me = { id: 'p1', name: 'Karim' };
 
+// ─── 15-player fixtures ──────────────────────────────────────────────────────
+// The target party size. Reveal and scoreboard layouts both used to overflow a
+// TV here, so these exist to make the crowded case checkable without a backend.
+const BIG_NAMES = ['Karim', 'Ayesha', 'Rafi', 'Sumi', 'Tariq', 'Nadia', 'Sabbir',
+  'Mim', 'Imran', 'Tania', 'Hasan', 'Nusrat', 'Arif', 'Priya', 'Jamal'];
+
+const bigPlayers = BIG_NAMES.map((name, i) => ({
+  id: `b${i + 1}`, name, score: 30 - i * 2,
+}));
+
+const bigRoom = { ...room, code: 'JHOL', players: bigPlayers };
+
+const bigRound = { ...roundData, players: bigPlayers, total: 20, round: 12 };
+
+const bigReveal = {
+  ...revealData,
+  revealMs: 9750,
+  ranked: bigPlayers.map((p, i) => ({
+    id: p.id, name: p.name, submitted: true,
+    guess: 150 + (i % 2 ? i * 7 : -i * 5),
+    distance: i === 0 ? 1 : i * 6,
+  })),
+};
+
+const bigScoreboard = {
+  scoreboard: bigPlayers.map((p, i) => ({
+    id: p.id, name: p.name, score: 30 - i * 2,
+    strikes: i > 12 ? 2 : 0, eliminated: false,
+  })),
+};
+
+// A question whose answer is in "lakh BDT" — exercises the magnitude warning.
+const scaleRound = {
+  ...roundData,
+  question: 'Average price of a used Toyota Corolla 2013 model in Bangladesh in 2026',
+  category: 'Price',
+  unit: 'lakh BDT',
+};
+
 export function renderPreview(name) {
   const noop = () => {};
   switch (name) {
@@ -98,7 +137,21 @@ export function renderPreview(name) {
     case 'player-scoreboard':
       return <PlayerGame me={me} initialRound={roundData} initialPhase="scoreboard" initialScoreboard={scoreboardData} setRoom={noop} setMe={noop} setScreen={noop} room={room} />;
     case 'game-over':
-      return <GameOver final={final} setScreen={noop} />;
+      return <GameOver final={final} setScreen={noop} room={room} me={null} />;
+
+    // 15-player / crowded-room cases
+    case 'host-lobby-15':
+      return <HostLobby room={bigRoom} setRoom={noop} setMe={noop} me={null} setScreen={noop} onStartGame={noop} />;
+    case 'host-reveal-15':
+      return <HostGame room={bigRoom} initialRound={bigRound} initialPhase="reveal" initialReveal={bigReveal} setRoom={noop} setMe={noop} me={null} setScreen={noop} />;
+    case 'host-scoreboard-15':
+      return <HostGame room={bigRoom} initialRound={bigRound} initialPhase="scoreboard" initialScoreboard={bigScoreboard} setRoom={noop} setMe={noop} me={null} setScreen={noop} />;
+    case 'host-question-15':
+      return <HostGame room={bigRoom} initialRound={bigRound} initialPhase="question" setRoom={noop} setMe={noop} me={null} setScreen={noop} />;
+    case 'player-scale-warning':
+      return <PlayerGame me={me} initialRound={scaleRound} initialPhase="question" setRoom={noop} setMe={noop} setScreen={noop} room={room} />;
+    case 'player-locked-guess':
+      return <PlayerGame me={me} initialRound={{ ...roundData, alreadySubmitted: true, mySubmission: 148 }} initialPhase="locked" setRoom={noop} setMe={noop} setScreen={noop} room={room} />;
     default:
       return <div style={{ padding: 40 }}>Unknown preview: {name}</div>;
   }

@@ -1,6 +1,22 @@
 const SESSION_KEY = 'ek_daam_session';
 const PID_KEY = 'ek_daam_pid';
 
+// Read the ?join=CODE deep link (from scanning the host's QR) exactly once, then
+// strip it from the URL so a later refresh doesn't re-trigger it and bounce a
+// mid-game player back to the join form.
+export const JOIN_CODE = (() => {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('join') || '';
+    if (!/^[A-Za-z0-9]{4}$/.test(raw)) return '';
+    const url = new URL(window.location.href);
+    url.searchParams.delete('join');
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    return raw.toUpperCase();
+  } catch {
+    return '';
+  }
+})();
+
 // Durable per-device id. This is what the server keys scores, answers and bets
 // off — socket ids change on every reconnect, so using them meant a player who
 // backgrounded their phone came back as a stranger with a zeroed score.

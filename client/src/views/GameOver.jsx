@@ -8,6 +8,7 @@ import {
   TitleBlock,
   WinnerDisplay,
 } from '@khelahobe/kui';
+import socket from '../socket';
 
 const BD_COLORS = ['#006A4E', '#F42A41', '#fbbf24', '#fcd34d', '#ffffff'];
 
@@ -29,7 +30,11 @@ function computeTiers(players) {
   return tiers;
 }
 
-export default function GameOver({ final, setScreen, onForget }) {
+export default function GameOver({ final, setScreen, onForget, room, me }) {
+  // The host can restart with the same room code and roster; players just wait
+  // to be pulled back into the lobby. Previously everyone was dumped to the
+  // landing screen and all 15 had to re-enter a fresh code.
+  const isHost = !!room?.code && !me;
   useEffect(() => {
     fireworks();
     const t = setTimeout(fireworks, 900);
@@ -107,16 +112,31 @@ export default function GameOver({ final, setScreen, onForget }) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.95 }}
+        style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}
       >
+        {isHost && (
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => socket.emit('host:play_again')}
+            className="ek-bengali"
+          >
+            আবার খেলো · Rematch
+          </Button>
+        )}
         <Button
-          variant="primary"
+          variant={isHost ? 'secondary' : 'primary'}
           size="lg"
           onClick={() => { onForget?.(); setScreen('landing'); }}
-          className="ek-bengali"
         >
-          আবার খেলো · Play Again
+          {isHost ? 'New Game' : 'Back to Start'}
         </Button>
       </motion.div>
+      {!isHost && (
+        <p style={{ color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)', textAlign: 'center' }}>
+          Stay here — if the host starts a rematch you'll be pulled back in automatically.
+        </p>
+      )}
     </div>
   );
 }

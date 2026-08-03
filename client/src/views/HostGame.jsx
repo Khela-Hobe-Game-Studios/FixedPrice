@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import {
   Badge,
+  Button,
   Card,
   Leaderboard,
   ProgressBar,
@@ -97,10 +98,16 @@ export default function HostGame({
     return () => clearTimeout(t);
   }, [revealData]);
 
+  function endGame() {
+    if (window.confirm('End the game now and show the final scores?')) {
+      socket.emit('host:end_game');
+    }
+  }
+
   const category = normCategory(roundData?.category);
   const answerPct = answerCount.total > 0 ? (answerCount.count / answerCount.total) * 100 : 0;
 
-  const leaderboardEntries = scoreboard.slice(0, 5).map((p, i) => ({
+  const leaderboardEntries = scoreboard.map((p, i) => ({
     id: p.id,
     rank: i + 1,
     name: p.name + (p.strikes ? ` ${'⚡'.repeat(p.strikes)}` : ''),
@@ -108,6 +115,17 @@ export default function HostGame({
     score: p.score,
     eliminated: !!p.eliminated,
   }));
+
+  const revealCount = revealData?.ranked.length ?? 0;
+  const revealCols = revealCount > 12 ? 3 : revealCount > 6 ? 2 : 1;
+  const dense = revealCols >= 3;
+
+  // Split into balanced columns so a 15-player board fits one screen.
+  const scoreCols = scoreboard.length > 8 ? 2 : 1;
+  const perCol = Math.ceil(leaderboardEntries.length / scoreCols) || 1;
+  const leaderboardChunks = Array.from({ length: scoreCols }, (_, i) =>
+    leaderboardEntries.slice(i * perCol, (i + 1) * perCol)
+  ).filter(c => c.length > 0);
 
   return (
     <div className="ek-page" style={{ gap: 20 }}>
@@ -137,9 +155,19 @@ export default function HostGame({
               <Badge variant="voting" pulse>BETTING ROUND</Badge>
             )}
           </div>
-          {(phase === 'question' || phase === 'betting') && (
-            <Timer seconds={timeLeft} size="lg" />
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {(phase === 'question' || phase === 'betting') && (
+              <Timer seconds={timeLeft} size="lg" />
+            )}
+            {/* Without these the host is stuck waiting out a full 30s timer for
+                someone who has put their phone down. */}
+            <Button variant="ghost" size="sm" onClick={() => socket.emit('host:skip')}>
+              Skip ⏭
+            </Button>
+            <Button variant="ghost" size="sm" onClick={endGame}>
+              End
+            </Button>
+          </div>
         </div>
       )}
 
@@ -214,27 +242,39 @@ export default function HostGame({
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
             >
-              <Card>
-                <Card.Body>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Correct Answer</p>
-                    <p style={{
-                      fontFamily: 'var(--kui-font-display)', fontWeight: 800,
-                      fontSize: 'var(--kui-text-hero)', color: 'var(--kui-accent)',
-                      lineHeight: 1.1, marginTop: 6,
-                    }}>
-                      {revealData.correctAnswer.toLocaleString()}
-                      {revealData.unit && (
-                        <em style={{ fontStyle: 'normal', fontSize: 'var(--kui-text-lg)', color: 'var(--kui-text-muted)', marginLeft: 10 }}>{revealData.unit}</em>
-                      )}
-                    </p>
-                  </div>
-                </Card.Body>
-              </Card>
+              {/* Side by side once the field is large — stacked, the answer and
+                  fun fact ate the vertical room the reveal cards need. */}
+              <div className={dense ? 'ek-reveal-head ek-reveal-head--split' : 'ek-reveal-head'}>
+                <Card>
+                  <Card.Body>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>Correct Answer</p>
+                      <p style={{
+                        fontFamily: 'var(--kui-font-display)', fontWeight: 800,
+                        fontSize: dense ? 'var(--kui-text-3xl)' : 'var(--kui-text-hero)',
+                        color: 'var(--kui-accent)',
+                        lineHeight: 1.1, marginTop: 6,
+                      }}>
+                        {revealData.correctAnswer.toLocaleString()}
+                        {revealData.unit && (
+                          <em style={{ fontStyle: 'normal', fontSize: 'var(--kui-text-lg)', color: 'var(--kui-text-muted)', marginLeft: 10 }}>{revealData.unit}</em>
+                        )}
+                      </p>
+                    </div>
+                  </Card.Body>
+                </Card>
 
-              {revealData.funFact && <FunFact text={revealData.funFact} />}
+                {revealData.funFact && <FunFact text={revealData.funFact} />}
+              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* One tall column ran off the bottom of a 16:9 TV past ~8
+                  players, hiding the winner — and nobody scrolls a TV. Fan out
+                  into columns so the whole field lands above the fold. Cards
+                  fill worst-first, so the winner is still revealed last. */}
+              <div
+                className={`ek-reveal-list${dense ? ' ek-reveal-list--compact' : ''}`}
+                style={{ '--ek-reveal-cols': revealCols }}
+              >
                 {[...revealData.ranked].reverse().map((r, i) => {
                   const total = revealData.ranked.length;
                   const minDist = revealData.ranked[0]?.distance;
@@ -276,12 +316,16 @@ export default function HostGame({
                 fontSize: 'var(--kui-text-3xl)', textAlign: 'center',
                 letterSpacing: '0.05em', textTransform: 'uppercase',
               }}>Scoreboard</h2>
-              <Leaderboard players={leaderboardEntries} />
-              {scoreboard.length > 5 && (
-                <p style={{ textAlign: 'center', color: 'var(--kui-text-muted)', fontSize: 'var(--kui-text-sm)' }}>
-                  +{scoreboard.length - 5} more players
-                </p>
-              )}
+              {/* Everyone in the room should be able to find themselves on the
+                  shared screen. This used to show the top 5 and "+10 more". */}
+              <div
+                className="ek-scoreboard-cols"
+                style={{ '--ek-score-cols': scoreboard.length > 8 ? 2 : 1 }}
+              >
+                {leaderboardChunks.map((chunk, i) => (
+                  <Leaderboard key={i} players={chunk} />
+                ))}
+              </div>
             </motion.div>
           )}
 

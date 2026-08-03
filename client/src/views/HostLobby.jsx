@@ -8,6 +8,7 @@ import {
   SettingsPanel,
 } from '@khelahobe/kui';
 import socket from '../socket';
+import JoinQR from '../components/JoinQR';
 
 const AVATAR_COLORS = ['#fbbf24', '#15a374', '#fb923c', '#818cf8', '#e879f9'];
 
@@ -40,9 +41,10 @@ export default function HostLobby({ room, onStartGame }) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <RoomCode code={room?.code ?? '----'} label="Room Code" size="lg" />
+          {room?.code && <JoinQR code={room.code} />}
           <SettingsPanel settings={settingRows} />
           <p style={{ marginTop: -4, fontSize: 'var(--kui-text-sm)', color: 'var(--kui-text-muted)', fontWeight: 600, textAlign: 'center' }}>
-            Players join at your URL with the code above
+            Scan the code, or open the link and enter <strong>{room?.code ?? '----'}</strong>
           </p>
         </div>
 

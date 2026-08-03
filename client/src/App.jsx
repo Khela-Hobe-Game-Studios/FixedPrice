@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Howl } from 'howler';
 import { ToastStack } from '@khelahobe/kui';
 import socket from './socket';
-import { getPlayerId, saveSession, loadSession, clearSession } from './session';
+import { getPlayerId, saveSession, loadSession, clearSession, JOIN_CODE } from './session';
 import { useToasts } from './hooks/useToasts';
 
 const soundUrls = [
@@ -23,7 +23,11 @@ import EkBrandLine from './components/EkBrandLine';
 const COLD_START_HINT_MS = 1500;
 const CONNECT_TIMEOUT_MS = 45000;
 
-const _session = loadSession();
+// Following a join link means "put me in THIS game" — it must beat a restored
+// session, or someone who hosted earlier lands back in their own dead lobby
+// instead of joining their friend's room.
+if (JOIN_CODE) clearSession();
+const _session = JOIN_CODE ? null : loadSession();
 const PLAYER_ID = getPlayerId();
 
 export default function App() {
@@ -274,7 +278,7 @@ export default function App() {
   else if (screen === 'player-lobby')  view = <PlayerLobby {...props} />;
   else if (screen === 'host-game')     view = <HostGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
   else if (screen === 'player-game')   view = <PlayerGame {...props} initialRound={roundData} initialPhase={initialPhase} initialBetting={initialBetting} initialReveal={initialReveal} initialScoreboard={initialScoreboard} />;
-  else if (screen === 'game-over')     view = <GameOver final={final} setScreen={setScreen} onForget={forget} />;
+  else if (screen === 'game-over')     view = <GameOver final={final} setScreen={setScreen} onForget={forget} room={room} me={me} />;
 
   return (
     <>
