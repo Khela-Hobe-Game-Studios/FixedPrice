@@ -6,3 +6,4 @@ dist/
 .windsurf/
 .playwright-mcp/
 .screens/
+.dev/
