@@ -9,14 +9,24 @@
 
 let cachedQuestions = null;
 
+// Below this a game cannot fill even the largest question count setting.
+const MIN_QUESTIONS = 20;
+
 function parseCSV(text) {
   const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
   const rows = lines.slice(1); // skip header row
 
-  return rows.map(line => {
+  let skipped = 0;
+  const parsed = rows.map((line, i) => {
     const cols = splitCSVRow(line);
     const answer = parseFloat(cols[1]);
-    if (!cols[0] || isNaN(answer)) return null;
+    // A non-finite answer would poison the ranking maths, so drop the row and
+    // say which one rather than failing silently mid-game.
+    if (!cols[0] || !Number.isFinite(answer)) {
+      if (cols[0]) console.warn(`[questions] row ${i + 2} skipped — bad answer "${cols[1]}": ${cols[0].slice(0, 60)}`);
+      skipped++;
+      return null;
+    }
     return {
       question: cols[0].trim(),
       answer,
@@ -25,6 +35,9 @@ function parseCSV(text) {
       funFact:  (cols[4] || '').trim() || null,
     };
   }).filter(Boolean);
+
+  if (skipped) console.warn(`[questions] skipped ${skipped} malformed row(s)`);
+  return parsed;
 }
 
 // Handles quoted fields containing commas or newlines.
@@ -63,7 +76,17 @@ async function loadQuestions() {
   const res = await fetch(url, { redirect: 'follow' });
   if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`);
   const csv = await res.text();
-  cachedQuestions = parseCSV(csv);
+  const parsed = parseCSV(csv);
+
+  // A sheet that fetched but yielded nothing (wrong tab, unpublished, HTML error
+  // page) would otherwise start a server that cannot run a single round.
+  if (parsed.length < MIN_QUESTIONS) {
+    console.error(`[questions] Sheet returned only ${parsed.length} usable questions — falling back to questions.json`);
+    cachedQuestions = require('../../questions/questions.json');
+    return cachedQuestions;
+  }
+
+  cachedQuestions = parsed;
   console.log(`[questions] Loaded ${cachedQuestions.length} questions from sheet`);
   return cachedQuestions;
 }

@@ -1,0 +1,352 @@
+[
+  {
+    "question": "Number of administrative districts (zila) in Bangladesh",
+    "answer": 64,
+    "unit": "districts",
+    "category": "Desh",
+    "funFact": "The 64 districts sit under 8 divisions — the count has been unchanged since 1984."
+  },
+  {
+    "question": "Length of the Bangabandhu (Jamuna) Bridge in metres",
+    "answer": 4800,
+    "unit": "metres",
+    "category": "Desh",
+    "funFact": "Opened in 1998, it was the 11th longest bridge in the world at the time."
+  },
+  {
+    "question": "Total number of seats in the Jatiya Sangsad, including reserved seats",
+    "answer": 350,
+    "unit": "seats",
+    "category": "Desh",
+    "funFact": "300 are directly elected; 50 are reserved for women and allocated proportionally."
+  },
+  {
+    "question": "Claimed length of Cox's Bazar sea beach in kilometres",
+    "answer": 120,
+    "unit": "km",
+    "category": "Desh",
+    "funFact": "It is widely promoted as the world's longest natural sandy sea beach."
+  },
+  {
+    "question": "Year the Ekushey Boi Mela book fair was first held at Bangla Academy",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It began when a publisher spread out books on a sheet on the Bangla Academy grounds."
+  },
+  {
+    "question": "Height of the Jatiyo Sriti Shoudho (National Martyrs' Memorial) in metres",
+    "answer": 150,
+    "unit": "metres",
+    "category": "Desh",
+    "funFact": "Its seven pairs of triangular planes stand for seven milestones of the independence struggle."
+  },
+  {
+    "question": "Number of stairs on the main approach of Ahsan Manzil in Old Dhaka",
+    "answer": 37,
+    "unit": "stairs",
+    "category": "Desh",
+    "funFact": "The Pink Palace faces the Buriganga, and the river steps were once its main entrance."
+  },
+  {
+    "question": "Number of rooms in the Ahsan Manzil museum open to visitors",
+    "answer": 23,
+    "unit": "rooms",
+    "category": "Desh",
+    "funFact": "The palace museum reopened to the public in 1992 after a long restoration."
+  },
+  {
+    "question": "Length of the Dhaka Metro Rail MRT Line-6 in kilometres",
+    "answer": 21,
+    "unit": "km",
+    "category": "Desh",
+    "funFact": "Line-6 runs Uttara North to Motijheel and was Bangladesh's first metro line."
+  },
+  {
+    "question": "Number of stations on Dhaka Metro Rail MRT Line-6",
+    "answer": 16,
+    "unit": "stations",
+    "category": "Desh",
+    "funFact": "The line opened in stages from December 2022, reaching Motijheel in late 2023."
+  },
+  {
+    "question": "Number of players fielded by each side in a kabaddi match, Bangladesh's national sport",
+    "answer": 7,
+    "unit": "players",
+    "category": "Desh",
+    "funFact": "Kabaddi was declared the national sport in 1972; locally it is often called Ha-Du-Du."
+  },
+  {
+    "question": "Number of stanzas of 'Amar Sonar Bangla' officially used as the national anthem",
+    "answer": 10,
+    "unit": "lines",
+    "category": "Desh",
+    "funFact": "Tagore's original poem runs much longer; only the first ten lines are the anthem."
+  },
+  {
+    "question": "Number of Bangladeshi taka to one US dollar in 2015",
+    "answer": 78,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "The taka has depreciated steadily since; it crossed 100 to the dollar in 2022."
+  },
+  {
+    "question": "Price of a 1kg packet of Fortune refined sugar in a Dhaka grocery (2024)",
+    "answer": 145,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Sugar prices in Bangladesh roughly doubled between 2021 and 2024."
+  },
+  {
+    "question": "Monthly minimum wage for a Bangladesh garment worker set in December 2023",
+    "answer": 12500,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "The revised floor wage followed months of protests across the RMG sector."
+  },
+  {
+    "question": "Cost of a single-journey Dhaka Metro ticket from Uttara North to Motijheel (2024)",
+    "answer": 100,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "The minimum metro fare is 20 taka, with fares scaling by distance travelled."
+  },
+  {
+    "question": "Price of a plate of kacchi biryani at a mid-range Dhaka restaurant (2024)",
+    "answer": 350,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Old Dhaka's kacchi tradition traces back to the Mughal kitchens of the region."
+  },
+  {
+    "question": "Cost of a 1kg packet of Igloo or Polar vanilla ice cream in Dhaka (2024)",
+    "answer": 550,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Bangladesh's packaged ice-cream market has grown sharply with cold-chain expansion."
+  },
+  {
+    "question": "Price of a monthly student bus pass on a Dhaka University shuttle route (2024)",
+    "answer": 200,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Subsidised transport is a major reason students commute from across the city."
+  },
+  {
+    "question": "Cost of a haircut at an ordinary neighbourhood barber in Dhaka (2024)",
+    "answer": 120,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Salon prices in Gulshan or Banani can run five to ten times the para rate."
+  },
+  {
+    "question": "Price of one kilogram of Kalijira rice in a Dhaka retail market (2024)",
+    "answer": 130,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "Kalijira is a small aromatic rice prized for polao and payesh."
+  },
+  {
+    "question": "Cost of one Shingara at a roadside tea stall in Dhaka (2024)",
+    "answer": 10,
+    "unit": "BDT",
+    "category": "Price",
+    "funFact": "The shingara and the cha stall are the backbone of Dhaka's street snacking."
+  },
+  {
+    "question": "Number of goals Cristiano Ronaldo scored for Real Madrid in all competitions",
+    "answer": 450,
+    "unit": "goals",
+    "category": "Sports",
+    "funFact": "He reached the mark in 438 appearances across nine seasons at the club."
+  },
+  {
+    "question": "Length of an Olympic swimming pool in metres",
+    "answer": 50,
+    "unit": "metres",
+    "category": "Sports",
+    "funFact": "Short-course world records are set in 25-metre pools and tracked separately."
+  },
+  {
+    "question": "Number of holes played in a standard round of golf",
+    "answer": 18,
+    "unit": "holes",
+    "category": "Sports",
+    "funFact": "The 18-hole round was standardised at St Andrews in the 18th century."
+  },
+  {
+    "question": "Distance of a marathon in kilometres, rounded to the nearest whole number",
+    "answer": 42,
+    "unit": "km",
+    "category": "Sports",
+    "funFact": "The exact distance is 42.195 km, fixed at the 1908 London Olympics."
+  },
+  {
+    "question": "Number of countries that competed at the Tokyo 2020 Olympic Games",
+    "answer": 206,
+    "unit": "countries",
+    "category": "Sports",
+    "funFact": "The Games were held in 2021 but kept the Tokyo 2020 branding."
+  },
+  {
+    "question": "Height of a basketball hoop above the floor in centimetres",
+    "answer": 305,
+    "unit": "cm",
+    "category": "Sports",
+    "funFact": "That is exactly 10 feet, unchanged since James Naismith nailed up a peach basket."
+  },
+  {
+    "question": "Number of Grand Slam singles titles won by Serena Williams",
+    "answer": 23,
+    "unit": "titles",
+    "category": "Sports",
+    "funFact": "It is the most in the Open Era for any player, man or woman."
+  },
+  {
+    "question": "Seating capacity of the Sher-e-Bangla National Cricket Stadium in Mirpur",
+    "answer": 25000,
+    "unit": "seats",
+    "category": "Sports",
+    "funFact": "Mirpur has hosted more international cricket than any other Bangladeshi ground."
+  },
+  {
+    "question": "Number of bones in the adult human body",
+    "answer": 206,
+    "unit": "bones",
+    "category": "Weird Facts",
+    "funFact": "Babies are born with around 270; many fuse together during growth."
+  },
+  {
+    "question": "Number of keys on a standard full-size piano",
+    "answer": 88,
+    "unit": "keys",
+    "category": "Weird Facts",
+    "funFact": "52 are white and 36 are black, spanning just over seven octaves."
+  },
+  {
+    "question": "Time in minutes for sunlight to travel from the Sun to Earth",
+    "answer": 8,
+    "unit": "minutes",
+    "category": "Weird Facts",
+    "funFact": "More precisely about 8 minutes 20 seconds, at roughly 150 million km."
+  },
+  {
+    "question": "Boiling point of water at sea level in degrees Fahrenheit",
+    "answer": 212,
+    "unit": "°F",
+    "category": "Weird Facts",
+    "funFact": "Water boils at a lower temperature as altitude rises and pressure drops."
+  },
+  {
+    "question": "Number of muscles it takes to smile, by the common estimate",
+    "answer": 12,
+    "unit": "muscles",
+    "category": "Weird Facts",
+    "funFact": "Counts vary by anatomist, which is why the frown-versus-smile claim is so slippery."
+  },
+  {
+    "question": "Number of chambers in a cow's stomach",
+    "answer": 4,
+    "unit": "chambers",
+    "category": "Weird Facts",
+    "funFact": "The rumen, reticulum, omasum and abomasum let cattle digest grass."
+  },
+  {
+    "question": "Average number of hairs on a human head",
+    "answer": 100000,
+    "unit": "hairs",
+    "category": "Weird Facts",
+    "funFact": "Redheads tend to have the fewest strands but the thickest individual hairs."
+  },
+  {
+    "question": "Depth of the Mariana Trench at its deepest point, in metres",
+    "answer": 10935,
+    "unit": "metres",
+    "category": "Weird Facts",
+    "funFact": "Everest could be dropped in and its summit would still sit far below the surface."
+  },
+  {
+    "question": "Number of times a human heart beats in an average day",
+    "answer": 100000,
+    "unit": "beats",
+    "category": "Weird Facts",
+    "funFact": "That is roughly 35 million beats a year, without a single day off."
+  },
+  {
+    "question": "Percentage of the Earth's surface covered by water",
+    "answer": 71,
+    "unit": "percent",
+    "category": "Weird Facts",
+    "funFact": "About 97% of that water is saltwater held in the oceans."
+  },
+  {
+    "question": "Number of member states in the United Nations",
+    "answer": 193,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "South Sudan was the most recent to join, in 2011."
+  },
+  {
+    "question": "Height of the Burj Khalifa in metres",
+    "answer": 828,
+    "unit": "metres",
+    "category": "Global",
+    "funFact": "It has held the title of world's tallest building since opening in 2010."
+  },
+  {
+    "question": "Number of countries that share a land border with China",
+    "answer": 14,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "China and Russia are tied for the most land neighbours of any country."
+  },
+  {
+    "question": "Length of the Great Wall of China in kilometres, by the official survey",
+    "answer": 21196,
+    "unit": "km",
+    "category": "Global",
+    "funFact": "The 2012 survey counted every branch and spur built across many dynasties."
+  },
+  {
+    "question": "Number of moons orbiting Mars",
+    "answer": 2,
+    "unit": "moons",
+    "category": "Global",
+    "funFact": "Phobos and Deimos are small and lumpy, probably captured asteroids."
+  },
+  {
+    "question": "Number of keys in a standard octave on a piano, black and white combined",
+    "answer": 12,
+    "unit": "keys",
+    "category": "Global",
+    "funFact": "Seven white and five black make up the twelve semitones of Western tuning."
+  },
+  {
+    "question": "Population of Tokyo's greater metropolitan area in millions (2024)",
+    "answer": 37,
+    "unit": "million people",
+    "category": "Global",
+    "funFact": "It has been the world's largest metropolitan area for decades."
+  },
+  {
+    "question": "Number of official working languages of the United Nations",
+    "answer": 6,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "Arabic, Chinese, English, French, Russian and Spanish."
+  },
+  {
+    "question": "Distance of the Earth from the Sun in millions of kilometres",
+    "answer": 150,
+    "unit": "million km",
+    "category": "Global",
+    "funFact": "This distance defines one astronomical unit, the yardstick of the solar system."
+  },
+  {
+    "question": "Number of time zones spanned by Russia",
+    "answer": 11,
+    "unit": "time zones",
+    "category": "Global",
+    "funFact": "France edges it worldwide once overseas territories are counted."
+  }
+]

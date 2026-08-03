@@ -30,7 +30,9 @@ const TIE_PRONE_MAX = 5;
 
 // A question whose answer moves over time is only fair if it says *when*.
 // Without an anchor a 2024-sourced answer is scored against 2026 knowledge.
-const TIME_SENSITIVE = /price|cost|salary|fare|fee|worth|value|revenue|population|rank|current|as of|today|per year|per month|subscri|market cap|GDP|inflation|exchange rate|number of (users|subscribers|employees|factories|universities|hospitals|branches)/i;
+// Word boundaries matter: an unanchored "fee" matches "feet", which flagged
+// "Length of the Hardinge Bridge in feet" as a time-sensitive price question.
+const TIME_SENSITIVE = /\b(price|prices|cost|costs|salary|salaries|fare|fares|fee|fees|worth|revenue|population|rank|ranking|current|currently|today|subscribers|subscription|inflation)\b|\bas of\b|\bper (year|month)\b|\bmarket cap\b|\bGDP\b|\bexchange rate\b|\bnumber of (users|subscribers|employees|factories|universities|hospitals|branches)\b/i;
 const YEAR_ANCHOR = /\b(1[89]\d{2}|20[0-3]\d)\b/;
 
 // Units that silently rescale the answer. Mixing "lakh BDT" with "BDT" turns a

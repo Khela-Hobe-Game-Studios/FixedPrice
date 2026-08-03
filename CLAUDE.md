@@ -21,7 +21,16 @@ The backend is stateful (in-memory rooms Map). Vercel/serverless won't work — 
 
 ## UI / Design System
 
-**The client uses `@khelahobe/kui` — the studio's shared component library.** Do NOT introduce CSS modules, Tailwind, styled-components, MUI, etc. If you need a primitive that KUI doesn't have, add it upstream to KUI rather than building it inline.
+**The client uses `@khelahobe/kui` — the studio's shared component library.** Do NOT introduce CSS modules, Tailwind, styled-components, MUI, etc.
+
+> **KUI is currently frozen — we cannot publish to it.** So the old "add it upstream to
+> KUI" rule no longer applies. If you need a primitive KUI doesn't have, add it locally
+> under `client/src/components/` with plain CSS in `client/src/index.css` that reuses the
+> existing `--kui-*` tokens (see `EkCategoryBadge`, `JoinQR`). If you need to change the
+> *behaviour* of an existing KUI component, override it with a scoped rule in `index.css`
+> (see the `.ek-reveal-list--compact .kui-revcard` reflow) rather than forking the
+> library. Only if that proves impossible, vendor that single component by copying its
+> source from the local clone at `../kui/packages/lib/src/`.
 
 - KUI package: `@khelahobe/kui` (^0.3.0 at time of writing — registry: https://www.npmjs.com/package/@khelahobe/kui)
 - KUI repo: https://github.com/Khela-Hobe-Game-Studios/KUI (locally cloned at `../kui` sibling to this repo)
@@ -32,7 +41,9 @@ The backend is stateful (in-memory rooms Map). Vercel/serverless won't work — 
 
 **Page background:** `.ek-page` (in `client/src/index.css`) provides a radial-gradient backdrop with BD-flag colors. Every view's root uses `<div className="ek-page">`. `.ek-page--center` modifier vertically centers content.
 
-**Game-specific components from KUI's `fixedprice` subpath:** `CategoryBadge`, `QuestionCard`, `AnswerInput`, `BettingPanel`, `RevealCard`, `FunFact`, `MiniLeaderboard`. Imported as `from '@khelahobe/kui/fixedprice'`.
+**Game-specific components from KUI's `fixedprice` subpath:** `QuestionCard`, `AnswerInput`, `BettingPanel`, `RevealCard`, `FunFact`, `MiniLeaderboard`. Imported as `from '@khelahobe/kui/fixedprice'`.
+
+KUI's `CategoryBadge` is **not** used — it only knows `desh|cricket|taka|global|weird`, which left the sheet's `Price` (314) and `Sports` (63) categories with no badge at all. `client/src/components/EkCategoryBadge.jsx` replaces it, driven by `client/src/categories.js`, which maps every category spelling either bank uses (the Sheet's `Price`/`Sports` and questions.json's `Taka`/`Cricket`) onto one key set. **Add new categories there, not in two views.**
 
 **Base components from KUI:** `Button`, `Card` (compound), `Input`, `Badge`, `Avatar`, `RoomCode`, `PlayerCard`, `ProgressBar`, `Timer`, `Leaderboard`, `Podium`, `WinnerDisplay`, `LoadingDot`, `SettingsPanel`, `TitleBlock`, `PageBackground`, `ConfettiBurst`, `CountdownSplash`, `ToastStack`, `PulseRing`, `StudioCredit`, `KuiProvider`.
 
@@ -177,6 +188,10 @@ test-game.js        End-to-end Playwright test (run from project root)
 
 ## Critical Gotchas
 
+**Player identity is a durable client-generated `pid`, never the socket id.** `client/src/session.js` mints it into `localStorage`; the client sends it on `player:join` / `player:rejoin`. The server keys `scores`, `strikes`, `answers` and `bets` off it and tracks the transport separately as `player.socketId`. Payloads still emit it as `id`. Socket ids change on every reconnect — keying game state off them silently reset a reconnecting player's score to 0.
+
+**The client must re-announce itself on every `connect`, not just the first.** `App.jsx` uses `socket.on('connect')` reading a live session ref. It previously used `socket.once`, so socket.io's automatic reconnect (after a phone locks or switches apps) never re-emitted `player:rejoin` — the new socket wasn't in the room and the player silently stopped receiving the game.
+
 **`sanitizePlayers()` is mandatory before any Socket.io emit of player arrays.** Player objects have `_disconnectTimer` (a Node.js Timeout with circular linked list internals). Emitting raw player objects causes `RangeError: Maximum call stack size exceeded` in `hasBinary()`. Both `index.js` and `gameManager.js` have their own copy.
 
 **Background music only plays on the host device.** `primeMusic()` in `App.jsx` is called on the Start Game click (user gesture required for browser autoplay unlock). Uses Howler.js (Web Audio API) — not `new Audio()` — to avoid triggering the Windows SMTC / OS media session popup. Music stops on leaving `host-game` screen and the Howl is unloaded so a new random track plays next game.
@@ -227,6 +242,14 @@ Track is randomly selected in `primeMusic()` each game. Adding new tracks: uploa
 node test-game.js                              # default: 3 rounds, betting toggle on
 ROUNDS=5 BETTING=true  node test-game.js       # 5 rounds, exercises the round-5 betting phase
 ROUNDS=2 BETTING=false node test-game.js       # no-betting smoke (toggles off via Landing)
+```
+
+`test-reliability.js` is the socket-level regression suite for the party-scale failures —
+15 players through a full game, a mid-game disconnect/reconnect that must preserve score,
+duplicate names scoring independently, and answer validation. Needs only the backend:
+
+```bash
+node test-reliability.js
 ```
 
 Both dev servers must be running. The host's Betting Rounds toggle in Landing is selected via `button[aria-pressed]:nth(1)` since the pill switches don't carry visible ON/OFF text.

@@ -59,10 +59,39 @@ function handleGameEvent(io, room, event, payload = {}) {
   }
 }
 
+// Questions with a very small answer have no room for estimation — with 15
+// players everyone converges on the same 2 or 3 and the round is a mass tie
+// worth 2 points to half the room. They are still fun facts, so rather than
+// cutting them we cap how many can land in a single game.
+const TIE_PRONE_MAX_ANSWER = 5;
+const TIE_PRONE_SHARE = 0.2;
+
+function pickQuestions(count) {
+  const order = shuffle([...Array(questions.length).keys()]);
+  const tieBudget = Math.max(1, Math.round(count * TIE_PRONE_SHARE));
+
+  // A ceiling, not a quota: take the natural shuffled order and only start
+  // skipping tie-prone questions once the budget for them is spent.
+  const picked = [];
+  const skipped = [];
+  let tieUsed = 0;
+  for (const i of order) {
+    if (picked.length >= count) break;
+    if (Math.abs(questions[i].answer) <= TIE_PRONE_MAX_ANSWER) {
+      if (tieUsed >= tieBudget) { skipped.push(i); continue; }
+      tieUsed++;
+    }
+    picked.push(i);
+  }
+  // Small or skewed bank — fall back to the ones we passed over.
+  if (picked.length < count) picked.push(...skipped.slice(0, count - picked.length));
+  return picked;
+}
+
 function startGame(io, room) {
   if (room.state !== 'LOBBY') return;
   const count = Math.min(room.settings.questionCount, questions.length);
-  room.questionIndices = shuffle([...Array(questions.length).keys()]).slice(0, count);
+  room.questionIndices = pickQuestions(count);
   room.currentRound = 0;
   room.state = 'IN_GAME';
   startRound(io, room);
@@ -448,4 +477,5 @@ module.exports = {
   setQuestions,
   resetToLobby,
   sanitizePlayers,
+  pickQuestions, // exported for tests
 };
