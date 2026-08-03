@@ -15,7 +15,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The game is played occasionally, so there is no ambient traffic to surface a
+  # broken deploy — without this gate a bad push stays invisible until the next
+  # game night and gets discovered with everyone already in the room.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+
+      # ci, not install: honour the lockfiles, so CI tests what the lockfile says
+      # rather than whatever transitive versions happen to resolve that day.
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix server
+          npm ci --prefix client
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # questions lint, client build, the 15-player reliability suite with a
+      # mid-game reconnect, and a real browser run through the UI.
+      - name: Verify
+        run: npm run verify
+
+      - name: Dev server logs on failure
+        if: failure()
+        run: |
+          for f in .dev/*.log; do
+            [ -f "$f" ] || continue
+            echo "--- $f ---"
+            tail -50 "$f"
+          done
+
   build:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,13 +75,36 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
 
+      # Without the secret the build still succeeds and bakes in localhost:3001,
+      # so every visitor gets a site where Create Room silently does nothing.
+      # Fail loudly instead of shipping that.
+      - name: Require VITE_SERVER_URL
+        env:
+          VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
+        run: |
+          if [ -z "$VITE_SERVER_URL" ]; then
+            echo "::error::VITE_SERVER_URL secret is not set. The build would bake in http://localhost:3001 and the deployed site could not reach the backend. Set it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "VITE_SERVER_URL is set"
+
       - name: Install dependencies
-        run: npm install --prefix client
+        run: npm ci --prefix client
 
       - name: Build
         run: npm run build --prefix client
         env:
           VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
+
+      # Belt and braces: catches the secret being set to something wrong, which
+      # the emptiness check above would not.
+      - name: Fail if localhost leaked into the bundle
+        run: |
+          if grep -rq "localhost:3001" client/dist/assets; then
+            echo "::error::The built bundle still points at localhost:3001."
+            exit 1
+          fi
+          echo "bundle points at the configured backend"
 
       - uses: actions/upload-pages-artifact@v3
         with:

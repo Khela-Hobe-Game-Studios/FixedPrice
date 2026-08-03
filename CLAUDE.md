@@ -87,9 +87,11 @@ For production, `client/src/socket.js` reads `VITE_SERVER_URL` env var. Set it a
 
 ## Deployment
 
-**Frontend:** Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) builds Vite and deploys to GitHub Pages automatically. Uses Node 20 + npm. Custom domain via `client/public/CNAME` → `ekdaam.khelahobe.store`.
+**Frontend:** Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) → GitHub Pages. Node 20, `npm ci`. Custom domain via `client/public/CNAME` → `ekdaam.khelahobe.store`.
 
-**Backend:** Render auto-deploys from `main` when `server/` changes (configured in Render dashboard, not in the repo).
+The workflow is `verify → build → deploy`; a failing check blocks the deploy. The gate exists because the game is played occasionally — there's no ambient traffic to reveal a broken deploy, so without it a bad push stays invisible until the next game night. The build also refuses to ship if `VITE_SERVER_URL` is unset or if `localhost:3001` survives into the bundle, which would otherwise deploy a site where Create Room silently does nothing.
+
+**Backend:** Render auto-deploys from `main` when `server/` changes (configured in the Render dashboard, not in the repo). Free tier, so it spins down when idle — measured cold start is ~21s, which the client surfaces as a "waking up the server" toast. All state is in memory: a restart drops every live room, so avoid deploying while a game is running.
 
 ---
 
