@@ -140,6 +140,16 @@ async function testFifteenPlayersWithReconnect() {
     log('REJOIN', `${victim.name} reconnected`);
   });
 
+  // Once the reconnect has been proven and a further round has scored, end the
+  // game rather than sitting through all 10 rounds — at 15 players each round
+  // is ~15s of reveal and scoreboard, which made this suite too slow to be a
+  // routine gate.
+  let roundsAfterRejoin = 0;
+  host.on('round:scoreboard', () => {
+    if (!reconnected) return;
+    if (++roundsAfterRejoin >= 2) host.emit('host:end_game');
+  });
+
   host.emit('host:start_game');
   const { final } = await gameOver;
 

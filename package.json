@@ -2,9 +2,18 @@
   "name": "fixed-price",
   "private": true,
   "scripts": {
-    "dev:server": "npm run dev --prefix server",
-    "dev:client": "npm run dev --prefix client",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "node scripts/dev.js up",
+    "dev:stop": "node scripts/dev.js down",
+    "dev:status": "node scripts/dev.js status",
+    "dev:restart": "node scripts/dev.js restart",
+    "dev:logs": "node scripts/dev.js logs",
+    "dev:watch": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "verify": "node scripts/verify.js",
+    "test:reliability": "node test-reliability.js",
+    "test:browser": "node test-game.js",
+    "questions:lint": "node questions/lint.js",
+    "questions:clean": "node questions/clean.js",
+    "screens": "node capture-screens.js",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client"
   },
   "devDependencies": {

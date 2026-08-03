@@ -17,29 +17,33 @@ const OUT = path.join(__dirname, '.screens');
 const DESKTOP = { width: 1280, height: 720 };
 const PHONE = { width: 390, height: 844 };
 
-// [file, preview key, viewport, settle ms]
-const SHOTS = [
-  ['host-01-lobby-empty',    'host-lobby-empty',      DESKTOP, 600],
-  ['host-02-lobby',          'host-lobby',            DESKTOP, 800],
-  ['host-03-lobby-15',       'host-lobby-15',         DESKTOP, 800],
-  ['host-04-question',       'host-question',         DESKTOP, 800],
-  ['host-05-question-15',    'host-question-15',      DESKTOP, 800],
-  ['host-06-betting',        'host-betting',          DESKTOP, 800],
-  ['host-07-reveal',         'host-reveal',           DESKTOP, 4500],
-  ['host-08-reveal-15',      'host-reveal-15',        DESKTOP, 8500],
-  ['host-09-scoreboard',     'host-scoreboard',       DESKTOP, 800],
-  ['host-10-scoreboard-15',  'host-scoreboard-15',    DESKTOP, 800],
-  ['host-11-game-over',      'game-over',             DESKTOP, 1800],
-  ['host-12-game-over-15',   'game-over-15',          DESKTOP, 1800],
+// The preview list is read out of the app itself rather than duplicated here,
+// so adding a preview automatically adds a screenshot. preview.jsx is JSX, so
+// pull the keys out of the source instead of importing it.
+function previewKeys() {
+  const src = fs.readFileSync(path.join(__dirname, 'client', 'src', 'preview.jsx'), 'utf8');
+  const body = src.slice(src.indexOf('export const PREVIEWS'));
+  const out = [];
+  const re = /'([a-z0-9-]+)':\s*\{\s*\n?\s*group:\s*'(\w+)',\s*viewport:\s*'(\w+)'/g;
+  let m;
+  while ((m = re.exec(body))) out.push({ key: m[1], group: m[2], viewport: m[3] });
+  return out;
+}
 
-  ['player-01-lobby',        'player-lobby',          PHONE, 800],
-  ['player-02-question',     'player-question',       PHONE, 800],
-  ['player-03-scale-warning','player-scale-warning',  PHONE, 800],
-  ['player-04-locked',       'player-locked-guess',   PHONE, 900],
-  ['player-05-betting',      'player-betting',        PHONE, 800],
-  ['player-06-reveal',       'player-reveal',         PHONE, 900],
-  ['player-07-scoreboard',   'player-scoreboard',     PHONE, 900],
-];
+// Reveal screens stagger their cards; wait out the animation before shooting.
+function settleFor(key) {
+  if (key.includes('reveal') && key.endsWith('-15')) return 8500;
+  if (key.includes('reveal')) return 4500;
+  if (key.includes('game-over')) return 1800;
+  return 800;
+}
+
+const SHOTS = previewKeys().map(({ key, group, viewport }, i) => [
+  `${group.toLowerCase()}-${String(i + 1).padStart(2, '0')}-${key}`,
+  key,
+  viewport === 'phone' ? PHONE : DESKTOP,
+  settleFor(key),
+]);
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 

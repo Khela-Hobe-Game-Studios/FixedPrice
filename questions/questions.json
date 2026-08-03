@@ -21,7 +21,7 @@
     "funFact": "The three sites are: the Mosque City of Bagerhat, the Ruins of the Buddhist Vihara at Paharpur, and the Sundarbans."
   },
   {
-    "question": "What is the population of Dhaka in millions?",
+    "question": "What is the population of Dhaka in millions (2024)?",
     "answer": 22,
     "unit": "million people",
     "category": "Desh",
@@ -49,7 +49,7 @@
     "funFact": "Bangladesh gained Test status in 2000 and took years to record their first Test win."
   },
   {
-    "question": "What is the approximate price of 1kg of hilsa fish at Karwan Bazar in taka?",
+    "question": "What is the approximate price of 1kg of hilsa fish at Karwan Bazar in taka (2024)?",
     "answer": 1500,
     "unit": "taka",
     "category": "Taka",
@@ -98,7 +98,7 @@
     "funFact": "The Sundarbans is the largest mangrove forest in the world, shared between Bangladesh and India."
   },
   {
-    "question": "How many subscribers does the most-subscribed YouTube channel have in millions?",
+    "question": "How many subscribers does the most-subscribed YouTube channel have in millions (2024)?",
     "answer": 300,
     "unit": "million subscribers",
     "category": "Global",
@@ -126,7 +126,7 @@
     "funFact": "Mushfiqur Rahim is Bangladesh's most prolific Test centurion."
   },
   {
-    "question": "What is the approximate current price of a smartphone (midrange) in Bangladesh in taka?",
+    "question": "What is the approximate price of a midrange smartphone in Bangladesh in taka (2024)?",
     "answer": 25000,
     "unit": "taka",
     "category": "Taka",

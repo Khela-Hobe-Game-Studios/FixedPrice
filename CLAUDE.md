@@ -1,5 +1,9 @@
 # Fixed Price (এক দাম) — Agent Context
 
+> **New here? Read [AGENTS.md](AGENTS.md) first** — it covers the commands, the
+> verification gate (`npm run verify`), the preview gallery (`?preview=index`), and the
+> traps that are expensive to rediscover. This file is the architecture reference.
+
 Multiplayer party game where players estimate numbers and the closest guess wins. Host runs on a shared screen (TV/laptop), players join on their phones via a 4-letter room code.
 
 **Live site:** https://ekdaam.khelahobe.store
@@ -66,12 +70,14 @@ KUI's `CategoryBadge` is **not** used — it only knows `desh|cricket|taka|globa
 ## Local Development
 
 ```bash
-# Terminal 1 — backend
-cd server && npm run dev   # nodemon, port 3001
-
-# Terminal 2 — frontend
-cd client && npm run dev   # Vite, port 5173, proxies /socket.io to :3001
+npm run dev          # both servers, background, returns when ready
+npm run dev:status   # what's running (and whether it's actually ours)
+npm run dev:stop
+npm run verify       # lint + build + reliability + browser tests
 ```
+
+`npm run dev:watch` is the old blocking two-terminal `concurrently` setup if you want
+live logs. See [AGENTS.md](AGENTS.md) for the full workflow.
 
 `client/vite.config.js` proxies `/socket.io` to `localhost:3001` so no CORS issues locally.
 
