@@ -42,13 +42,15 @@ What it runs, cheapest first:
 |---|---|
 | `questions/lint.js` | The question bank meets the quality rules |
 | `vite build` | No import/syntax errors in any view |
-| `test-reliability.js` | 15 players, mid-game reconnect keeps score, duplicate names, input validation |
+| `test-reliability.js` | 15 players, mid-game reconnect keeps score, duplicate names, input validation, colour stability, avatars, settings, the server clock, the finale |
+| `scripts/fit-check.js` | Every screen fits the screen it is meant for, and rendered at all |
 | `test-game.js` | The real browser path through the real UI |
 
 Individually:
 
 ```bash
 npm run test:reliability   # socket-level, needs only the backend
+npm run test:fit           # every preview at its own viewport, needs the client
 npm run test:browser       # Playwright, needs both servers
 npm run questions:lint     # pure, needs nothing
 ```
@@ -64,7 +66,7 @@ the screen — see below.
 http://localhost:5173/?preview=index
 ```
 
-A gallery of all 20 screens with mock data. Each entry links to itself and states the
+A gallery of all 42 screens with mock data. Each entry links to itself and states the
 viewport it should be judged at. Defined in `client/src/preview.jsx` as the `PREVIEWS`
 map — the gallery and `capture-screens.js` both derive from it, so **adding an entry
 there automatically adds it to the gallery and the screenshot run**.
@@ -82,14 +84,12 @@ Use this whenever you touch layout. Screenshots are gitignored.
 These are the constraints that make this a party game rather than a web app. Breaking
 them produces a green test run and a broken game night.
 
-**The host screen must never scroll.** It is a TV across the room that nobody touches.
-Every host screen has to fit 1280×720. The reference cases are `host-reveal-15`,
-`host-scoreboard-15` and `game-over-15` — check those three after any host layout
-change, and assert it rather than eyeballing:
-
-```js
-document.documentElement.scrollHeight - window.innerHeight  // must be <= 0
-```
+**The host screen must never scroll — now enforced.** `npm run test:fit` loads every
+preview at its declared viewport and fails on a scrolling document, on anything
+spilling past the stage, and on a screen that rendered nothing. It runs inside
+`verify`. The board is also authored at a fixed 1280×720 and scaled to fit (see
+`board/Stage.jsx`), so an overflow hides content rather than adding a scrollbar —
+which is exactly why it needs a test rather than an eyeball.
 
 **15 players is the design target, not 5.** Layouts that look fine with the default
 5-player fixtures fall apart at 15 — that is how the reveal, the scoreboard and the
@@ -125,18 +125,34 @@ still emit it as `id`, so client code that matches on `id` keeps working.
 correct and silently kills every player who reconnects. Same for reading the session
 once at module load — a player who joins fresh has no session at mount time.
 
-**Server and client must agree on reveal length.** The server sends `revealMs` sized to
-the field; the host animates cards 450ms apart. Change either and you must change both,
-or the phase advances mid-animation and nobody sees the winner.
+**The server owns the reveal's choreography.** It sends a `schedule` of beat offsets
+and the phase length that contains them; the host plays what it is told and computes
+nothing. Change the sequence in `revealSchedule()` (server) and `revealBeats.js`
+follows. The previous arrangement — a flat `revealMs` and a client-side stagger that
+had to match it by agreement — is how the celebration could land before the winner
+resolved.
+
+**`steps(1)` is not "snap on".** It defaults to `jump-end`, whose output holds the
+FROM value for the whole duration, so an element animated that way finishes its
+animation still invisible. Use `step-start` to snap on, and `jump-none` for anything
+whose END state matters (`dim`, `slam`, `shake`) or it freezes one step short.
 
 **`sanitizePlayers()` before any emit of a player array.** Player objects carry a Node
 `Timeout` with circular internals; emitting one raw blows the stack inside socket.io's
 `hasBinary()`.
 
-**KUI is frozen — we cannot publish to it.** Add new primitives locally under
-`client/src/components/`; override existing KUI components with scoped CSS in
-`client/src/index.css` (e.g. `.ek-reveal-list--compact .kui-revcard`). Details in
-`CLAUDE.md`.
+**The UI has no component-library dependency any more.** `client/src/board/` is the
+design system — plain React, plain CSS, no deps. KUI is untouched upstream and still
+used by the studio's other games; this client stopped consuming it in v2.0 because the
+DOT MATRIX board shares no visual DNA with it. Details in `CLAUDE.md`.
+
+**Two columns fill top-to-bottom, never row-major.** Use `SplitColumns`. Rows placed
+directly into a two-column grid fill left-right and turn a roster into a checkerboard —
+the one real defect design review found, and it found it twice.
+
+**A reset must not out-specify its own components.** `board.css` wraps its reset in
+`:where()` for exactly this reason: `button { background: none }` beats `.bd-btn` on
+specificity and silently strips every button's fill.
 
 **React StrictMode is on.** Effects run twice in dev. Every `socket.on` needs a matching
 `socket.off` in cleanup.
