@@ -3,6 +3,8 @@ import PlayerLobby from './views/PlayerLobby';
 import HostGame from './views/HostGame';
 import PlayerGame from './views/PlayerGame';
 import GameOver from './views/GameOver';
+import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
+import './board/board.css';
 
 const players = [
   { id: 'p1', name: 'Karim', score: 8 },
@@ -120,6 +122,16 @@ const noop = () => {};
  * capture-screens.js shoots at the same sizes.
  */
 export const PREVIEWS = {
+  // ── Design system: the primitives on their own, before any screen uses them. ──
+  'board-primitives': {
+    group: 'Board', viewport: 'tv', note: 'Type, ramp, tiles, clock, split columns',
+    render: () => <BoardSpecimens />,
+  },
+  'board-phone': {
+    group: 'Board', viewport: 'phone', note: 'Phone primitives + tile size scale',
+    render: () => <PhoneSpecimens />,
+  },
+
   // ── Host: shared screen. Judge at 1280x720. Must never need scrolling. ──
   'host-lobby-empty': {
     group: 'Host', viewport: 'tv', note: 'Waiting for anyone to join',

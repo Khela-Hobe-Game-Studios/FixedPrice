@@ -1,0 +1,60 @@
+/* DOT MATRIX typefaces — self-hosted.
+ *
+ * Three families, one job each: DotGothic16 is every number, Barlow Condensed is
+ * every word, Hind Siliguri is Bengali only. Poppins and Inter are retired.
+ *
+ * Self-hosted rather than fonts.googleapis.com because the board renders on a TV on
+ * living-room wifi and a third-party stylesheet request is a render-blocking round
+ * trip we control nothing about.
+ *
+ * font-display: block, not swap. Every band height, column width and numeral position
+ * in this design is a measured value; a fallback face reflowing the board for 100ms is
+ * worse than 100ms of nothing. The faces are 10-22KB each and same-origin.
+ *
+ * The Bengali face is a custom subset — the interface language is English and Bengali
+ * appears in exactly four strings plus the taka sign, so 73KB of full Hind Siliguri
+ * became 1.6KB. Regenerate with:
+ *
+ *   python -m fontTools.subset \
+ *     node_modules/@fontsource/hind-siliguri/files/hind-siliguri-bengali-700-normal.woff2 \
+ *     --flavor=woff2 --output-file=src/board/fonts/hind-siliguri-bn-700-subset.woff2 \
+ *     --text="এক দাম খেলা হবে শেষ !৳" --layout-features='*' --no-hinting
+ *
+ * If you add a Bengali string anywhere, add its characters to --text and rerun, or it
+ * will silently fall back to a system face and break the lockup.
+ */
+
+@font-face {
+  font-family: 'DotGothic16';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../../node_modules/@fontsource/dotgothic16/files/dotgothic16-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('../../node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: block;
+  src: url('../../node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-800-normal.woff2') format('woff2');
+}
+
+/* Bengali + the taka sign. unicode-range keeps this out of the critical path for any
+ * screen that happens to carry no Bengali. */
+@font-face {
+  font-family: 'Hind Siliguri';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('./fonts/hind-siliguri-bn-700-subset.woff2') format('woff2');
+  unicode-range: U+0980-09FF, U+200C-200D, U+25CC;
+}

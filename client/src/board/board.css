@@ -1,0 +1,942 @@
+/* DOT MATRIX primitives.
+ *
+ * Everything here is composable furniture: the stage, the bands, the tiles, the
+ * numerals, the rules. Screen-specific layout lives in host.css / player.css.
+ *
+ * Conventions:
+ *   .bd-*        a primitive
+ *   .bd-x--mod   a variant
+ *   data-*       state the choreography drives (never a class toggle mid-animation)
+ *
+ * border-radius is 0 everywhere. There are no exceptions, including buttons and
+ * avatars — it is the load-bearing contrast against the old pill-and-rounded-card UI.
+ */
+
+@import './tokens.css';
+@import './fonts.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* The board owns its subtree rather than the document, so the radius purge can be
+ * absolute inside it without reaching anything mounted beside it.
+ *
+ * The whole reset sits inside :where() so it contributes zero specificity — a reset
+ * that out-specifies the components it exists to support is how `.bd-btn` quietly
+ * loses its fill to `button { background: none }`. */
+:where(.bd-stagewrap, .bd-phone) * {
+  border-radius: 0;
+}
+
+.bd-stagewrap,
+.bd-phone {
+  color: var(--bone);
+  font-family: var(--f-word);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+:where(.bd-stagewrap, .bd-phone) button {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(.bd-stagewrap, .bd-phone) input {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+:where(.bd-stagewrap, .bd-phone) :is(h1, h2, h3, p, ul, ol) {
+  margin: 0;
+  padding: 0;
+}
+
+:where(.bd-stagewrap, .bd-phone) :is(ul, ol) {
+  list-style: none;
+}
+
+:where(.bd-stagewrap, .bd-phone) img {
+  max-width: 100%;
+}
+
+.bd-stagewrap :focus-visible,
+.bd-phone :focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* ========================================================================== */
+/* STAGE — the host board                                                     */
+/* ========================================================================== */
+
+/* The board is authored at exactly 1280x720 in absolute px (every measurement in
+ * the design is absolute) and scaled to whatever TV or laptop it lands on. This is
+ * what makes "the host screen never scrolls" structurally true rather than a rule we
+ * hope holds — and 1920x1080 comes out an exact 1.5x. */
+
+.bd-stagewrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--board);
+}
+
+.bd-stage {
+  position: relative;
+  flex: none;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  transform: scale(var(--stage-scale, 1));
+  transform-origin: center center;
+  background-color: var(--board);
+  border: var(--bezel-w) solid var(--bezel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bd-dots {
+  background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
+  background-size: 4px 4px;
+}
+
+.bd-rivet {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: var(--rivet);
+  z-index: 3;
+}
+
+.bd-rivet--tl {
+  top: 4px;
+  left: 5px;
+}
+.bd-rivet--tr {
+  top: 4px;
+  right: 5px;
+}
+.bd-rivet--bl {
+  bottom: 4px;
+  left: 5px;
+}
+.bd-rivet--br {
+  bottom: 4px;
+  right: 5px;
+}
+
+/* ========================================================================== */
+/* PHONE — a controller, not a small TV                                       */
+/* ========================================================================== */
+
+/* The phone carries only what a thumb needs and what is personally yours; the TV
+ * carries the story. It is never scaled and never switches to day mode. */
+
+.bd-phone {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  height: 100dvh;
+  background-color: var(--board);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* The game never renders landscape on a phone. */
+.bd-rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: var(--flag-red);
+  color: #fff;
+  text-align: center;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .bd-rotate {
+    display: flex;
+  }
+}
+
+/* ========================================================================== */
+/* SCREEN SKELETON                                                            */
+/* ========================================================================== */
+
+/* The layout contract that lets one grid serve 2 players and 15 with no fork:
+ * bands are flex:none, the body is flex:1 with min-height:0, and lists stretch
+ * their rows into whatever height is left. min-height:0 on every flex/grid child
+ * that holds a list is what stops intrinsic heights from overflowing the box. */
+
+.bd-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.bd-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bd-fill {
+  flex: 1;
+  min-height: 0;
+}
+
+.bd-push {
+  margin-top: auto;
+}
+
+/* Rows share the leftover height instead of asserting their own. */
+.bd-rows {
+  display: grid;
+  grid-auto-rows: 1fr;
+  align-content: stretch;
+  min-height: 0;
+}
+
+.bd-rows--fixed {
+  align-content: start;
+}
+
+/* ========================================================================== */
+/* BANDS                                                                      */
+/* ========================================================================== */
+
+.bd-band {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  height: var(--band-h);
+  overflow: hidden;
+}
+
+.bd-band__cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  min-width: 0;
+}
+
+.bd-band__cell--fill {
+  flex: 1;
+  min-width: 0;
+}
+
+.bd-band__cell--between {
+  justify-content: space-between;
+}
+
+.bd-band__cell--center {
+  justify-content: center;
+}
+
+.bd-band__cell--panel {
+  background: var(--panel);
+}
+
+.bd-band__cell--green {
+  background: var(--flag-green);
+  color: var(--flag-bone);
+}
+
+.bd-band__cell--red {
+  background: var(--flag-red);
+  color: #fff;
+}
+
+.bd-band__cell--amber {
+  background: var(--amber);
+  color: var(--board);
+}
+
+.bd-band__cell--led {
+  background: var(--led-green);
+  color: var(--board);
+}
+
+/* Brand lockup — a 34px round mascot is the one round thing in the system, because
+ * it is a photograph of a logo rather than a UI element. */
+.bd-brand {
+  flex: none;
+  width: var(--brand-w);
+  background: var(--flag-green);
+  color: var(--flag-bone);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 16px;
+}
+
+.bd-brand__mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--flag-bone);
+}
+
+.bd-brand__word {
+  font: 800 23px/1 var(--f-word);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.bd-brand__bn {
+  font-family: var(--f-bn);
+  font-weight: 700;
+}
+
+/* ========================================================================== */
+/* MARQUEE                                                                    */
+/* ========================================================================== */
+
+.bd-marquee {
+  flex: none;
+  height: var(--band-marquee);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--flag-red);
+  color: #fff;
+}
+
+.bd-marquee--green {
+  background: var(--flag-green);
+  color: var(--flag-bone);
+}
+
+.bd-marquee--panel {
+  background: var(--panel);
+  color: var(--out-55);
+}
+
+.bd-marquee__track {
+  display: flex;
+  flex: none;
+  will-change: transform;
+  animation: bd-marquee 28s linear infinite;
+}
+
+.bd-marquee__seg {
+  font: 800 15px/1 var(--f-word);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding-right: 34px;
+  white-space: nowrap;
+}
+
+.bd-marquee__seg .bd-bn {
+  letter-spacing: 0.06em;
+}
+
+/* ========================================================================== */
+/* TYPE                                                                       */
+/* ========================================================================== */
+
+/* Numbers. Always DotGothic16, always amber unless the state says otherwise. */
+.bd-num {
+  font-family: var(--f-num);
+  font-weight: 400;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.bd-num--glow {
+  text-shadow: var(--glow-num);
+}
+
+.bd-num--bone {
+  color: var(--bone);
+}
+.bd-num--green {
+  color: var(--led-green);
+}
+.bd-num--red {
+  color: var(--led-red);
+}
+.bd-num--ink {
+  color: var(--board);
+}
+
+/* Words. Always Barlow Condensed, always bone unless inverted. */
+.bd-word {
+  font-family: var(--f-word);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.bd-bn {
+  font-family: var(--f-bn);
+  font-weight: 700;
+  text-transform: none;
+}
+
+/* Band / section label — the machine voice. */
+.bd-label {
+  font: 800 16px/1 var(--f-word);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--out-45);
+  white-space: nowrap;
+}
+
+.bd-label--tight {
+  letter-spacing: 0.2em;
+}
+
+.bd-label--bright {
+  color: var(--out-100);
+}
+
+.bd-label--amber {
+  color: var(--amber);
+}
+
+/* Machine sub-label — DotGothic16 doing words, deliberately, for system copy. */
+.bd-mono {
+  font-family: var(--f-num);
+  font-weight: 400;
+  color: var(--out-45);
+  line-height: 1;
+}
+
+.bd-mono--wrap {
+  line-height: 1.5;
+}
+
+/* Names must never truncate. Barlow Condensed at 25px fits the longest realistic
+ * first name in the two-column reveal; if one still overflows we drop that row to
+ * 22px rather than adding an ellipsis. */
+.bd-name {
+  font: 700 25px/1 var(--f-word);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--bone);
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ========================================================================== */
+/* AVATAR TILE                                                                */
+/* ========================================================================== */
+
+/* A hard square, never a radius. The bottom bar is the player's colour, which is
+ * what survives at 18px when the picture does not. */
+.bd-tile {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  background: var(--tile-color, var(--panel));
+  border-bottom: var(--tile-bar, 3px) solid var(--board);
+  color: var(--board);
+  font-family: var(--f-num);
+  font-weight: 400;
+  line-height: 1;
+  user-select: none;
+}
+
+.bd-tile__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+/* Players 9-15 repeat the 8-hue ramp, so they carry a 2px inset notch to disambiguate. */
+.bd-tile--notch::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--board);
+  pointer-events: none;
+}
+
+.bd-tile--dim {
+  opacity: 0.45;
+}
+
+/* ========================================================================== */
+/* SEGMENT BAR                                                                */
+/* ========================================================================== */
+
+.bd-seg {
+  display: grid;
+  gap: 3px;
+  height: 20px;
+}
+
+.bd-seg__cell {
+  background: rgba(232, 228, 216, 0.1);
+}
+
+.bd-seg__cell--lit {
+  background: var(--led-green);
+}
+
+/* ========================================================================== */
+/* ROOM CODE                                                                  */
+/* ========================================================================== */
+
+.bd-key {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background: var(--panel);
+  font-family: var(--f-num);
+  font-weight: 400;
+  line-height: 1;
+  text-shadow: var(--glow-amber-soft);
+}
+
+.bd-key__caret {
+  position: absolute;
+  width: 12px;
+  background: var(--amber);
+  animation: bd-blip 1s steps(1) infinite;
+}
+
+.bd-codeentry {
+  position: relative;
+}
+
+.bd-codeentry__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/* The input is the real control; the tiles are a rendering of its value. Keeping it
+ * focusable (rather than display:none) is what makes the phone keyboard, paste and
+ * the QR deep link all behave. */
+.bd-codeentry__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 1;
+  caret-color: transparent;
+  cursor: pointer;
+}
+
+/* ========================================================================== */
+/* FIELD                                                                      */
+/* ========================================================================== */
+
+.bd-field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  padding: 0 14px;
+  background: var(--panel);
+  border-bottom: 4px solid var(--out-20);
+  font: 700 32px/1 var(--f-word);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.bd-field::placeholder {
+  color: var(--out-20);
+}
+
+.bd-field:focus {
+  outline: none;
+  border-bottom-color: var(--amber);
+}
+
+.bd-field--num {
+  font-family: var(--f-num);
+  font-weight: 400;
+  color: var(--amber);
+  text-align: center;
+}
+
+.bd-field--error {
+  border-bottom-color: var(--led-red);
+}
+
+/* ========================================================================== */
+/* BUTTONS / ACTION BARS                                                      */
+/* ========================================================================== */
+
+.bd-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--led-green);
+  color: var(--board);
+  font: 800 27px/1 var(--f-word);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  height: 72px;
+  padding: 0 44px;
+  box-shadow: var(--glow-green-btn);
+  transition: none;
+}
+
+.bd-btn:active {
+  filter: brightness(0.86);
+}
+
+.bd-btn--block {
+  width: 100%;
+  padding: 0 16px;
+}
+
+.bd-btn--cta {
+  height: var(--cta-phone);
+  box-shadow: none;
+}
+
+.bd-btn--sm {
+  height: var(--cta-phone-sm);
+  font-size: 21px;
+  letter-spacing: 0.18em;
+}
+
+.bd-btn--ghost {
+  background: transparent;
+  color: var(--out-75);
+  border: 2px solid var(--out-20);
+  box-shadow: none;
+}
+
+.bd-btn--panel {
+  background: var(--panel);
+  color: var(--out-75);
+  box-shadow: none;
+}
+
+.bd-btn--red {
+  background: var(--led-red);
+  color: #fff;
+  box-shadow: none;
+}
+
+.bd-btn--amber {
+  background: var(--amber);
+  color: var(--board);
+  box-shadow: none;
+}
+
+.bd-btn[disabled],
+.bd-btn[aria-disabled='true'] {
+  background: var(--panel);
+  color: var(--out-45);
+  box-shadow: none;
+  cursor: default;
+}
+
+.bd-btn--pulse:not([disabled]) {
+  animation: bd-pulsering 2s infinite;
+}
+
+/* Host footer split into halves. */
+.bd-actionbar {
+  flex: none;
+  display: flex;
+  height: var(--band-action);
+}
+
+.bd-actionbar > * {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 800 19px/1 var(--f-word);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* ========================================================================== */
+/* RULES / REGIONS                                                            */
+/* ========================================================================== */
+
+.bd-rule-r {
+  border-right: var(--rule-region);
+}
+.bd-rule-t {
+  border-top: var(--rule-region);
+}
+.bd-rule-b {
+  border-bottom: var(--rule-region);
+}
+.bd-row-rule {
+  border-bottom: var(--rule-row);
+}
+
+.bd-panel {
+  background: var(--panel);
+}
+
+/* Boxes with visible outlines exist only for pending/empty states. */
+.bd-pending {
+  border: var(--rule-pending);
+}
+
+/* ========================================================================== */
+/* CURSOR                                                                     */
+/* ========================================================================== */
+
+/* Exactly one blinking cursor per idle screen. Nothing else moves — that restraint
+ * is what makes the reveal's motion register. */
+.bd-caret {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background: var(--amber);
+  animation: bd-blip 1s steps(1) infinite;
+  vertical-align: middle;
+}
+
+/* ========================================================================== */
+/* TOASTS                                                                     */
+/* ========================================================================== */
+
+.bd-toaststack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 14px;
+  pointer-events: none;
+}
+
+.bd-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--led-red);
+  color: #fff;
+}
+
+.bd-toast--led {
+  background: var(--led-green);
+  color: var(--board);
+}
+
+.bd-toast--panel {
+  background: var(--panel);
+  color: var(--bone);
+}
+
+.bd-toast--amber {
+  background: var(--amber);
+  color: var(--board);
+}
+
+.bd-toast__title {
+  font: 800 20px/1 var(--f-word);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bd-toast__sub {
+  margin-top: 4px;
+  font: 400 12px/1 var(--f-num);
+  opacity: 0.8;
+}
+
+/* ========================================================================== */
+/* MOTION                                                                     */
+/* ========================================================================== */
+
+@keyframes bd-slam {
+  0% {
+    transform: scale(1.6) rotate(-3deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.97) rotate(-0.6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-0.6deg);
+  }
+}
+
+@keyframes bd-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-4px, 2px);
+  }
+  40% {
+    transform: translate(4px, -2px);
+  }
+  60% {
+    transform: translate(-2px, -1px);
+  }
+  80% {
+    transform: translate(2px, 1px);
+  }
+}
+
+@keyframes bd-blip {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes bd-dim {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.32;
+  }
+}
+
+@keyframes bd-ledin {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bd-pulsering {
+  0% {
+    box-shadow: 0 0 0 0 rgba(43, 224, 138, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(43, 224, 138, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(43, 224, 138, 0);
+  }
+}
+
+@keyframes bd-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.bd-blink {
+  animation: bd-blip 1s steps(1) infinite;
+}
+
+/* The last five seconds: 2Hz, and red whether or not it already was. */
+.bd-countdown--urgent {
+  animation: bd-blip 0.5s steps(1) infinite;
+}
+
+/* Split-flap: each digit is its own span with its own delay, so the correct answer
+ * arrives digit-by-digit in a single CSS pass. */
+.bd-flap__d {
+  display: inline-block;
+  opacity: 0;
+  animation: bd-ledin 1ms steps(1) both;
+}
+
+.bd-slam {
+  animation: bd-slam var(--step-slam) steps(3) both;
+}
+
+/* Reduced motion kills shake, blink, strobe and the marquee scroll; it does not kill
+ * the reveal, which still reads as a sequence at 60% duration. */
+:root[data-motion='reduced'] .bd-blink,
+:root[data-motion='reduced'] .bd-caret,
+:root[data-motion='reduced'] .bd-key__caret,
+:root[data-motion='reduced'] .bd-countdown--urgent,
+:root[data-motion='reduced'] .bd-marquee__track,
+:root[data-motion='reduced'] .bd-btn--pulse,
+:root[data-motion='reduced'] .bd-slam {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bd-blink,
+  .bd-caret,
+  .bd-key__caret,
+  .bd-countdown--urgent,
+  .bd-marquee__track,
+  .bd-btn--pulse,
+  .bd-slam {
+    animation: none;
+  }
+}
+
+/* ========================================================================== */
+/* SCREEN-READER ONLY                                                         */
+/* ========================================================================== */
+
+.bd-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

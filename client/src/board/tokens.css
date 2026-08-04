@@ -1,0 +1,173 @@
+/* DOT MATRIX design tokens.
+ *
+ * The board is a stadium LED panel. Two rules hold the whole system together:
+ *
+ *   1. Numbers are amber, words are bone. They never swap. (In the old UI the correct
+ *      answer and the players' guesses were both gold — the two numbers the room most
+ *      needs to tell apart were painted identically.)
+ *   2. Elevation is light output, not height. There are no shadows and no borders;
+ *      a "card" is a region at a different brightness. Four steps: 100 / 55 / 32 / 12.
+ *
+ * Every value here is measured from the design prototype. Derive new values from these
+ * rather than inventing them.
+ */
+
+:root {
+  /* ---- Surfaces ------------------------------------------------------------ */
+  --board: #07090a;         /* page background on every screen, ~80% of pixels */
+  --panel: #0b1113;         /* band infills, inset boxes, unlit tiles */
+  --bezel: #1a1f22;         /* the 12px screen frame */
+  --rivet: #2c3236;         /* its four corner rivets */
+  --dot: rgba(255, 255, 255, 0.05); /* the 4px dot grid over every screen */
+
+  /* ---- Ink ----------------------------------------------------------------- */
+  --amber: #ffb423;         /* NUMBERS ONLY. Never a name, never a word. */
+  --bone: #e8e4d8;          /* WORDS ONLY. Never a number. */
+  --led-green: #2be08a;     /* good: winner, locked in, points gained, primary action */
+  --led-red: #ff3b47;       /* jeopardy: wild misses, final 5s, disconnects, knockouts */
+  --bronze: #a9702b;        /* third-place podium underline. Nothing else. */
+
+  /* Brand colours are demoted to sponsor bands — which is where a national flag
+   * belongs on a scoreboard. */
+  --flag-green: #006a4e;
+  --flag-red: #f42a41;
+  --flag-bone: #fff8ec;
+
+  /* ---- Brightness ladder ---------------------------------------------------
+   * Alpha on --bone. This replaces borders, cards, and elevation. */
+  --out-100: #e8e4d8;
+  --out-75: rgba(232, 228, 216, 0.75);
+  --out-55: rgba(232, 228, 216, 0.55);
+  --out-45: rgba(232, 228, 216, 0.45);
+  --out-40: rgba(232, 228, 216, 0.4);
+  --out-32: rgba(232, 228, 216, 0.32);
+  --out-20: rgba(232, 228, 216, 0.2);
+  --out-16: rgba(232, 228, 216, 0.16);
+  --out-12: rgba(232, 228, 216, 0.12);
+  --out-08: rgba(232, 228, 216, 0.08);
+
+  /* Region separators. There are no boxes — only rules and full-bleed bands. */
+  --rule-region: 2px solid var(--out-12);
+  --rule-row: 1px solid var(--out-08);
+  --rule-pending: 1px solid var(--out-16);
+
+  /* ---- Glow ----------------------------------------------------------------
+   * Glow replaces shadow. Never a drop shadow, never a soft shadow. */
+  --glow-num: 0 0 18px currentColor;
+  --glow-amber: 0 0 20px var(--amber), 0 0 50px rgba(255, 180, 35, 0.45);
+  --glow-amber-soft: 0 0 24px rgba(255, 180, 35, 0.55);
+  --glow-green: 0 0 44px rgba(43, 224, 138, 0.4);
+  --glow-green-btn: 0 0 40px rgba(43, 224, 138, 0.35);
+  --glow-red: 0 0 30px rgba(255, 59, 71, 0.65);
+
+  /* ---- Category bands ------------------------------------------------------
+   * Category is the cheapest source of variety across 15-20 rounds, so it owns a
+   * full-bleed band, not a 12px pill. */
+  --cat-desh: #006a4e;
+  --cat-desh-ink: #fff8ec;
+  --cat-daam: #ffb423;
+  --cat-daam-ink: #07090a;
+  --cat-cricket: #2be08a;
+  --cat-cricket-ink: #07090a;
+  --cat-sports: #f42a41;
+  --cat-sports-ink: #ffffff;
+  --cat-global: #2e86ff;
+  --cat-global-ink: #ffffff;
+  --cat-weird: #c46bff;
+  --cat-weird-ink: #07090a;
+
+  /* ---- Player colour ramp --------------------------------------------------
+   * Assigned server-side at join, held for the game, never reused in a room.
+   * At 3 metres a 20px face is mush but a 20px colour block is instant, so this is
+   * the real identity token — tile, scoreboard bar, podium block, phone header. */
+  --p0: #ffb423;
+  --p1: #2be08a;
+  --p2: #ff3b47;
+  --p3: #2e86ff;
+  --p4: #c46bff;
+  --p5: #22d3db;
+  --p6: #ff6fa8;
+  --p7: #b4e82b;
+
+  /* ---- Type ----------------------------------------------------------------
+   * Numbers are bitmap by nature so they never look "styled"; condensed is what lets
+   * 15 full names fit with no truncation. */
+  --f-num: 'DotGothic16', ui-monospace, monospace;
+  --f-word: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-bn: 'Hind Siliguri', 'Barlow Condensed', sans-serif;
+
+  /* ---- Geometry ------------------------------------------------------------
+   * Host board is authored at exactly 1280x720 and scaled to fit the TV. */
+  --stage-w: 1280px;
+  --stage-h: 720px;
+  --bezel-w: 12px;
+
+  --band-h: 46px;           /* host header */
+  --band-marquee: 36px;     /* host footer marquee */
+  --band-action: 44px;      /* host game-over action bar */
+  --band-phone: 44px;       /* phone header */
+  --band-phone-cat: 34px;   /* phone category strip */
+  --cta-phone: 80px;        /* phone primary CTA */
+  --cta-phone-sm: 52px;     /* phone secondary */
+
+  --brand-w: 300px;         /* host header brand lockup cell */
+
+  /* ---- Motion --------------------------------------------------------------
+   * Nothing eases. A stadium board is a mechanical device: pixels are on or off.
+   * Reduced motion kills shake, blip, strobe and the marquee outright (see board.css)
+   * but keeps the reveal's stagger, at 60% duration — the reveal must still read as a
+   * sequence, it just stops flashing. */
+  --stagger-scale: 1;
+  --step-fast: 0.3s;
+  --step-slam: 0.4s;
+}
+
+/* -------------------------------------------------------------------------- */
+/* DAY MODE — same geometry, sunlight instead of floodlight. An unlit LED panel
+ * rather than an emissive one. Phones are always night: a phone is held close and
+ * glanced at, and the dark board is the more legible of the two at arm's length. */
+/* -------------------------------------------------------------------------- */
+
+:root[data-lighting='day'] {
+  --board: #d8d6ce;
+  --panel: #c9c7bd;
+  --bezel: #b4b2a8;
+  --rivet: #9d9b91;
+  --dot: rgba(0, 0, 0, 0.09);
+
+  --amber: #b45309;
+  --bone: #12211c;
+  --led-green: #047857;
+  --led-red: #be123c;
+
+  --out-100: #12211c;
+  --out-75: rgba(18, 33, 28, 0.75);
+  --out-55: rgba(18, 33, 28, 0.6);
+  --out-45: rgba(18, 33, 28, 0.5);
+  --out-40: rgba(18, 33, 28, 0.45);
+  --out-32: rgba(18, 33, 28, 0.38);
+  --out-20: rgba(18, 33, 28, 0.24);
+  --out-16: rgba(18, 33, 28, 0.2);
+  --out-12: rgba(18, 33, 28, 0.16);
+  --out-08: rgba(18, 33, 28, 0.1);
+
+  /* No glow in daylight — an unlit panel does not emit. */
+  --glow-num: none;
+  --glow-amber: none;
+  --glow-amber-soft: none;
+  --glow-green: none;
+  --glow-green-btn: none;
+  --glow-red: none;
+
+  /* Bands keep full strength in both modes. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --stagger-scale: 0.6;
+  }
+}
+
+:root[data-motion='reduced'] {
+  --stagger-scale: 0.6;
+}
