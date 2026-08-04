@@ -3,18 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <!-- viewport-fit=cover is required for env(safe-area-inset-*) to resolve to
-         anything but 0 on notched iPhones — EkBrandLine relies on it. -->
+         anything but 0 on notched iPhones — the phone's pinned CTA relies on it. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/fixed_price_logo_bitmap.png" />
     <link rel="apple-touch-icon" href="/fixed_price_logo_bitmap.png" />
     <meta property="og:image" content="/fixed_price_logo_bitmap.png" />
+    <meta name="description" content="Guess the number, closest wins. A party game for 2-15 people: the board runs on your TV, everyone plays on their phone." />
+    <!-- The board is black before the CSS lands, not white. -->
+    <meta name="theme-color" content="#07090A" />
     <title>এক দাম — Fixed Price</title>
-    <!-- KUI's stylesheet pulls its own faces (Inter / Poppins / Hind Siliguri).
-         Unbounded and Nunito used to be requested here and were never referenced
-         by any rule — two render-blocking font requests for nothing. Keep the
-         preconnects so KUI's @import resolves faster. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts are self-hosted and same-origin (client/src/board/fonts.css), so there
+         is nothing to preconnect to. The previous build pulled three faces from
+         fonts.googleapis.com through an @import inside a third-party stylesheet —
+         a render-blocking round trip on the living-room wifi this is played on. -->
+    <style>
+      html, body { background: #07090A; margin: 0; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

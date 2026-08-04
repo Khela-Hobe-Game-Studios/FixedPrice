@@ -243,6 +243,14 @@ export const PREVIEWS = {
     group: 'Tv', viewport: 'tv', note: 'Winner, podium, mascot',
     render: () => <HostGameOver final={fx.final5} onPlayAgain={noop} onStandings={noop} />,
   },
+  'tv-game-over-tie': {
+    group: 'Tv', viewport: 'tv', note: 'Shared 2nd — the podium must still have three steps',
+    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 6).map((p, i) => ({ ...p, score: i === 0 ? 14 : 9 })), rounds: 15 }} onPlayAgain={noop} onStandings={noop} />,
+  },
+  'tv-game-over-finale': {
+    group: 'Tv', viewport: 'tv', note: 'After sudden death — order is the finale, not points',
+    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 5), rounds: 15, finale: { played: 3 } }} onPlayAgain={noop} onStandings={noop} />,
+  },
   'tv-game-over-15': {
     group: 'Tv', viewport: 'tv', note: 'Podium must not collapse — align-items:stretch',
     render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} onStandings={noop} />,

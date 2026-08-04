@@ -3,8 +3,16 @@ import {
 
 const LOGO = `${import.meta.env.BASE_URL}fixed_price_logo_bitmap.png`;
 
-/** Ranks with ties shared, so two players on 14 are both first and nobody is second. */
-export function placings(final = []) {
+/**
+ * Ranks with ties shared, so two players on 14 are both first and nobody is second.
+ *
+ * A finale overrides this: sudden death has already decided the order among the
+ * finalists, and two of them on the same points are not joint anything — one
+ * knocked the other out.
+ */
+export function placings(final = [], hasFinale = false) {
+  if (hasFinale) return final.map((p, i) => ({ ...p, place: i + 1 }));
+
   let rank = 0;
   let prev = null;
   return final.map((p, i) => {
@@ -16,16 +24,18 @@ export function placings(final = []) {
 
 /** The winner, the podium, and the mascot's one big appearance. */
 export default function HostGameOver({ final, onPlayAgain, onStandings }) {
-  const results = placings(final?.final ?? []);
+  const results = placings(final?.final ?? [], !!final?.finale);
   const champions = results.filter((p) => p.place === 1);
   const winner = champions[0];
   const roundsTaken = winner?.roundsTaken;
 
-  const slot = (place) => results.find((p) => p.place === place);
+  // Podium slots come from the finishing order, not from the place number: with
+  // shared places there may be no "3rd", and a column that silently vanishes
+  // leaves a dead black gap where a player should be.
   const podium = [
-    { place: 2, height: '66%', player: slot(2) },
-    { place: 1, height: '100%', player: winner },
-    { place: 3, height: '50%', player: slot(3) },
+    { slot: 2, height: '66%', player: results[1] },
+    { slot: 1, height: '100%', player: results[0] },
+    { slot: 3, height: '50%', player: results[2] },
   ];
 
   return (
@@ -75,8 +85,8 @@ export default function HostGameOver({ final, onPlayAgain, onStandings }) {
           </div>
 
           <div className="hs-podium">
-            {podium.map(({ place, height, player }) => (
-              <div key={place} className={`hs-podium__slot hs-podium__slot--${place}`} style={{ height }}>
+            {podium.map(({ slot, height, player }) => (
+              <div key={slot} className={`hs-podium__slot hs-podium__slot--${slot}`} style={{ height }}>
                 {player ? (
                   <>
                     <div className="hs-podium__who">
@@ -91,13 +101,13 @@ export default function HostGameOver({ final, onPlayAgain, onStandings }) {
                         {player.score}
                       </Num>
                     </div>
-                    <div className={`hs-podium__block hs-podium__block--${place}`}>
+                    <div className={`hs-podium__block hs-podium__block--${slot}`}>
                       <Num
-                        size={place === 1 ? 42 : 30}
-                        tone={place === 1 ? 'ink' : 'bone'}
-                        style={{ opacity: place === 1 ? 1 : 0.5 }}
+                        size={slot === 1 ? 42 : 30}
+                        tone={slot === 1 ? 'ink' : 'bone'}
+                        style={{ opacity: slot === 1 ? 1 : 0.5 }}
                       >
-                        {String(place).padStart(2, '0')}
+                        {String(player.place).padStart(2, '0')}
                       </Num>
                     </div>
                   </>
