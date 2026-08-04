@@ -11,6 +11,7 @@ import HostLanding from './views/host/HostLanding';
 import HostSettings from './views/host/HostSettings';
 import HostLobby from './views/host/HostLobby';
 import HostIntro from './views/host/HostIntro';
+import HostFinale from './views/host/HostFinale';
 import HostQuestion from './views/host/HostQuestion';
 import HostBetting from './views/host/HostBetting';
 import HostReveal from './views/host/HostReveal';
@@ -27,7 +28,7 @@ import PlayerBetting from './views/player/PlayerBetting';
 import PlayerReveal from './views/player/PlayerReveal';
 import PlayerScoreboard from './views/player/PlayerScoreboard';
 import {
-  PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver,
+  PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver, PlayerSpectating,
 } from './views/player/PlayerStatus';
 
 const soundUrls = [
@@ -41,7 +42,7 @@ export default function App() {
   const { state, dispatch, forget } = useGameSocket({ notify, dismiss });
   const {
     role, screen, room, me, phase, timing, intro, round, answerCount, betting,
-    betCount, reveal, scoreboard, final, mySubmission, myBet, connState, paused, pending,
+    betCount, reveal, scoreboard, final, finale, mySubmission, myBet, connState, paused, pending,
   } = state;
 
   const isPhone = role === 'player';
@@ -159,6 +160,8 @@ export default function App() {
           onStandings={() => setShowPause(true)}
         />
       );
+    } else if (phase === 'finale') {
+      view = <HostFinale finale={finale} />;
     } else if (phase === 'intro') {
       view = <HostIntro intro={intro} timing={timing} />;
     } else if (phase === 'betting') {
@@ -197,6 +200,11 @@ export default function App() {
 
   // ── player ─────────────────────────────────────────────────────────────────
 
+  const wasEliminated = !!room?.players?.find((p) => p.id === me?.id)?.eliminated;
+  // Only during sudden death: outside it nobody is eliminated, and a normal round
+  // must never hide the controls.
+  const amSpectating = wasEliminated && (!!round?.finale || phase === 'finale');
+
   let view = null;
 
   if (connState === 'reconnecting' && room?.code) {
@@ -232,6 +240,16 @@ export default function App() {
     view = <PlayerLobby me={me} room={room} onEditAvatar={() => go('player-avatar')} />;
   } else if (screen === 'game-over') {
     view = <PlayerGameOver me={me} final={final} onLeave={forget} />;
+  } else if (amSpectating) {
+    view = (
+      <PlayerSpectating
+        me={me}
+        finale={round?.finale ?? finale}
+        knockedOut={reveal?.knockedOut?.includes(me?.id) || wasEliminated}
+      />
+    );
+  } else if (phase === 'finale') {
+    view = <PlayerSpectating me={me} finale={{ left: finale?.total }} />;
   } else if (phase === 'intro' || phase === 'scoreboard') {
     view =
       phase === 'scoreboard' ? (

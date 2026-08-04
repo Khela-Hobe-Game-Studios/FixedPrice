@@ -16,7 +16,9 @@ const QUESTION_MARQUEE = ['TYPE YOUR PRICE ON YOUR PHONE · SHOUT IT AT EACH OTH
  * staring at the board waiting for one specific person.
  */
 export default function HostQuestion({ round, timing, answerCount, players }) {
-  const cat = category(round?.category);
+  const cat = round?.finale
+    ? { name: 'SUDDEN DEATH', band: 'SUDDEN DEATH', color: '#FF3B47', ink: '#FFFFFF' }
+    : category(round?.category);
   const left = useCountdown(timing);
   const seats = round?.players ?? players ?? [];
   const answered = new Set(answerCount?.answered ?? []);
@@ -39,7 +41,9 @@ export default function HostQuestion({ round, timing, answerCount, players }) {
             {cat.band}
           </span>
           <Num size={18} style={{ color: 'inherit', opacity: 0.75 }}>
-            ROUND {String(round?.round ?? 1).padStart(2, '0')}/{round?.total ?? '—'}
+            {round?.finale
+              ? `${round.finale.left} LEFT`
+              : `ROUND ${String(round?.round ?? 1).padStart(2, '0')}/${round?.total ?? '—'}`}
           </Num>
         </BandCell>
         <BandCell width={140} tone="panel">

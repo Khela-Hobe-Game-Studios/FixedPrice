@@ -11,8 +11,14 @@ import { useCountdown } from '../../game/clock';
  * the quiet standings and the next question. Without it every screen in the game
  * runs at the same level and the reveal has nothing to be a peak above.
  */
+const SUDDEN_DEATH = { name: 'SUDDEN DEATH', band: 'SUDDEN DEATH', color: '#FF3B47', ink: '#FFFFFF' };
+
 export default function HostIntro({ intro, timing }) {
-  const cat = intro?.isBettingRound ? BETTING_CATEGORY : category(intro?.category);
+  const cat = intro?.finale
+    ? SUDDEN_DEATH
+    : intro?.isBettingRound
+      ? BETTING_CATEGORY
+      : category(intro?.category);
   const left = useCountdown(timing);
 
   // backgroundColor, not background — the shorthand would drop the dot grid, and the
@@ -22,7 +28,9 @@ export default function HostIntro({ intro, timing }) {
       <Band height={46}>
         <BandCell fill align="between" style={{ background: 'var(--board)' }}>
           <span className="bd-label bd-label--bright" style={{ fontSize: 20 }}>
-            ROUND {String(intro?.round ?? 1).padStart(2, '0')} OF {intro?.total ?? '—'}
+            {intro?.finale
+              ? `SUDDEN DEATH · ROUND ${intro.finale.round}`
+              : `ROUND ${String(intro?.round ?? 1).padStart(2, '0')} OF ${intro?.total ?? '—'}`}
           </span>
           <span className="bd-label" style={{ fontSize: 16 }}>
             GET READY
@@ -32,9 +40,12 @@ export default function HostIntro({ intro, timing }) {
 
       <div className="bd-body" style={{ color: cat.ink }}>
         <div className="hs-intro">
-          <div className="hs-intro__label">CATEGORY</div>
+          <div className="hs-intro__label">
+            {intro?.finale ? `${intro.finale.left} LEFT` : 'CATEGORY'}
+          </div>
           <div
             className={`hs-intro__name bd-slam${cat.bengali ? ' hs-intro__name--bn' : ''}`}
+            style={intro?.finale ? { fontSize: 128 } : undefined}
             data-testid="intro-category"
           >
             {cat.name}

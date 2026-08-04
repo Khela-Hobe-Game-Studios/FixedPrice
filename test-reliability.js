@@ -320,6 +320,65 @@ async function testIdentityAndSettings() {
   await wait(300);
 }
 
+// ─── 6: the sudden-death finale ──────────────────────────────────────────────
+
+async function testFinale() {
+  log('TEST', 'sudden death converges on one winner');
+  // Short game, no clock pressure, finale forced on.
+  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 20, bettingFrequency: 'never', finale: 'on' });
+
+  const players = [];
+  for (let i = 0; i < 8; i++) {
+    const sock = await joinPlayer(code, `F${i}`, uid(`f${i}`));
+    // Systematically spread guesses so knockouts are deterministic, not luck.
+    sock.on('round:start', () => setTimeout(() => sock.emit('player:submit_answer', { answer: 100 + i * 400 }), 30));
+    players.push(sock);
+  }
+  await wait(300);
+
+  let sawFinale = null;
+  const knockouts = [];
+  host.on('round:finale_intro', (d) => { sawFinale = d; });
+  host.on('round:reveal', (d) => {
+    if (d.finale && d.knockedOut?.length) knockouts.push(...d.knockedOut);
+  });
+
+  const gameOver = once(host, 'game:over', 180000);
+  host.emit('host:start_game');
+
+  // Skip the normal rounds; the finale is what this test is about.
+  const skipper = setInterval(() => host.emit('host:skip'), 250);
+  const { final, finale } = await gameOver;
+  clearInterval(skipper);
+
+  check('the finale ran', !!sawFinale && sawFinale.finalists.length >= 2,
+        `(finalists=${sawFinale?.finalists?.length})`);
+  check('finalists qualified on points',
+        !!sawFinale && sawFinale.finalists.every(f => typeof f.score === 'number'));
+  check('sudden death knocked players out', knockouts.length >= 1,
+        `(knockouts=${knockouts.length})`);
+  check('it converged on exactly one survivor',
+        !!sawFinale && knockouts.length === sawFinale.finalists.length - 1,
+        `(${knockouts.length} out of ${sawFinale?.finalists?.length} finalists)`);
+  check('nobody was knocked out twice', new Set(knockouts).size === knockouts.length);
+  check('the survivor tops the final table',
+        !!sawFinale && !knockouts.includes(final[0].id),
+        `(winner ${final[0]?.name})`);
+  check('the finale reported its length', typeof finale?.played === 'number',
+        `(played=${finale?.played})`);
+  // Placings among finalists are the reverse of the knockout order, so somebody
+  // cannot finish above the player who knocked them out.
+  const placeOf = (id) => final.findIndex(p => p.id === id);
+  const ordered = knockouts.every((id, i) =>
+    i === 0 || placeOf(id) < placeOf(knockouts[i - 1]));
+  check('placings follow the reverse knockout order', ordered,
+        `(${knockouts.map(id => `${final[placeOf(id)]?.name}@${placeOf(id) + 1}`).join(' ')})`);
+
+  host.disconnect();
+  players.forEach(p => p.connected && p.disconnect());
+  await wait(300);
+}
+
 // ─── run ─────────────────────────────────────────────────────────────────────
 
 (async () => {
@@ -327,6 +386,7 @@ async function testIdentityAndSettings() {
     await testFifteenPlayersWithReconnect();
     await testInputValidation();
     await testIdentityAndSettings();
+    await testFinale();
   } catch (err) {
     failures++;
     log('ERROR', err.stack || err.message);

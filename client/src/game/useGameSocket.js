@@ -38,6 +38,7 @@ const initialState = {
   phase: null,          // 'intro' | 'question' | 'betting' | 'reveal' | 'scoreboard'
   timing: null,         // { phase, serverNow, startedAt, endsAt, durationMs }
   intro: null,
+  finale: null,
   round: null,
   answerCount: { count: 0, total: 0, answered: [] },
   betCount: { count: 0, total: 0 },
@@ -124,6 +125,9 @@ function reducer(state, action) {
         room: state.room ? { ...state.room, players: payload.players, settings: payload.settings ?? state.room.settings } : state.room,
         screen: state.role === 'host' ? 'host-lobby' : 'player-lobby',
       };
+
+    case 'round:finale_intro':
+      return { ...clearRound(state), phase: 'finale', timing: payload, finale: payload, screen: 'game' };
 
     case 'round:intro':
       return { ...clearRound(state), phase: 'intro', timing: payload, intro: payload, screen: 'game' };
@@ -235,7 +239,7 @@ export default function useGameSocket({ notify, dismiss }) {
 
     for (const event of [
       'room:created', 'player:joined', 'room:updated', 'room:settings', 'room:reset',
-      'round:intro', 'round:start', 'round:answer_count', 'round:bet_count', 'round:betting',
+      'round:finale_intro', 'round:intro', 'round:start', 'round:answer_count', 'round:bet_count', 'round:betting',
       'round:reveal', 'round:scoreboard', 'game:over', 'game:paused', 'game:resumed',
     ]) {
       offs.push(on(event, (payload) => dispatch({ type: event, payload })));

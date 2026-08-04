@@ -186,3 +186,30 @@ export const final5 = makeFinal(players5);
 export const final15 = makeFinal(players15);
 
 export const me = { id: 'p2', name: 'Nadia', colorIndex: 1, avatar: { kind: 'monogram' } };
+
+// ── the finale ──────────────────────────────────────────────────────────────
+
+export const finaleIntro = {
+  finalists: players15.slice(0, 5),
+  total: 5,
+  ...timing('FINALE_INTRO', 4000, 1200),
+};
+
+export const finaleRound = makeRound(players15.slice(0, 3), {
+  finale: { round: 2, left: 3 },
+  question: 'Runs scored by Bangladesh in the 2023 World Cup opener',
+  category: 'Cricket',
+  unit: 'RUNS',
+});
+
+/** A sudden-death reveal: somebody just went out. */
+export function makeFinaleReveal() {
+  const r = makeReveal(players15.slice(0, 3));
+  const out = r.ranked[r.ranked.length - 1];
+  return {
+    ...r,
+    finale: { round: 2, left: 2 },
+    knockedOut: [out.id],
+    ranked: r.ranked.map((x) => ({ ...x, knockedOut: x.id === out.id })),
+  };
+}

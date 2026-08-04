@@ -21,6 +21,7 @@ export default function HostReveal({ reveal, round }) {
 
   const winners = ranked.filter((r) => r.isWinner);
   const rest = ranked.filter((r) => !r.isWinner);
+  const knockedOut = ranked.filter((r) => r.knockedOut);
   const outcome = reveal?.outcome ?? 'single';
   const lit = beat !== 'blackout';
 
@@ -70,7 +71,21 @@ export default function HostReveal({ reveal, round }) {
             )}
           </div>
 
-          {outcome === 'nobody_close' ? (
+          {/* In sudden death the knockout is the news, not the winner — the band
+              that would celebrate someone instead names who just went out. */}
+          {reveal?.finale && knockedOut.length > 0 ? (
+            <div className="hs-winner hs-winner--none" data-testid="knocked-out">
+              <span className="bd-word" style={{ fontSize: 20, letterSpacing: '0.3em', opacity: 0.8 }}>
+                KNOCKED OUT
+              </span>
+              <div className="bd-word" style={{ fontSize: 44, marginTop: 6 }}>
+                {knockedOut.map((r) => r.name).join(' & ')}
+              </div>
+              <span className="bd-mono" style={{ fontSize: 14, color: '#fff', opacity: 0.8 }}>
+                {reveal.finale.left} LEFT
+              </span>
+            </div>
+          ) : outcome === 'nobody_close' ? (
             <div className="hs-winner hs-winner--none">
               <span className="bd-word" style={{ fontSize: 38, letterSpacing: '0.06em' }}>
                 NOBODY WAS CLOSE
@@ -147,13 +162,13 @@ export default function HostReveal({ reveal, round }) {
             renderItem={(r) => (
               <div
                 key={r.id}
-                className={`hs-rev${r.wildMiss ? ' hs-rev--wild' : ''}`}
+                className={`hs-rev${r.wildMiss || r.knockedOut ? ' hs-rev--wild' : ''}`}
                 style={{ '--row-delay': `${Math.round(delays.get(r.id) ?? 0)}ms` }}
                 data-testid="reveal-row"
               >
                 {/* Green rank is earned by being within 5% — it is the third
                     channel that says "close" without anyone reading a digit. */}
-                <Num size={15} tone={r.wildMiss ? 'red' : r.nearMiss ? 'green' : 'amber'}>
+                <Num size={15} tone={r.wildMiss || r.knockedOut ? 'red' : r.nearMiss ? 'green' : 'amber'}>
                   {String(r.rank ?? '—').padStart(2, '0')}
                 </Num>
                 <AvatarTile
@@ -161,14 +176,14 @@ export default function HostReveal({ reveal, round }) {
                   colorIndex={r.colorIndex}
                   name={r.name}
                   avatar={r.avatar}
-                  dim={r.wildMiss}
+                  dim={r.wildMiss || r.knockedOut}
                 />
                 <span className="hs-rev__name">{r.name}</span>
-                <Num size={24} tone={r.wildMiss ? 'red' : 'amber'} className="hs-rev__guess">
+                <Num size={24} tone={r.wildMiss || r.knockedOut ? 'red' : 'amber'} className="hs-rev__guess">
                   {r.submitted ? formatNum(r.guess) : '—'}
                 </Num>
-                <Num size={14} className="hs-rev__delta" tone={r.wildMiss ? 'red' : 'amber'}>
-                  {r.submitted ? formatNum(r.distance) : 'NO GUESS'}
+                <Num size={14} className="hs-rev__delta" tone={r.wildMiss || r.knockedOut ? 'red' : 'amber'}>
+                  {r.knockedOut ? 'OUT' : r.submitted ? formatNum(r.distance) : 'NO GUESS'}
                 </Num>
               </div>
             )}

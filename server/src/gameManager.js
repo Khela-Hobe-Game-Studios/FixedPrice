@@ -181,6 +181,9 @@ function startIntro(io, room) {
     total: questionIndices.length,
     category: q.category,
     isBettingRound,
+    finale: room.finale
+      ? { round: room.finale.round + 1, left: room.players.filter(p => !p.eliminated).length }
+      : null,
   };
   touchRoom(room);
 
@@ -193,6 +196,7 @@ function startIntro(io, room) {
 }
 
 function bettingRoundDue(room, roundIndex) {
+  if (room.finale) return false; // sudden death is already the drama
   const freq = room.settings.bettingFrequency;
   if (freq === 'every') return true;
   if (freq === 'every3') return (roundIndex + 1) % 3 === 0;
@@ -217,6 +221,8 @@ function startRound(io, room) {
   room._roundPoints = {};
   touchRoom(room);
 
+  if (room.finale) room.finale.round++;
+
   room._lastRoundStart = {
     round: currentRound + 1,
     total: questionIndices.length,
@@ -224,6 +230,9 @@ function startRound(io, room) {
     category: q.category,
     unit: q.unit,
     isBettingRound,
+    finale: room.finale
+      ? { round: room.finale.round, left: activePlayers(room).length }
+      : null,
     players: activePlayers(room).map(p => ({ id: p.id, name: p.name })),
   };
 
@@ -447,9 +456,14 @@ function decorateRanked(ranked, correctAnswer) {
 
 function revealAnswers(io, room, rawRanked, bets = {}) {
   const correctAnswer = room.currentQuestion.answer;
+  // In sudden death the reveal is also the execution, so who went out has to be
+  // decided before the board draws it.
+  const knockedOut = room.finale ? applyKnockout(io, room, rawRanked) : [];
+
   const ranked = decorateRanked(rawRanked, correctAnswer).map(r => ({
     ...r,
     points: room._roundPoints?.[r.id] ?? 0,
+    knockedOut: knockedOut.includes(r.id),
   }));
 
   const scored = ranked.filter(r => r.distance !== null);
@@ -475,6 +489,10 @@ function revealAnswers(io, room, rawRanked, bets = {}) {
     roundPoints: room._roundPoints ?? {},
     outcome,
     winnerIds: winners.map(w => w.id),
+    knockedOut,
+    finale: room.finale
+      ? { round: room.finale.round, left: room.players.filter(p => !p.eliminated).length }
+      : null,
     schedule,
     revealMs: schedule.total,
   };
@@ -534,8 +552,172 @@ function showScoreboard(io, room) {
  */
 function advanceRound(io, room) {
   room.currentRound++;
-  if (room.currentRound >= room.questionIndices.length) return endGame(io, room);
+
+  if (room.finale) {
+    // In sudden death the deck is topped up a round at a time, because how many
+    // rounds it takes depends on how the room plays.
+    if (finaleOver(room)) return endGame(io, room);
+    extendDeck(room, 1);
+    return startIntro(io, room);
+  }
+
+  if (room.currentRound >= room.questionIndices.length) return startFinale(io, room);
   startIntro(io, room);
+}
+
+// ─── the finale ──────────────────────────────────────────────────────────────
+
+/**
+ * Sudden death.
+ *
+ * The normal rounds decide who qualifies; the finale decides the order among them.
+ * Everyone answers, the furthest guess is knocked out, repeat until one is left.
+ * That is the whole rule, and it is the whole appeal — from the moment it starts,
+ * every guess is the one that might end you.
+ *
+ * This replaces the old three-strikes mode, which knocked people out at round 6 of
+ * a fifteen-round party game and left them watching for ten minutes.
+ */
+const FINALE_MIN_PLAYERS = 8;   // when 'auto' turns it on
+const FINALE_TOP_SMALL = 3;     // finalists under 10 players
+const FINALE_TOP_LARGE = 5;     // finalists at 10+
+const FINALE_MAX_EXTRA = 3;     // hard cap on no-kill rounds, so the game ends
+
+function finalistCount(room) {
+  return room.players.length >= 10 ? FINALE_TOP_LARGE : FINALE_TOP_SMALL;
+}
+
+function startFinale(io, room) {
+  const mode = room.settings.finale;
+  const enabled =
+    mode === 'on' ? room.players.length >= 3
+    : mode === 'auto' ? room.players.length >= FINALE_MIN_PLAYERS
+    : false;
+
+  if (!enabled) return endGame(io, room);
+
+  const standings = [...room.players].sort((a, b) => b.score - a.score);
+  const cutoff = standings[Math.min(finalistCount(room), standings.length) - 1]?.score ?? 0;
+  // Everyone level with the last qualifying score is in — nobody misses a finale on
+  // a sort order they cannot see.
+  const finalists = standings.filter(p => p.score >= cutoff);
+
+  if (finalists.length < 2) return endGame(io, room);
+
+  room.finale = {
+    round: 0,
+    // Reverse knockout order: the first player out finishes last among finalists.
+    knockedOutOrder: [],
+    noKillRounds: 0,
+  };
+  room.players.forEach(p => { p.eliminated = !finalists.some(f => f.id === p.id); });
+
+  room._lastFinaleIntro = {
+    finalists: finalists.map(p => ({
+      id: p.id, name: p.name, score: p.score, colorIndex: p.colorIndex, avatar: p.avatar,
+    })),
+    total: finalists.length,
+  };
+  io.to(room.code).emit('round:finale_intro', {
+    ...room._lastFinaleIntro,
+    ...beginPhase(room, 'FINALE_INTRO', INTRO_TIME + 1000),
+  });
+
+  extendDeck(room, 1);
+  setRoomTimer(room, 'intro', () => startIntro(io, room), INTRO_TIME + 1000);
+}
+
+/** Sudden death needs one more question than we planned for, every time it loops. */
+function extendDeck(room, n) {
+  const used = new Set(room.questionIndices);
+  const spare = pickQuestions(room.questionIndices.length + n, room.settings.categories)
+    .filter(i => !used.has(i));
+  room.questionIndices.push(...spare.slice(0, n));
+  // A tiny bank can run dry; replaying a question is better than ending mid-duel.
+  while (room.questionIndices.length <= room.currentRound) {
+    room.questionIndices.push(room.questionIndices[room.currentRound % room.questionIndices.length]);
+  }
+}
+
+function finaleOver(room) {
+  const left = room.players.filter(p => !p.eliminated);
+  return left.length <= 1 || room.finale.noKillRounds >= FINALE_MAX_EXTRA;
+}
+
+/**
+ * Who goes out this round.
+ *
+ * Non-submitters forfeit first — sitting out a sudden-death round is a choice. A tie
+ * for furthest takes everyone tied, unless that would empty the board, in which case
+ * nobody goes out and the round replays. If nobody submitted at all, nobody goes out.
+ */
+function resolveKnockout(room, ranked) {
+  const live = ranked.filter(r => !room.players.find(p => p.id === r.id)?.eliminated);
+  const missing = live.filter(r => r.distance === null);
+  const scored = live.filter(r => r.distance !== null);
+
+  if (missing.length > 0 && scored.length > 0) return missing.map(r => r.id);
+  if (scored.length <= 1) return [];
+
+  const worst = scored[scored.length - 1].distance;
+  const out = scored.filter(r => r.distance === worst);
+  return out.length === scored.length ? [] : out.map(r => r.id);
+}
+
+function applyKnockout(io, room, ranked) {
+  const out = resolveKnockout(room, ranked);
+  if (out.length === 0) {
+    room.finale.noKillRounds++;
+    return [];
+  }
+
+  out.forEach(id => {
+    const player = room.players.find(p => p.id === id);
+    if (player) player.eliminated = true;
+  });
+  room.finale.knockedOutOrder.push(...out);
+  return out;
+}
+
+/**
+ * The final table.
+ *
+ * Without a finale it is simply points. With one, points decide who qualified and
+ * where everyone else lands, and the finale decides the order among the finalists:
+ * the survivor first, then the reverse of the order they were knocked out in. A
+ * player cannot be beaten by someone they knocked out.
+ */
+function finalStandings(room) {
+  const shape = (p) => ({
+    id: p.id,
+    name: p.name,
+    score: p.score,
+    colorIndex: p.colorIndex,
+    avatar: p.avatar,
+  });
+
+  if (!room.finale) {
+    return [...room.players].sort((a, b) => b.score - a.score).map(shape);
+  }
+
+  const { knockedOutOrder } = room.finale;
+  const finalists = new Set([
+    ...knockedOutOrder,
+    ...room.players.filter(p => !p.eliminated).map(p => p.id),
+  ]);
+
+  const survivors = room.players
+    .filter(p => !p.eliminated)
+    .sort((a, b) => b.score - a.score);
+  const knockedOut = [...knockedOutOrder]
+    .reverse()
+    .map(id => room.players.find(p => p.id === id))
+    .filter(Boolean);
+  const rest = room.players
+    .filter(p => !finalists.has(p.id))
+    .sort((a, b) => b.score - a.score);
+
+  return [...survivors, ...knockedOut, ...rest].map(shape);
 }
 
 function endGame(io, room) {
@@ -544,17 +726,13 @@ function endGame(io, room) {
   clearRoomTimers(room);
   touchRoom(room);
 
-  const final = room.players
-    .map(p => ({
-      id: p.id,
-      name: p.name,
-      score: p.score,
-      colorIndex: p.colorIndex,
-      avatar: p.avatar,
-    }))
-    .sort((a, b) => b.score - a.score);
+  const final = finalStandings(room);
 
-  room._lastFinal = { final, rounds: room.questionIndices.length };
+  room._lastFinal = {
+    final,
+    rounds: room.questionIndices.length,
+    finale: room.finale ? { played: room.finale.round } : null,
+  };
   io.to(room.code).emit('game:over', room._lastFinal);
 }
 
@@ -571,7 +749,9 @@ function resetToLobby(io, room) {
   room.bets = {};
   room.scores = {};
   room.isBettingRound = false;
+  room.finale = null;
   room._roundPoints = {};
+  room._lastFinaleIntro = null;
   room._lastIntroData = room._lastRoundStart = room._lastBettingData = null;
   room._lastRevealData = room._lastScoreboardData = room._lastFinal = null;
   room._phaseStartedAt = null;
@@ -606,6 +786,7 @@ function pauseForHost(io, room) {
 }
 
 const PHASE_RESUME = {
+  FINALE_INTRO: (io, room) => (ms) => setRoomTimer(room, 'intro', () => startRound(io, room), ms),
   INTRO:      (io, room) => (ms) => setRoomTimer(room, 'intro', () => startRound(io, room), ms),
   QUESTION:   (io, room) => (ms) => setRoomTimer(room, 'question', () => endQuestion(io, room), ms),
   BETTING:    (io, room) => (ms) => setRoomTimer(room, 'betting', () => endBetting(io, room, null), ms),
@@ -628,6 +809,7 @@ function resumeAfterHost(io, room) {
 function skipPhase(io, room) {
   if (room.paused) return;
   switch (room.state) {
+    case 'FINALE_INTRO':
     case 'INTRO':      clearRoomTimer(room, 'intro'); return startRound(io, room);
     case 'QUESTION':   clearRoomTimer(room, 'question'); return endQuestion(io, room);
     case 'BETTING':    clearRoomTimer(room, 'betting'); return endBetting(io, room, null);
@@ -671,6 +853,9 @@ function syncPlayerState(socket, room, pid) {
       break;
     case 'INTRO':
       if (room._lastIntroData) socket.emit('round:intro', { ...room._lastIntroData, ...timing });
+      break;
+    case 'FINALE_INTRO':
+      if (room._lastFinaleIntro) socket.emit('round:finale_intro', { ...room._lastFinaleIntro, ...timing });
       break;
     case 'QUESTION':
       if (room._lastRoundStart) {

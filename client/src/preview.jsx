@@ -7,7 +7,7 @@ import PlayerBetting from './views/player/PlayerBetting';
 import PlayerReveal from './views/player/PlayerReveal';
 import PlayerScoreboard from './views/player/PlayerScoreboard';
 import {
-  PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver,
+  PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver, PlayerSpectating,
 } from './views/player/PlayerStatus';
 import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
 import HostLanding from './views/host/HostLanding';
@@ -16,6 +16,7 @@ import HostIntro from './views/host/HostIntro';
 import HostQuestion from './views/host/HostQuestion';
 import HostBetting from './views/host/HostBetting';
 import HostReveal from './views/host/HostReveal';
+import HostFinale from './views/host/HostFinale';
 import HostScoreboard from './views/host/HostScoreboard';
 import HostGameOver from './views/host/HostGameOver';
 import * as fx from './previewData';
@@ -214,6 +215,22 @@ export const PREVIEWS = {
     group: 'Tv', viewport: 'tv', note: '2 players — same grid, rows grow, no fork',
     render: () => <HostReveal reveal={fx.makeReveal(fx.makePlayers(2))} round={fx.round5} />,
   },
+  'tv-finale': {
+    group: 'Tv', viewport: 'tv', note: 'Sudden death — who qualified',
+    render: () => <HostFinale finale={fx.finaleIntro} />,
+  },
+  'tv-finale-intro': {
+    group: 'Tv', viewport: 'tv', note: 'A sudden-death round announcing itself',
+    render: () => <HostIntro intro={{ ...fx.intro, finale: { round: 2, left: 3 } }} timing={fx.intro} />,
+  },
+  'tv-finale-question': {
+    group: 'Tv', viewport: 'tv', note: 'Three left, red band',
+    render: () => <HostQuestion round={fx.finaleRound} timing={fx.finaleRound} answerCount={{ count: 1, total: 3, answered: ['p1'] }} />,
+  },
+  'tv-finale-reveal': {
+    group: 'Tv', viewport: 'tv', note: 'The knockout is the news, not the winner',
+    render: () => <HostReveal reveal={fx.makeFinaleReveal()} round={fx.finaleRound} />,
+  },
   'tv-scoreboard': {
     group: 'Tv', viewport: 'tv', note: '5 players between rounds',
     render: () => <HostScoreboard scoreboard={fx.scoreboard5} />,
@@ -279,6 +296,10 @@ export const PREVIEWS = {
   'ph-between': {
     group: 'Phone', viewport: 'phone', note: 'The look-up state',
     render: () => <PlayerBetween me={fx.me} scoreboard={fx.scoreboard15} intro={fx.intro} timing={fx.intro} />,
+  },
+  'ph-spectating': {
+    group: 'Phone', viewport: 'phone', note: 'Knocked out — nothing to do, and it says so',
+    render: () => <PlayerSpectating me={fx.me} finale={{ left: 2 }} knockedOut />,
   },
   'ph-reconnecting': {
     group: 'Phone', viewport: 'phone', note: 'Seat and score held for 90s',

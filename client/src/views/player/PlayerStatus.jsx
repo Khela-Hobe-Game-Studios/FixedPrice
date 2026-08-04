@@ -49,6 +49,46 @@ export function PlayerBetween({ me, scoreboard, intro, timing }) {
 }
 
 /**
+ * Knocked out, or never in the finale.
+ *
+ * There is nothing for this player to do and the honest thing is to say so and send
+ * them back to the room. A party game's spectators are still in the party — they
+ * just aren't holding a controller any more.
+ */
+export function PlayerSpectating({ me, finale, knockedOut }) {
+  return (
+    <PhoneScreen>
+      <PhoneHeader tone="red" left={knockedOut ? 'KNOCKED OUT' : 'SUDDEN DEATH'} />
+
+      <div className="ps-body ps-body--center" style={{ gap: 18 }}>
+        <AvatarTile size={112} colorIndex={me?.colorIndex} name={me?.name ?? ''} dim />
+        <h2 className="ps-head" style={{ fontSize: 38 }}>
+          {knockedOut ? (
+            <>
+              You're out.
+              <br />
+              Watch the TV
+            </>
+          ) : (
+            <>
+              Sudden death
+              <br />
+              on the TV
+            </>
+          )}
+        </h2>
+        <span className="bd-mono bd-mono--wrap" style={{ fontSize: 14 }}>
+          {finale?.left ? `${finale.left} STILL IN.` : ''} FURTHEST GUESS GOES OUT EACH ROUND UNTIL
+          ONE IS LEFT.
+        </span>
+      </div>
+
+      <RotateGuard />
+    </PhoneScreen>
+  );
+}
+
+/**
  * Reconnecting.
  *
  * The seat and the score are held for 90 seconds and the game carries on without
