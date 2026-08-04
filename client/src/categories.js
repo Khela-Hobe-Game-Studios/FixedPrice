@@ -58,9 +58,3 @@ export function category(raw) {
 }
 
 export const CATEGORY_KEYS = Object.keys(CATEGORIES);
-
-// Shim for the pre-v2 views, which are still mounted while the phone screens are
-// rebuilt. Delete with them.
-export function categoryColor(key) {
-  return category(key).color;
-}

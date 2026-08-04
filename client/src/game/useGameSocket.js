@@ -40,6 +40,7 @@ const initialState = {
   intro: null,
   round: null,
   answerCount: { count: 0, total: 0, answered: [] },
+  betCount: { count: 0, total: 0 },
   betting: null,
   reveal: null,
   scoreboard: null,
@@ -63,6 +64,7 @@ function clearRound(state) {
     mySubmission: null,
     myBet: null,
     answerCount: { count: 0, total: 0, answered: [] },
+    betCount: { count: 0, total: 0 },
   };
 }
 
@@ -140,6 +142,9 @@ function reducer(state, action) {
 
     case 'round:answer_count':
       return { ...state, answerCount: payload };
+
+    case 'round:bet_count':
+      return { ...state, betCount: payload };
 
     case 'round:betting':
       return {
@@ -230,7 +235,7 @@ export default function useGameSocket({ notify, dismiss }) {
 
     for (const event of [
       'room:created', 'player:joined', 'room:updated', 'room:settings', 'room:reset',
-      'round:intro', 'round:start', 'round:answer_count', 'round:betting',
+      'round:intro', 'round:start', 'round:answer_count', 'round:bet_count', 'round:betting',
       'round:reveal', 'round:scoreboard', 'game:over', 'game:paused', 'game:resumed',
     ]) {
       offs.push(on(event, (payload) => dispatch({ type: event, payload })));

@@ -1,14 +1,19 @@
 /**
- * test-game.js
- * Drives a full game with 3 isolated browser contexts:
- *   - Host: creates room, starts game, watches each round phase
- *   - Alice / Bob: join, submit answers, place bets each round
+ * test-game.js — the real browser path through the real UI.
  *
- * Selectors use stable text/role locators that survive CSS/component refactors.
+ * Three isolated contexts: the board on a TV viewport, two players on phones.
+ * The host opens a room from the settings screen, the players join through the QR
+ * deep link, pick a face, and play every phase.
+ *
+ * Selectors are `data-testid` hooks, not text. The board is all-uppercase with
+ * heavy letter-spacing and its copy is deliberately mutable — a test that asserts
+ * on wording fails every time the design changes its mind, and the old one also
+ * picked a settings toggle by index among `button[aria-pressed]`, which passes
+ * while silently toggling the wrong thing.
  *
  * Run:
- *   ROUNDS=3 BETTING=true  node test-game.js   (default — 3 rounds, betting on, betting phase at round 5/10/15)
- *   ROUNDS=2 BETTING=false node test-game.js   (no-betting smoke test)
+ *   node test-game.js                          3 rounds, betting on
+ *   ROUNDS=2 BETTING=false node test-game.js   the smoke test `verify` runs
  */
 
 const { chromium } = require('playwright');
@@ -16,18 +21,18 @@ const { chromium } = require('playwright');
 const URL = 'http://localhost:5173';
 const ROUNDS_TO_PLAY = Number(process.env.ROUNDS ?? 3);
 const BETTING = (process.env.BETTING ?? 'true').toLowerCase() !== 'false';
+const PHASE_TIMEOUT = 60000;
 
 function log(role, msg) {
   console.log(`[${role.padEnd(5)}] ${msg}`);
 }
 
-// Race two locator visibilities — returns 'a' or 'b' depending which appears first.
-async function whichAppears(page, locA, locB, timeoutMs = 60000) {
-  const result = await Promise.race([
+/** Race two locators — returns 'a' or 'b' depending which appears first. */
+async function whichAppears(locA, locB, timeoutMs = PHASE_TIMEOUT) {
+  return Promise.race([
     locA.first().waitFor({ state: 'visible', timeout: timeoutMs }).then(() => 'a'),
     locB.first().waitFor({ state: 'visible', timeout: timeoutMs }).then(() => 'b'),
   ]);
-  return result;
 }
 
 // ─── HOST ────────────────────────────────────────────────────────────────────
@@ -35,180 +40,150 @@ async function whichAppears(page, locA, locB, timeoutMs = 60000) {
 async function runHost(context, resolveCode) {
   const page = await context.newPage();
   await page.goto(URL);
-  log('HOST', 'Navigated to app');
+  log('HOST', 'board loaded');
 
-  await page.getByRole('button', { name: 'Host a Game' }).click();
+  await page.getByTestId('host-start').click();
 
-  // Toggle betting rounds OFF if BETTING=false (default is ON).
-  // The pill-switch toggles are <button aria-pressed>, ordered:
-  // 0=Elimination, 1=Betting Rounds, 2=Background Music
-  if (!BETTING) {
-    const bettingToggle = page.locator('button[aria-pressed]').nth(1);
-    await bettingToggle.waitFor({ timeout: 10000 });
-    const state = await bettingToggle.getAttribute('aria-pressed');
-    if (state === 'true') {
-      await bettingToggle.click();
-      log('HOST', 'Betting rounds toggled OFF');
-    }
-  }
+  // Betting cadence is a real setting now, so the test states which game it wants
+  // rather than toggling whatever control happens to sit second on the screen.
+  await page.getByTestId(BETTING ? 'betting-every' : 'betting-never').click();
+  await page.getByTestId('rounds-10').click();
+  await page.getByTestId('save-settings').click();
+  log('HOST', `settings saved (betting=${BETTING})`);
 
-  await page.getByRole('button', { name: 'Create Room' }).click();
-
-  // RoomCode renders as <span class="kui-roomcode__code"> with the 4-letter code
-  const codeEl = page.locator('.kui-roomcode__code').first();
-  await codeEl.waitFor({ timeout: 10000 });
-  const code = (await codeEl.textContent()).trim();
-  log('HOST', `Room created: ${code}`);
+  const code = (await page.getByTestId('room-code').textContent()).trim();
+  if (!/^[A-Z0-9]{4}$/.test(code)) throw new Error(`bad room code: "${code}"`);
+  log('HOST', `room ${code}`);
   resolveCode(code);
 
-  // Wait until Start Game button is enabled (≥2 players joined)
-  const startBtn = page.getByRole('button', { name: /Start Game/i });
+  const start = page.getByTestId('start-game');
+  await start.waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
   await page.waitForFunction(
-    () => {
-      const all = Array.from(document.querySelectorAll('button'));
-      const start = all.find(b => /Start Game/.test(b.textContent || ''));
-      return start && !start.disabled;
-    },
-    { timeout: 30000 }
+    () => !document.querySelector('[data-testid="start-game"]')?.disabled,
+    null,
+    { timeout: PHASE_TIMEOUT }
   );
-  log('HOST', 'Players joined — starting game');
-  await startBtn.click();
+  await start.click();
+  log('HOST', 'game started');
 
   for (let round = 1; round <= ROUNDS_TO_PLAY; round++) {
-    log('HOST', `--- Round ${round} ---`);
+    log('HOST', `--- round ${round} ---`);
 
-    // Question phase: QuestionCard is up
-    await page.locator('.kui-qcard').first().waitFor({ timeout: 15000 });
-    log('HOST', 'Question phase');
+    await page.getByTestId('intro-category').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+    log('HOST', 'round intro');
 
-    // Wait for either betting ("Who do you trust?") or reveal ("Correct Answer")
-    const phase = await whichAppears(
-      page,
-      page.getByText('Who do you trust?', { exact: false }),
-      page.getByText('Correct Answer', { exact: false }),
-      60000,
+    await page.getByTestId('question').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+    log('HOST', 'question');
+
+    const next = await whichAppears(
+      page.getByTestId('betting-board'),
+      page.getByTestId('correct-answer')
     );
-
-    if (phase === 'a') {
-      log('HOST', 'Betting phase');
-      await page.getByText('Correct Answer', { exact: false }).first().waitFor({ timeout: 40000 });
+    if (next === 'a') {
+      if (!BETTING) throw new Error('a betting round ran with betting set to never');
+      log('HOST', 'betting');
+      await page.getByTestId('correct-answer').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
     }
+    log('HOST', 'reveal');
 
-    log('HOST', 'Reveal phase');
-
-    // Scoreboard: <h2>Scoreboard</h2>
-    await page.getByRole('heading', { name: 'Scoreboard' }).waitFor({ timeout: 25000 });
-    log('HOST', 'Scoreboard phase');
-
-    if (round < ROUNDS_TO_PLAY) {
-      await page.locator('.kui-qcard').first().waitFor({ timeout: 25000 });
-    }
+    await page.getByTestId('score-row').first().waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+    log('HOST', 'scoreboard');
   }
 
-  log('HOST', 'Done');
+  log('HOST', 'done');
+  return page;
 }
 
 // ─── PLAYER ──────────────────────────────────────────────────────────────────
 
-async function runPlayer(context, name, codePromise) {
+async function runPlayer(context, name, code) {
   const page = await context.newPage();
-  await page.goto(URL);
-  log(name, 'Navigated to app');
+  // The QR deep link is the path fourteen of fifteen guests actually take.
+  await page.goto(`${URL}/?join=${code}`);
 
-  await page.getByRole('button', { name: 'Join a Game' }).click();
+  await page.getByTestId('player-name-input').fill(name);
+  await page.getByTestId('join-game').click();
 
-  const code = await codePromise;
-  // KUI Input renders <input id="room-code"> with a separate <label for="room-code">
-  await page.locator('#room-code').fill(code);
-  await page.locator('#player-name').fill(name);
-  await page.getByRole('button', { name: 'Join' }).click();
-  log(name, `Joined room ${code}`);
-
-  // After join: either still in lobby, or game already in question phase
-  const initial = await whichAppears(
-    page,
-    page.getByText(/Waiting for the host/i),
-    page.locator('.kui-answer__input'),
-    15000,
-  );
-  if (initial === 'a') {
-    log(name, 'In lobby — waiting for host to start');
-    await page.locator('.kui-answer__input').first().waitFor({ timeout: 60000 });
-  }
+  await page.getByTestId('use-avatar').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+  await page.getByTestId('use-avatar').click();
+  log(name, `joined ${code}`);
 
   for (let round = 1; round <= ROUNDS_TO_PLAY; round++) {
-    log(name, `--- Round ${round} ---`);
+    const lock = page.getByTestId('lock-in');
+    await lock.waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
 
-    // Question phase: AnswerInput visible
-    await page.locator('.kui-answer__input').first().waitFor({ timeout: 15000 });
+    const guess = String(100 + Math.floor(Math.random() * 900));
+    for (const digit of guess) await page.getByTestId(`pad-${digit}`).click();
+    await lock.click();
+    log(name, `r${round} guessed ${guess}`);
 
-    const question = await page.locator('.kui-qcard__question').first().textContent().catch(() => '?');
-    log(name, `Q: ${(question || '').trim().slice(0, 80)}`);
+    // The locked-in screen is a race by design — the last player to lock in ends the
+    // question phase immediately, so they may never see it. Check without waiting.
+    if (await page.getByTestId('locked-in').isVisible().catch(() => false)) {
+      log(name, `r${round} locked in`);
+    }
 
-    const guess = String(Math.floor(Math.random() * 9000) + 100);
-    await page.locator('.kui-answer__input').fill(guess);
-    await page.getByRole('button', { name: 'Lock In' }).click();
-    log(name, `Guess: ${guess}`);
-
-    // Wait for betting prompt OR reveal answer
-    const phase = await whichAppears(
-      page,
-      page.getByText('Who do you trust?', { exact: false }),
-      page.getByText('Correct Answer', { exact: false }),
-      60000,
+    // Whatever comes next comes next: a betting round, or straight to the reveal.
+    // Waiting on the reveal alone would sit through the entire betting phase and
+    // then report that betting never happened.
+    const next = await whichAppears(
+      page.getByTestId('bet-option'),
+      page.getByTestId('actual-price')
     );
-
-    if (phase === 'a') {
-      log(name, 'Betting phase');
-      const rows = await page.locator('.kui-betpanel__row').all();
-      if (rows.length > 0) {
-        await rows[0].click();
-        await page.getByRole('button', { name: 'Place Bet' }).click();
-        log(name, 'Bet placed');
-      }
-      await page.getByText('Correct Answer', { exact: false }).first().waitFor({ timeout: 40000 });
+    if (next === 'a') {
+      await page.getByTestId('bet-option').first().click();
+      await page.getByTestId('place-bet').click();
+      log(name, `r${round} bet placed`);
+      await page.getByTestId('actual-price').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
     }
+    log(name, `r${round} reveal`);
 
-    log(name, 'Reveal phase');
-
-    // Scoreboard: SCOREBOARD heading
-    await page.locator('h2', { hasText: /SCOREBOARD/i }).waitFor({ timeout: 25000 });
-    log(name, 'Scoreboard phase');
-
-    if (round < ROUNDS_TO_PLAY) {
-      await page.locator('.kui-answer__input').first().waitFor({ timeout: 25000 });
-    }
+    await page.getByTestId('my-standing').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+    log(name, `r${round} standings`);
   }
 
-  log(name, 'Done');
+  log(name, 'done');
+  return page;
 }
 
-// ─── MAIN ────────────────────────────────────────────────────────────────────
+// ─── RUN ─────────────────────────────────────────────────────────────────────
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, slowMo: 50 });
+  const browser = await chromium.launch({ headless: true, slowMo: 30 });
+  const failures = [];
 
-  const hostCtx  = await browser.newContext();
-  const aliceCtx = await browser.newContext();
-  const bobCtx   = await browser.newContext();
+  const tv = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const phones = await Promise.all([
+    browser.newContext({ viewport: { width: 390, height: 844 } }),
+    browser.newContext({ viewport: { width: 375, height: 667 } }), // the short phone
+  ]);
+
+  // Any uncaught error in any context is a failure, even if the flow completes.
+  for (const [label, ctx] of [['HOST', tv], ['Alice', phones[0]], ['Bob', phones[1]]]) {
+    ctx.on('page', (p) => p.on('pageerror', (e) => failures.push(`${label}: ${e.message}`)));
+  }
 
   let resolveCode;
-  const codePromise = new Promise(res => { resolveCode = res; });
-
-  const hostPromise = runHost(hostCtx, resolveCode);
-  await new Promise(r => setTimeout(r, 1000));
+  const codePromise = new Promise((r) => { resolveCode = r; });
 
   try {
+    const hostRun = runHost(tv, resolveCode);
+    const code = await codePromise;
     await Promise.all([
-      hostPromise,
-      runPlayer(aliceCtx, 'Alice', codePromise),
-      runPlayer(bobCtx, 'Bob', codePromise),
+      hostRun,
+      runPlayer(phones[0], 'Alice', code),
+      runPlayer(phones[1], 'Bob', code),
     ]);
     log('DONE', `${ROUNDS_TO_PLAY} rounds complete (betting=${BETTING})`);
   } catch (err) {
-    log('FAIL', err.message);
-    process.exitCode = 1;
-  } finally {
-    await browser.close();
+    failures.push(err.message);
   }
+
+  if (failures.length) {
+    log('FAIL', `${failures.length} problem(s):`);
+    failures.forEach((f) => console.log('   ' + f));
+    process.exitCode = 1;
+  }
+
+  await browser.close();
 })();

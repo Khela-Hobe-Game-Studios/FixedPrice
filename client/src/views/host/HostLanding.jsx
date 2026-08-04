@@ -11,7 +11,7 @@ export const LOBBY_MARQUEE = ['খেলা হবে! · PLAYERS JOIN ON THEIR 
  * It has one job and one button. Everything else on it is the game introducing
  * itself to a room that has not played before.
  */
-export default function HostLanding({ onStart, pending }) {
+export default function HostLanding({ onStart, onJoinInstead, pending }) {
   return (
     <Stage>
       <Band height={44}>
@@ -45,6 +45,20 @@ export default function HostLanding({ onStart, pending }) {
             <span className="bd-caret" />
             2-15 PLAYERS · 15 MIN
           </div>
+
+          {/* This screen is the board. Somebody opening it on a laptop to play
+              along needs a way out of hosting. */}
+          {onJoinInstead && (
+            <button
+              type="button"
+              className="bd-label"
+              style={{ fontSize: 13, marginTop: 6 }}
+              onClick={onJoinInstead}
+              data-testid="join-instead"
+            >
+              JOINING A GAME INSTEAD?
+            </button>
+          )}
         </div>
       </div>
 

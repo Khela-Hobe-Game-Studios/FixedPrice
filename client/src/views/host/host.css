@@ -691,6 +691,90 @@
 .hs-podium__block--2 { border-bottom: 6px solid var(--bone); }
 .hs-podium__block--3 { border-bottom: 6px solid var(--bronze); }
 
+/* ── Settings ──────────────────────────────────────────────────────────────── */
+
+.hs-set {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+  padding: 22px 26px 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hs-set__col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding-right: 20px;
+}
+
+.bd-rule-l {
+  border-left: var(--rule-region);
+  padding-left: 26px;
+}
+
+.hs-set__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hs-set__row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hs-set__btn {
+  height: 46px;
+  min-width: 60px;
+  padding: 0 14px;
+  background: var(--panel);
+  color: var(--out-45);
+  font: 800 17px/1 var(--f-word);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hs-set__btn[aria-pressed='true'] {
+  background: var(--amber);
+  color: var(--board);
+}
+
+.hs-set__btn--green[aria-pressed='true'] {
+  background: var(--led-green);
+}
+
+.hs-set__btn--red[aria-pressed='true'] {
+  background: var(--led-red);
+  color: #fff;
+}
+
+.hs-set__cats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.hs-set__cat {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 800 17px/1 var(--f-word);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hs-set__note {
+  font-size: 12px;
+  margin-top: auto;
+}
+
 /* ── Pause overlay ─────────────────────────────────────────────────────────── */
 
 .hs-overlay {

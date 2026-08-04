@@ -1,5 +1,14 @@
-import PlayerLobby from './views/PlayerLobby';
-import PlayerGame from './views/PlayerGame';
+import PlayerJoin from './views/player/PlayerJoin';
+import PlayerAvatar from './views/player/PlayerAvatar';
+import PlayerLobby from './views/player/PlayerLobby';
+import PlayerQuestion from './views/player/PlayerQuestion';
+import PlayerLocked from './views/player/PlayerLocked';
+import PlayerBetting from './views/player/PlayerBetting';
+import PlayerReveal from './views/player/PlayerReveal';
+import PlayerScoreboard from './views/player/PlayerScoreboard';
+import {
+  PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver,
+} from './views/player/PlayerStatus';
 import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
 import HostLanding from './views/host/HostLanding';
 import HostLobby from './views/host/HostLobby';
@@ -12,6 +21,7 @@ import HostGameOver from './views/host/HostGameOver';
 import * as fx from './previewData';
 import './board/board.css';
 import './views/host/host.css';
+import './views/player/player.css';
 
 const players = [
   { id: 'p1', name: 'Karim', score: 8 },
@@ -221,42 +231,70 @@ export const PREVIEWS = {
     render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} onStandings={noop} />,
   },
 
-  // ── Player: phone. Judge at 390x844, one-handed, glanceable. ──
-  'player-lobby': {
-    group: 'Player', viewport: 'phone', note: 'Waiting for host',
-    render: () => <PlayerLobby room={room} me={me} setRoom={noop} setMe={noop} setScreen={noop} />,
+  // ── Phone: a controller, not a small TV. Judged at 390x844 and 375x667. ──
+  'ph-join': {
+    group: 'Phone', viewport: 'phone', note: 'Code + name, QR deep-link fills the code',
+    render: () => <PlayerJoin code="JHOL" setCode={noop} name="Nadia" setName={noop} onJoin={noop} />,
   },
-  'player-question': {
-    group: 'Player', viewport: 'phone', note: 'Number input + countdown',
-    render: () => <PlayerGame me={me} initialRound={roundData} initialPhase="question" setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-join-empty': {
+    group: 'Phone', viewport: 'phone', note: 'Cold start — caret on the first tile',
+    render: () => <PlayerJoin code="" setCode={noop} name="" setName={noop} onJoin={noop} />,
   },
-  'player-scale-warning': {
-    group: 'Player', viewport: 'phone', note: 'lakh/thousand/million magnitude guard',
-    render: () => <PlayerGame me={me} initialRound={scaleRound} initialPhase="question" setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-avatar': {
+    group: 'Phone', viewport: 'phone', note: 'Letter is the default; sprites are locked until drawn',
+    render: () => <PlayerAvatar me={fx.me} onSet={noop} onDone={noop} />,
   },
-  'player-locked': {
-    group: 'Player', viewport: 'phone', note: 'Submitted, guess not echoed',
-    render: () => <PlayerGame me={me} initialRound={roundData} initialPhase="locked" setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-lobby': {
+    group: 'Phone', viewport: 'phone', note: 'Header is the player own colour',
+    render: () => <PlayerLobby me={fx.me} room={fx.room15} onEditAvatar={noop} />,
   },
-  'player-locked-guess': {
-    group: 'Player', viewport: 'phone', note: 'Submitted, guess echoed back (reconnect path)',
-    render: () => <PlayerGame me={me} initialRound={{ ...roundData, alreadySubmitted: true, mySubmission: 148 }} initialPhase="locked" setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-question': {
+    group: 'Phone', viewport: 'phone', note: 'Number pad — no invalid key exists',
+    render: () => <PlayerQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} onSubmit={noop} />,
   },
-  'player-betting': {
-    group: 'Player', viewport: 'phone', note: 'Pick who you trust',
-    render: () => <PlayerGame me={me} initialRound={{ ...roundData, isBettingRound: true }} initialPhase="betting" initialBetting={bettingData} setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-question-short': {
+    group: 'Phone', viewport: 'short', note: 'iPhone SE — the CTA must never move',
+    render: () => <PlayerQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} onSubmit={noop} />,
   },
-  'player-reveal': {
-    group: 'Player', viewport: 'phone', note: 'Your result vs the answer',
-    render: () => <PlayerGame me={me} initialRound={roundData} initialPhase="reveal" initialReveal={revealData} setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-locked': {
+    group: 'Phone', viewport: 'phone', note: 'Get their eyes off the phone',
+    render: () => <PlayerLocked round={fx.round15} guess={760} answerCount={fx.answerCount15} onChange={noop} />,
   },
-  'player-scoreboard': {
-    group: 'Player', viewport: 'phone', note: 'Self pinned if outside top 5',
-    render: () => <PlayerGame me={me} initialRound={roundData} initialPhase="scoreboard" initialScoreboard={scoreboardData} setRoom={noop} setMe={noop} setScreen={noop} room={room} />,
+  'ph-betting': {
+    group: 'Phone', viewport: 'phone', note: 'One of six, with the numbers to argue about',
+    render: () => <PlayerBetting betting={fx.betting} timing={fx.betting} me={fx.me} myBet="p3" onBet={noop} onPlace={noop} />,
+  },
+  'ph-reveal': {
+    group: 'Phone', viewport: 'phone', note: 'Only your outcome — the board is on the TV',
+    render: () => <PlayerReveal reveal={fx.reveal15} round={fx.round15} me={fx.me} />,
+  },
+  'ph-reveal-miss': {
+    group: 'Phone', viewport: 'phone', note: 'A wild miss, and who took it',
+    render: () => <PlayerReveal reveal={fx.reveal15} round={fx.round15} me={{ id: 'p6', name: 'Popy', colorIndex: 5 }} />,
+  },
+  'ph-scoreboard': {
+    group: 'Phone', viewport: 'phone', note: 'Your block at full output, the field under it',
+    render: () => <PlayerScoreboard scoreboard={fx.scoreboard15} me={fx.me} timing={fx.scoreboard15} />,
+  },
+  'ph-between': {
+    group: 'Phone', viewport: 'phone', note: 'The look-up state',
+    render: () => <PlayerBetween me={fx.me} scoreboard={fx.scoreboard15} intro={fx.intro} timing={fx.intro} />,
+  },
+  'ph-reconnecting': {
+    group: 'Phone', viewport: 'phone', note: 'Seat and score held for 90s',
+    render: () => <PlayerReconnecting me={fx.me} score={13} seatHoldUntil={Date.now() + 52000} onLeave={noop} />,
+  },
+  'ph-no-room': {
+    group: 'Phone', viewport: 'phone', note: 'Wrong code, or the host ended it',
+    render: () => <PlayerRoomError code="XKCD" onRetry={noop} onScan={noop} />,
+  },
+  'ph-game-over': {
+    group: 'Phone', viewport: 'phone', note: 'How it ended, for you',
+    render: () => <PlayerGameOver me={fx.me} final={fx.final15} onPlayAgain={noop} onLeave={noop} />,
   },
 };
 
-const VIEWPORT_SIZES = { tv: '1280x720', phone: '390x844' };
+const VIEWPORT_SIZES = { tv: '1280x720', phone: '390x844', short: '375x667' };
 
 function PreviewIndex() {
   const groups = [...new Set(Object.values(PREVIEWS).map(p => p.group))];

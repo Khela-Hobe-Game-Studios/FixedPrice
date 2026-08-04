@@ -16,7 +16,9 @@ export default function HostBetting({ betting, round, timing, betCount }) {
   const left = useCountdown(timing);
   const options = betting?.options ?? [];
   const placed = betCount?.count ?? 0;
-  const total = betCount?.total ?? options.length;
+  // Falls back to the field size until the first bet lands, so the band never
+  // reads "0 OF 0" while six people are choosing.
+  const total = betCount?.total || options.length;
 
   return (
     <Stage>
@@ -35,7 +37,7 @@ export default function HostBetting({ betting, round, timing, betCount }) {
         </BandCell>
       </Band>
 
-      <div className="hs-betting">
+      <div className="hs-betting" data-testid="betting-board">
         <div className="hs-betting__head">
           <div>
             <h2 className="hs-betting__title">Who is closest?</h2>

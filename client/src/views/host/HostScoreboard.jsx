@@ -40,6 +40,7 @@ export default function HostScoreboard({ scoreboard }) {
           className="hs-board"
           items={rows}
           gap="0 26px"
+          rowMax={72}
           columnClassName=""
           renderItem={(p, i, col) => (
             <div

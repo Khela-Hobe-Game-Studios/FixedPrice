@@ -52,6 +52,7 @@ export function FlapNum({
   run = true,
   className = '',
   style,
+  ...rest
 }) {
   const text = typeof value === 'string' ? value : formatNum(value);
   const chars = [...text];
@@ -63,6 +64,7 @@ export function FlapNum({
       } bd-flap ${className}`}
       style={{ fontSize: size, ...style }}
       aria-label={text}
+      {...rest}
     >
       {chars.map((c, i) => (
         <span
