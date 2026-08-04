@@ -20,9 +20,12 @@ export default function SplitColumns({
   renderItem,
   gap = '0 22px',
   rowGap,
-  /** Rows share the leftover height. Pass `rowHeight` instead for a fixed pitch. */
+  /** Rows share the leftover height. Pass `rowHeight` instead for a fixed pitch,
+   * or `rowMax` to let them stretch up to a ceiling — at two players an
+   * unconstrained 1fr row is 600px tall, which is a row nobody would call a row. */
   stretch = true,
   rowHeight,
+  rowMax,
   className = '',
   columnClassName = '',
   style,
@@ -48,6 +51,7 @@ export default function SplitColumns({
           style={{
             ...(rowGap ? { rowGap } : null),
             ...(rowHeight ? { gridAutoRows: rowHeight } : null),
+            ...(rowMax ? { maxHeight: column.length * rowMax } : null),
           }}
           data-column={ci}
         >

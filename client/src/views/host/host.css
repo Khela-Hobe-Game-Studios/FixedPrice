@@ -316,6 +316,224 @@
   overflow: hidden;
 }
 
+/* ── Reveal ────────────────────────────────────────────────────────────────── */
+
+/* No footer band on this screen. The fun fact lives in the left column, and that
+ * is exactly what buys the vertical room for fifteen rows on the right. */
+
+.hs-reveal {
+  display: grid;
+  grid-template-columns: 404px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.hs-reveal__left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px 16px;
+  min-height: 0;
+  /* Beat 0: every lit pixel except the sponsor bands goes off for 400ms. In a dim
+   * room this reads as the room going quiet. */
+  opacity: 0;
+}
+
+.hs-reveal__left[data-lit] {
+  opacity: 1;
+}
+
+.hs-reveal__answer {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.hs-reveal__target {
+  text-shadow: var(--glow-amber);
+}
+
+.hs-reveal__fact {
+  padding-top: 12px;
+}
+
+.hs-reveal__facttext {
+  margin-top: 6px;
+  font: 700 21px/1.15 var(--f-word);
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.hs-reveal__right {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px 10px;
+  min-height: 0;
+}
+
+.hs-reveal__head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+/* The winner band — the only inverted element in the system: black type on a
+ * saturated fill. Reserved for exactly this. */
+.hs-winner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+}
+
+.hs-winner__band {
+  background: var(--led-green);
+  color: var(--board);
+  padding: 13px 15px;
+  box-shadow: var(--glow-green);
+}
+
+/* Nobody close: the slot the green band would have filled goes red instead, and
+ * the actual price stays amber. */
+.hs-winner--none {
+  background: var(--led-red);
+  color: #fff;
+  padding: 16px 15px;
+  text-align: center;
+}
+
+.hs-winner__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hs-winner__stamp {
+  font-size: 15px;
+  padding: 2px 8px;
+  background: rgba(7, 9, 10, 0.12);
+}
+
+.hs-winner__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  min-width: 0;
+}
+
+.hs-winner__name {
+  font-family: var(--f-word);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hs-winner__points {
+  margin-left: auto;
+  background: var(--board);
+  padding: 4px 10px;
+}
+
+/* A tie splits the band in two at full output — nobody gets dimmed for sharing. */
+.hs-winner--split .hs-winner__band {
+  padding: 9px 15px;
+}
+
+.hs-winner--split .hs-winner__row {
+  margin-top: 6px;
+}
+
+/* Rows. Each one lights at its own delay in a single CSS pass — no per-row React
+ * state and no layout work while the sequence plays. */
+.hs-rev {
+  display: grid;
+  grid-template-columns: 30px 22px minmax(0, 1fr) auto 82px;
+  gap: 8px;
+  align-items: center;
+  border-bottom: var(--rule-row);
+  min-width: 0;
+  opacity: 0;
+  animation: bd-ledin 1ms step-start both;
+  animation-delay: var(--row-delay, 0ms);
+}
+
+.hs-rev__name {
+  font: 700 25px/1 var(--f-word);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--bone);
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.hs-rev__guess {
+  text-align: right;
+}
+
+.hs-rev__delta {
+  text-align: right;
+  opacity: 0.4;
+}
+
+/* A wild miss arrives already struck through. The strike is not animated on — it
+ * is simply on, because it was true before the row lit. */
+.hs-rev--wild {
+  background: rgba(255, 59, 71, 0.09);
+}
+
+.hs-rev--wild .hs-rev__name {
+  color: var(--out-45);
+  text-decoration: line-through 3px var(--led-red);
+}
+
+.hs-rev--wild .hs-rev__delta {
+  opacity: 0.8;
+}
+
+/* Beat 4: all rows drop to 32% output in one frame. The eye is now free. */
+[data-beat='dim'] .hs-rev,
+[data-beat='winner'] .hs-rev,
+[data-beat='points'] .hs-rev {
+  animation: bd-ledin 1ms step-start both, bd-dim var(--step-fast) steps(2, jump-none) both;
+  animation-delay: var(--row-delay, 0ms), 0ms;
+}
+
+/* Beat 5: the winner snaps in at 1.4x and settles in three steps, and the board
+ * flashes once. */
+[data-beat='winner'] .hs-winner,
+[data-beat='points'] .hs-winner {
+  opacity: 1;
+  animation: bd-slam var(--step-slam) steps(3, jump-none) both;
+}
+
+.hs-reveal--flash {
+  animation: bd-shake 0.3s steps(4, jump-none) 1;
+}
+
+[data-beat='points'] .hs-winner__points {
+  animation: bd-ledin 1ms step-start both;
+}
+
+/* Reduced motion keeps the sequence and drops the flash: the reveal must still
+ * read as an order of events, it just stops hitting the room. */
+:root[data-motion='reduced'] .hs-reveal--flash,
+:root[data-motion='reduced'] [data-beat='winner'] .hs-winner {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-reveal--flash,
+  [data-beat='winner'] .hs-winner {
+    animation: none;
+  }
+}
+
 /* ── Scoreboard ────────────────────────────────────────────────────────────── */
 
 /* All 15 players, so everyone can find themselves from the sofa. Never a top 5. */

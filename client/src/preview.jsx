@@ -6,6 +6,7 @@ import HostLobby from './views/host/HostLobby';
 import HostIntro from './views/host/HostIntro';
 import HostQuestion from './views/host/HostQuestion';
 import HostBetting from './views/host/HostBetting';
+import HostReveal from './views/host/HostReveal';
 import HostScoreboard from './views/host/HostScoreboard';
 import HostGameOver from './views/host/HostGameOver';
 import * as fx from './previewData';
@@ -174,6 +175,34 @@ export const PREVIEWS = {
   'tv-betting': {
     group: 'Tv', viewport: 'tv', note: 'Guesses visible, order random, odds priced off the pack',
     render: () => <HostBetting betting={fx.betting} round={fx.round15} timing={fx.betting} betCount={fx.betCount} />,
+  },
+  'tv-reveal': {
+    group: 'Tv', viewport: 'tv', note: '5 players, sequence finished',
+    render: () => <HostReveal reveal={fx.reveal5} round={fx.round5} />,
+  },
+  'tv-reveal-15': {
+    group: 'Tv', viewport: 'tv', note: 'THE hard case — 15 rows, two wrapper columns, must not overflow',
+    render: () => <HostReveal reveal={fx.reveal15} round={fx.round15} />,
+  },
+  'tv-reveal-live': {
+    group: 'Tv', viewport: 'tv', note: 'Plays the whole sequence from beat 0',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { elapsed: 0 })} round={fx.round15} />,
+  },
+  'tv-reveal-chase': {
+    group: 'Tv', viewport: 'tv', note: 'Mid-sequence: wild misses lit, the chase running',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { elapsed: 2400 })} round={fx.round15} />,
+  },
+  'tv-reveal-tie': {
+    group: 'Tv', viewport: 'tv', note: 'Tie — the band splits, both at full output',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { outcome: 'tie' })} round={fx.round15} />,
+  },
+  'tv-reveal-nobody': {
+    group: 'Tv', viewport: 'tv', note: 'Nobody close — red band, price stays amber',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { outcome: 'nobody_close' })} round={fx.round15} />,
+  },
+  'tv-reveal-two': {
+    group: 'Tv', viewport: 'tv', note: '2 players — same grid, rows grow, no fork',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.makePlayers(2))} round={fx.round5} />,
   },
   'tv-scoreboard': {
     group: 'Tv', viewport: 'tv', note: '5 players between rounds',

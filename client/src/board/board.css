@@ -890,15 +890,19 @@ body {
 }
 
 /* Split-flap: each digit is its own span with its own delay, so the correct answer
- * arrives digit-by-digit in a single CSS pass. */
+ * arrives digit-by-digit in a single CSS pass.
+ *
+ * step-start, not steps(1). steps(1) defaults to jump-end, whose output holds the
+ * FROM value for the entire duration — a "snap on" written that way finishes the
+ * animation still invisible. step-start is the honest spelling of "no transition". */
 .bd-flap__d {
   display: inline-block;
   opacity: 0;
-  animation: bd-ledin 1ms steps(1) both;
+  animation: bd-ledin 1ms step-start both;
 }
 
 .bd-slam {
-  animation: bd-slam var(--step-slam) steps(3) both;
+  animation: bd-slam var(--step-slam) steps(3, jump-none) both;
 }
 
 /* Reduced motion kills shake, blink, strobe and the marquee scroll; it does not kill
