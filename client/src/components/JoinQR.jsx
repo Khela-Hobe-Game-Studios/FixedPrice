@@ -7,43 +7,62 @@ export function joinUrl(code) {
   return `${origin}${base}${base.endsWith('/') ? '' : '/'}?join=${code}`;
 }
 
+/** The address a guest would type, without the deep-link query. */
+export function joinHost() {
+  return joinUrl('')
+    .replace(/^https?:\/\//, '')
+    .replace(/\?join=.*$/, '')
+    .replace(/\/$/, '');
+}
+
 /**
- * The host lobby used to say "Players join at your URL" without ever showing the
- * URL. With 15 guests, typing an address plus a 4-letter code is the slowest part
- * of the whole game — this makes it a scan, deep-linked so the code is prefilled.
+ * With 15 guests, typing an address plus a 4-letter code is the slowest part of the
+ * whole game — this makes it a scan, deep-linked so the code is prefilled.
+ *
+ * The quiet zone stays white and the modules stay near-black even on a board where
+ * everything else is emissive: a QR inverted into the board's palette is a QR that
+ * half the phones in the room refuse to read.
  */
-export default function JoinQR({ code, size = 168 }) {
+export default function JoinQR({ code, size = 120, pad = 8 }) {
   const [dataUrl, setDataUrl] = useState(null);
   const url = code ? joinUrl(code) : null;
 
   useEffect(() => {
-    if (!url) { setDataUrl(null); return; }
+    if (!url) { setDataUrl(null); return undefined; }
     let cancelled = false;
     QRCode.toDataURL(url, {
-      width: size * 2,           // 2x for crisp rendering on a TV
-      margin: 1,
+      width: size * 3,           // oversampled — this is read across a living room
+      margin: 0,
       errorCorrectionLevel: 'M',
-      color: { dark: '#003d2e', light: '#ffffff' },
+      color: { dark: '#07090A', light: '#E8E4D8' },
     })
-      .then(d => { if (!cancelled) setDataUrl(d); })
+      .then((d) => { if (!cancelled) setDataUrl(d); })
       .catch(() => { if (!cancelled) setDataUrl(null); });
     return () => { cancelled = true; };
   }, [url, size]);
 
   if (!url) return null;
 
-  // Show the bare address people would type; the QR carries the ?join= deep link.
-  const display = url.replace(/^https?:\/\//, '').replace(/\?join=.*$/, '').replace(/\/$/, '');
-
   return (
-    <div className="ek-joinqr">
-      {dataUrl
-        ? <img src={dataUrl} alt={`QR code to join room ${code}`} width={size} height={size} />
-        : <div className="ek-joinqr__placeholder" style={{ width: size, height: size }} />}
-      <div className="ek-joinqr__meta">
-        <span className="ek-joinqr__label">Scan to join</span>
-        <span className="ek-joinqr__url">{display}</span>
-      </div>
+    <div
+      style={{
+        width: size,
+        height: size,
+        flex: 'none',
+        padding: pad,
+        background: 'var(--bone)',
+        display: 'flex',
+      }}
+    >
+      {dataUrl && (
+        <img
+          src={dataUrl}
+          alt={`QR code to join room ${code}`}
+          width={size - pad * 2}
+          height={size - pad * 2}
+          style={{ imageRendering: 'pixelated' }}
+        />
+      )}
     </div>
   );
 }

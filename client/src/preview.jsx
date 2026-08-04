@@ -1,10 +1,16 @@
-import HostLobby from './views/HostLobby';
 import PlayerLobby from './views/PlayerLobby';
-import HostGame from './views/HostGame';
 import PlayerGame from './views/PlayerGame';
-import GameOver from './views/GameOver';
 import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
+import HostLanding from './views/host/HostLanding';
+import HostLobby from './views/host/HostLobby';
+import HostIntro from './views/host/HostIntro';
+import HostQuestion from './views/host/HostQuestion';
+import HostBetting from './views/host/HostBetting';
+import HostScoreboard from './views/host/HostScoreboard';
+import HostGameOver from './views/host/HostGameOver';
+import * as fx from './previewData';
 import './board/board.css';
+import './views/host/host.css';
 
 const players = [
   { id: 'p1', name: 'Karim', score: 8 },
@@ -132,54 +138,58 @@ export const PREVIEWS = {
     render: () => <PhoneSpecimens />,
   },
 
-  // ── Host: shared screen. Judge at 1280x720. Must never need scrolling. ──
-  'host-lobby-empty': {
-    group: 'Host', viewport: 'tv', note: 'Waiting for anyone to join',
-    render: () => <HostLobby room={{ ...room, players: [] }} setRoom={noop} setMe={noop} me={null} setScreen={noop} onStartGame={noop} />,
+  // ── The board. 1280x720, never scrolls, judged at 15 players. ──
+  'tv-landing': {
+    group: 'Tv', viewport: 'tv', note: 'Before anyone joins',
+    render: () => <HostLanding onStart={noop} />,
   },
-  'host-lobby': {
-    group: 'Host', viewport: 'tv', note: '5 players, QR + room code',
-    render: () => <HostLobby room={room} setRoom={noop} setMe={noop} me={null} setScreen={noop} onStartGame={noop} />,
+  'tv-lobby-one': {
+    group: 'Tv', viewport: 'tv', note: 'One player — the QR is all that matters',
+    render: () => <HostLobby room={{ ...fx.room5, players: fx.players5.slice(0, 1) }} onStart={noop} onSettings={noop} />,
   },
-  'host-lobby-15': {
-    group: 'Host', viewport: 'tv', note: '15 players — full roster grid',
-    render: () => <HostLobby room={bigRoom} setRoom={noop} setMe={noop} me={null} setScreen={noop} onStartGame={noop} />,
+  'tv-lobby': {
+    group: 'Tv', viewport: 'tv', note: '5 players, code + QR + roster',
+    render: () => <HostLobby room={fx.room5} onStart={noop} onSettings={noop} />,
   },
-  'host-question': {
-    group: 'Host', viewport: 'tv', note: 'Countdown + answered progress',
-    render: () => <HostGame room={room} initialRound={roundData} initialPhase="question" setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-lobby-15': {
+    group: 'Tv', viewport: 'tv', note: '15 players — two wrapper columns, no checkerboard',
+    render: () => <HostLobby room={fx.room15} onStart={noop} onSettings={noop} />,
   },
-  'host-question-15': {
-    group: 'Host', viewport: 'tv', note: 'Progress bar at 15 players',
-    render: () => <HostGame room={bigRoom} initialRound={bigRound} initialPhase="question" setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-intro': {
+    group: 'Tv', viewport: 'tv', note: 'The one screen a category fills',
+    render: () => <HostIntro intro={fx.intro} timing={fx.intro} />,
   },
-  'host-betting': {
-    group: 'Host', viewport: 'tv', note: 'Every 5th round when enabled',
-    render: () => <HostGame room={room} initialRound={{ ...roundData, isBettingRound: true, round: 5 }} initialPhase="betting" initialBetting={bettingData} setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-question': {
+    group: 'Tv', viewport: 'tv', note: '5 players, 2 locked in',
+    render: () => <HostQuestion round={fx.round5} timing={fx.round5} answerCount={fx.answerCount5} />,
   },
-  'host-reveal': {
-    group: 'Host', viewport: 'tv', note: 'Cards land worst-first',
-    render: () => <HostGame room={room} initialRound={roundData} initialPhase="reveal" initialReveal={revealData} setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-question-15': {
+    group: 'Tv', viewport: 'tv', note: '15 players, 7 locked in — all three progress channels',
+    render: () => <HostQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} />,
   },
-  'host-reveal-15': {
-    group: 'Host', viewport: 'tv', note: 'THE hard case — 3 columns, must not overflow',
-    render: () => <HostGame room={bigRoom} initialRound={bigRound} initialPhase="reveal" initialReveal={bigReveal} setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-question-zero': {
+    group: 'Tv', viewport: 'tv', note: 'Nobody answered yet — every seat dashed',
+    render: () => <HostQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCountZero} />,
   },
-  'host-scoreboard': {
-    group: 'Host', viewport: 'tv', note: 'Between rounds',
-    render: () => <HostGame room={room} initialRound={roundData} initialPhase="scoreboard" initialScoreboard={scoreboardData} setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-betting': {
+    group: 'Tv', viewport: 'tv', note: 'Guesses visible, order random, odds priced off the pack',
+    render: () => <HostBetting betting={fx.betting} round={fx.round15} timing={fx.betting} betCount={fx.betCount} />,
   },
-  'host-scoreboard-15': {
-    group: 'Host', viewport: 'tv', note: 'All 15 visible — no "+N more"',
-    render: () => <HostGame room={bigRoom} initialRound={bigRound} initialPhase="scoreboard" initialScoreboard={bigScoreboard} setRoom={noop} setMe={noop} me={null} setScreen={noop} />,
+  'tv-scoreboard': {
+    group: 'Tv', viewport: 'tv', note: '5 players between rounds',
+    render: () => <HostScoreboard scoreboard={fx.scoreboard5} />,
   },
-  'game-over': {
-    group: 'Host', viewport: 'tv', note: 'Podium + rematch',
-    render: () => <GameOver final={final} setScreen={noop} room={room} me={null} />,
+  'tv-scoreboard-15': {
+    group: 'Tv', viewport: 'tv', note: 'All 15 visible with find-yourself bars',
+    render: () => <HostScoreboard scoreboard={fx.scoreboard15} />,
   },
-  'game-over-15': {
-    group: 'Host', viewport: 'tv', note: 'Buttons must stay above the fold',
-    render: () => <GameOver final={bigPlayers.map(p => ({ ...p, strikes: 0 }))} setScreen={noop} room={bigRoom} me={null} />,
+  'tv-game-over': {
+    group: 'Tv', viewport: 'tv', note: 'Winner, podium, mascot',
+    render: () => <HostGameOver final={fx.final5} onPlayAgain={noop} onStandings={noop} />,
+  },
+  'tv-game-over-15': {
+    group: 'Tv', viewport: 'tv', note: 'Podium must not collapse — align-items:stretch',
+    render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} onStandings={noop} />,
   },
 
   // ── Player: phone. Judge at 390x844, one-handed, glanceable. ──

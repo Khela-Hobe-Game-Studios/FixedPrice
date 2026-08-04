@@ -20,7 +20,9 @@ export default function SplitColumns({
   renderItem,
   gap = '0 22px',
   rowGap,
+  /** Rows share the leftover height. Pass `rowHeight` instead for a fixed pitch. */
   stretch = true,
+  rowHeight,
   className = '',
   columnClassName = '',
   style,
@@ -42,8 +44,11 @@ export default function SplitColumns({
       {columns.map((column, ci) => (
         <div
           key={ci}
-          className={`${stretch ? 'bd-rows' : 'bd-rows bd-rows--fixed'} ${columnClassName}`}
-          style={rowGap ? { rowGap } : undefined}
+          className={`bd-rows${stretch && !rowHeight ? '' : ' bd-rows--fixed'} ${columnClassName}`}
+          style={{
+            ...(rowGap ? { rowGap } : null),
+            ...(rowHeight ? { gridAutoRows: rowHeight } : null),
+          }}
           data-column={ci}
         >
           {column.map((item, i) => renderItem(item, cut * ci + i, ci))}

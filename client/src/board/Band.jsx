@@ -76,10 +76,10 @@ export function Brand({ width, compact = false }) {
  * is seamless regardless of how long the copy is. Never pauses — except under
  * reduced motion, where it stops dead (board.css).
  */
-export function Marquee({ items, tone = 'red', speed = 28, className = '' }) {
+export function Marquee({ items, tone = 'red', speed = 28, className = '', style }) {
   const track = [...items, ...items];
   return (
-    <div className={`bd-marquee bd-marquee--${tone} ${className}`} aria-hidden="true">
+    <div className={`bd-marquee bd-marquee--${tone} ${className}`} style={style} aria-hidden="true">
       <div
         className="bd-marquee__track"
         style={{ animationDuration: `${speed}s` }}

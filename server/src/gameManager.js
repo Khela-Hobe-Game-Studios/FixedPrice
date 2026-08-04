@@ -304,7 +304,7 @@ function endQuestion(io, room) {
   syncScores(room);
 
   if (room.isBettingRound) {
-    room._lastBettingData = { ranked: ranked.map(r => ({ id: r.id, name: r.name })) };
+    room._lastBettingData = { options: bettingOptions(ranked) };
 
     io.to(room.code).emit('round:betting', {
       ...room._lastBettingData,
@@ -316,6 +316,46 @@ function endQuestion(io, room) {
   }
 }
 
+/**
+ * What the room sees when it is asked to back a guess.
+ *
+ * The guesses are shown — betting on a name with no number is a coin flip, and the
+ * whole point of the round is arguing about whether 780 or 1200 sounds more like
+ * beef. But the order is randomised and the odds are computed from how far a guess
+ * sits from the pack rather than from its actual distance to the answer. Sorting by
+ * distance, or pricing by it, hands the room the answer before it bets.
+ */
+function bettingOptions(ranked) {
+  const scored = ranked.filter(r => r.distance !== null);
+  if (scored.length === 0) return [];
+
+  const guesses = scored.map(r => r.guess).sort((a, b) => a - b);
+  const median = guesses[Math.floor(guesses.length / 2)];
+  const spread = scored
+    .map(r => ({ id: r.id, deviation: Math.abs(r.guess - median) }))
+    .sort((a, b) => a.deviation - b.deviation);
+
+  const options = scored.map((r) => {
+    const rank = spread.findIndex(s => s.id === r.id);
+    return {
+      id: r.id,
+      name: r.name,
+      colorIndex: r.colorIndex,
+      avatar: r.avatar,
+      guess: r.guess,
+      // The furthest-out guess in the room is always ×99. It is a joke, and it is
+      // occasionally correct, which is the best kind of joke.
+      odds: rank === spread.length - 1 && spread.length > 2
+        ? 99
+        : Math.round((1.4 + (rank / Math.max(spread.length - 1, 1)) * 5.2) * 10) / 10,
+    };
+  });
+
+  // Presentation order is random and fixed for the phase, so the layout itself
+  // carries no information.
+  return shuffle(options).slice(0, 6);
+}
+
 // ─── betting ─────────────────────────────────────────────────────────────────
 
 function submitBet(io, room, { pid, targetId }) {
@@ -325,6 +365,11 @@ function submitBet(io, room, { pid, targetId }) {
 
   room.bets[pid] = targetId;
   touchRoom(room);
+
+  io.to(room.code).emit('round:bet_count', {
+    count: Object.keys(room.bets).length,
+    total: awaitedPlayers(room).length,
+  });
 
   const awaited = awaitedPlayers(room);
   if (awaited.length > 0 && awaited.every(p => room.bets[p.id] !== undefined)) {

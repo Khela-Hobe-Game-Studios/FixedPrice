@@ -3,21 +3,36 @@
  *
  * Two banks feed the game and they don't agree: the published Sheet uses
  * `Price` / `Sports`, the local questions.json fallback uses `Taka` / `Cricket`.
- * KUI's CategoryBadge only knows desh|cricket|taka|global|weird, so Price (314)
- * and Sports (63) — 36% of the live bank — rendered with no badge and a generic
- * accent colour. This maps every spelling either bank uses onto one key set.
+ * This maps every spelling either bank uses onto one key set.
+ *
+ * Category is the cheapest source of variety across 15-20 rounds, so here it owns a
+ * full-bleed band on the host question screen, the phone header and the whole board
+ * during the round intro — not the 12px pill it used to tint.
+ *
+ * The matcher table is mirrored in `server/src/categories.js`, which filters the
+ * deck by the same keys. Change both together.
  */
 
 export const CATEGORIES = {
-  desh:    { label: '🇧🇩 দেশ',     color: '#15a374' },
-  price:   { label: '💰 Daam',     color: '#fbbf24' },
-  cricket: { label: '🏏 Cricket',  color: '#fb923c' },
-  sports:  { label: '⚽ Sports',   color: '#f97316' },
-  global:  { label: '🌍 Global',   color: '#818cf8' },
-  weird:   { label: '🌀 Weird',    color: '#e879f9' },
+  // দেশ keeps its Bengali name because that is its name. The rest are English.
+  desh:    { name: 'দেশ',     band: 'দেশ · BANGLADESH', color: '#006A4E', ink: '#FFF8EC', bengali: true },
+  price:   { name: 'DAAM',    band: 'DAAM · PRICES',    color: '#FFB423', ink: '#07090A' },
+  cricket: { name: 'CRICKET', band: 'CRICKET',          color: '#2BE08A', ink: '#07090A' },
+  sports:  { name: 'SPORTS',  band: 'SPORTS',           color: '#F42A41', ink: '#FFFFFF' },
+  global:  { name: 'GLOBAL',  band: 'GLOBAL',           color: '#2E86FF', ink: '#FFFFFF' },
+  weird:   { name: 'WEIRD',   band: 'WEIRD',            color: '#C46BFF', ink: '#07090A' },
 };
 
-export const DEFAULT_CATEGORY_COLOR = 'var(--kui-accent)';
+// The betting round is its own colour, and it is the same purple as WEIRD — both
+// are the board being strange on purpose.
+export const BETTING_CATEGORY = {
+  name: 'BETTING ROUND',
+  band: 'BETTING ROUND',
+  color: '#C46BFF',
+  ink: '#07090A',
+};
+
+const FALLBACK = { name: 'GLOBAL', band: 'GLOBAL', color: '#2E86FF', ink: '#FFFFFF' };
 
 // Order matters: 'cricket' must be tested before 'sports' so a bank that says
 // "Cricket" keeps the bat, while anything else sporty falls through to the ball.
@@ -37,6 +52,15 @@ export function normCategory(raw) {
   return MATCHERS.find(([, re]) => re.test(v))?.[0];
 }
 
+/** Everything a band needs to paint itself: name, label, fill and the ink on it. */
+export function category(raw) {
+  return CATEGORIES[normCategory(raw)] ?? FALLBACK;
+}
+
+export const CATEGORY_KEYS = Object.keys(CATEGORIES);
+
+// Shim for the pre-v2 views, which are still mounted while the phone screens are
+// rebuilt. Delete with them.
 export function categoryColor(key) {
-  return (key && CATEGORIES[key]?.color) || DEFAULT_CATEGORY_COLOR;
+  return category(key).color;
 }
