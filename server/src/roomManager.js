@@ -27,7 +27,47 @@ function generateCode() {
   return null; // every code in use — caller must surface an error
 }
 
-function createRoom({ hostSocketId, questionCount = 10, eliminationMode = false, bettingRounds = false }) {
+const ROUND_OPTIONS = [10, 15, 20];
+const SECONDS_OPTIONS = [0, 20, 30, 45]; // 0 = no clock; the host advances the round
+const BETTING_FREQUENCIES = ['never', 'every3', 'every'];
+const FINALE_MODES = ['off', 'auto', 'on'];
+
+const DEFAULT_SETTINGS = {
+  rounds: 10,
+  secondsPerQuestion: 30,
+  bettingFrequency: 'never',
+  categories: [], // empty = the whole deck
+  finale: 'auto',
+};
+
+// Accepts both the current shape and the pre-v2 one (`questionCount` + a
+// `bettingRounds` boolean), so an older client can still open a room.
+function normalizeSettings(raw = {}, base = DEFAULT_SETTINGS) {
+  const rounds = Number(raw.rounds ?? raw.questionCount);
+  const seconds = Number(raw.secondsPerQuestion);
+
+  let bettingFrequency = raw.bettingFrequency;
+  if (!BETTING_FREQUENCIES.includes(bettingFrequency)) {
+    bettingFrequency =
+      raw.bettingRounds !== undefined
+        ? raw.bettingRounds
+          ? 'every3'
+          : 'never'
+        : base.bettingFrequency;
+  }
+
+  return {
+    rounds: ROUND_OPTIONS.includes(rounds) ? rounds : base.rounds,
+    secondsPerQuestion: SECONDS_OPTIONS.includes(seconds) ? seconds : base.secondsPerQuestion,
+    bettingFrequency,
+    categories: Array.isArray(raw.categories)
+      ? raw.categories.filter((c) => typeof c === 'string').slice(0, 12)
+      : base.categories,
+    finale: FINALE_MODES.includes(raw.finale) ? raw.finale : base.finale,
+  };
+}
+
+function createRoom({ hostSocketId, settings }) {
   const code = generateCode();
   if (!code) return null;
 
@@ -37,7 +77,7 @@ function createRoom({ hostSocketId, questionCount = 10, eliminationMode = false,
     hostConnected: true,
     state: 'LOBBY',
     players: [],
-    settings: { questionCount, eliminationMode, bettingRounds },
+    settings: normalizeSettings(settings),
     currentQuestion: null,
     currentRound: 0,
     // All of these are keyed by the player's STABLE pid, never by socket id —
@@ -45,8 +85,11 @@ function createRoom({ hostSocketId, questionCount = 10, eliminationMode = false,
     answers: {},      // pid -> number
     bets: {},         // pid -> target pid
     scores: {},       // pid -> number
-    strikes: {},      // pid -> number (elimination mode)
     questionIndices: [],
+    // Colours are handed out from a counter, never from the roster index: the
+    // roster is filtered on removal, so an index-derived colour re-paints everyone
+    // after whoever left.
+    _nextColorIndex: 0,
     _timers: {},
     lastActivityAt: Date.now(),
   };
@@ -86,9 +129,10 @@ function uniqueName(room, name) {
 function addPlayer(room, { pid, socketId, name }) {
   const existing = room.players.find(p => p.id === pid);
   if (existing) {
-    // Same device re-joining — reattach the transport, keep score/strikes.
+    // Same device re-joining — reattach the transport, keep score and colour.
     existing.socketId = socketId;
-    existing.connected = true;
+    existing.connectionState = 'connected';
+    existing.seatHoldUntil = null;
     return existing;
   }
   if (room.players.length >= MAX_PLAYERS) return null;
@@ -98,14 +142,44 @@ function addPlayer(room, { pid, socketId, name }) {
     socketId,
     name: uniqueName(room, name),
     score: 0,
-    strikes: 0,
+    colorIndex: room._nextColorIndex++,
+    avatar: { kind: 'monogram' },
     eliminated: false,
-    connected: true,
+    connectionState: 'connected',
+    seatHoldUntil: null,
   };
   room.players.push(player);
   room.scores[pid] = room.scores[pid] ?? 0;
-  room.strikes[pid] = room.strikes[pid] ?? 0;
   return player;
+}
+
+const AVATAR_KINDS = ['monogram', 'selfie', 'sprite'];
+const AVATAR_IMAGE_MAX = 12 * 1024; // a 2-tone 96px PNG lands around 1-2KB
+
+// The picture is the player's, so it comes from the player — but it is broadcast to
+// every device in the room, so it is bounded and typed here rather than trusted.
+function setAvatar(player, raw = {}) {
+  if (!player) return false;
+  const kind = AVATAR_KINDS.includes(raw.kind) ? raw.kind : null;
+  if (!kind) return false;
+
+  if (kind === 'selfie') {
+    const image = typeof raw.image === 'string' ? raw.image : '';
+    if (!image.startsWith('data:image/png;base64,')) return false;
+    if (image.length > AVATAR_IMAGE_MAX) return false;
+    player.avatar = { kind, image };
+    return true;
+  }
+
+  if (kind === 'sprite') {
+    const spriteId = typeof raw.spriteId === 'string' ? raw.spriteId.slice(0, 32) : '';
+    if (!spriteId) return false;
+    player.avatar = { kind, spriteId };
+    return true;
+  }
+
+  player.avatar = { kind: 'monogram' };
+  return true;
 }
 
 function findPlayerByPid(room, pid) {
@@ -166,11 +240,14 @@ function startIdleSweeper(intervalMs = 15 * 60 * 1000) {
 module.exports = {
   rooms,
   MAX_PLAYERS,
+  DEFAULT_SETTINGS,
+  normalizeSettings,
   createRoom,
   getRoom,
   touchRoom,
   sanitizeName,
   addPlayer,
+  setAvatar,
   findPlayerByPid,
   findPlayerBySocket,
   removePlayer,

@@ -113,10 +113,13 @@ async function testFifteenPlayersWithReconnect() {
   // "kept their score" assertion vacuous.
   let victim = null;
   let scoreBeforeDrop = 0;
+  let colorBeforeDrop = null;
   let reconnected = null;
-  let sawRevealMs = null;
+  let lastReveal = null;
+  let sawIntro = false;
 
-  host.on('round:reveal', (d) => { sawRevealMs = d.revealMs; });
+  host.on('round:intro', () => { sawIntro = true; });
+  host.on('round:reveal', (d) => { lastReveal = d; });
 
   host.on('round:scoreboard', async ({ scoreboard }) => {
     if (reconnected) return;
@@ -126,6 +129,7 @@ async function testFifteenPlayersWithReconnect() {
     victim = players.find(p => p.pid === leader.id);
     if (!victim) return;
     scoreBeforeDrop = leader.score;
+    colorBeforeDrop = roster.find(p => p.id === leader.id)?.colorIndex;
 
     log('DROP', `${victim.name} disconnecting with score ${scoreBeforeDrop}`);
     victim.sock.disconnect();
@@ -172,11 +176,38 @@ async function testFifteenPlayersWithReconnect() {
   check('both Karims exist independently in the final table', karims.length === 2,
         `(got ${karims.length})`);
 
-  check('reveal window scales with player count', sawRevealMs && sawRevealMs > 5000,
-        `(revealMs=${sawRevealMs}, must exceed the old fixed 5000ms)`);
+  // The reveal is a choreographed sequence the server owns, so the phase has to be
+  // long enough to contain its own last beat. It used to be a flat number the host
+  // animated against by guesswork, which is how the celebration could land before
+  // the winner resolved.
+  const s = lastReveal?.schedule;
+  check('reveal carries a beat schedule', !!s && typeof s.winner === 'number',
+        `(schedule=${JSON.stringify(s)})`);
+  check('reveal window contains its own beats',
+        !!s && lastReveal.revealMs >= s.points && lastReveal.revealMs >= s.winner,
+        `(revealMs=${lastReveal?.revealMs}, points beat at ${s?.points})`);
+  check('reveal states its outcome',
+        ['single', 'tie', 'nobody_close'].includes(lastReveal?.outcome),
+        `(outcome=${lastReveal?.outcome})`);
+  check('reveal ranks and scores agree',
+        Array.isArray(lastReveal?.ranked) &&
+        lastReveal.ranked.filter(r => r.isWinner).length === lastReveal.winnerIds.length,
+        `(winners=${lastReveal?.winnerIds?.length})`);
 
-  const total = final.reduce((s, p) => s + p.score, 0);
+  check('every round was introduced', sawIntro);
+
+  const total = final.reduce((s2, p) => s2 + p.score, 0);
   check('points were actually awarded', total > 0, `(total ${total})`);
+
+  // Colour is the identity token the whole board leans on: it must be unique in the
+  // room and survive a player dropping out, which an index-derived colour does not.
+  const colors = roster.map(p => p.colorIndex);
+  check('every player has a distinct colour index',
+        colors.every(c => typeof c === 'number') && new Set(colors).size === colors.length,
+        `(got ${JSON.stringify(colors)})`);
+  check('the reconnected player kept their colour',
+        victim && roster.find(p => p.id === victim.pid)?.colorIndex === colorBeforeDrop,
+        `(before ${colorBeforeDrop}, after ${roster.find(p => p.id === victim?.pid)?.colorIndex})`);
 
   host.disconnect();
   reconnected?.disconnect();
@@ -224,12 +255,78 @@ async function testInputValidation() {
   await wait(300);
 }
 
+// ─── 5: identity, avatars and settings ───────────────────────────────────────
+
+async function testIdentityAndSettings() {
+  log('TEST', 'avatars, settings and the server clock');
+  const { host, code } = await hostRoom({ rounds: 15, secondsPerQuestion: 20, bettingFrequency: 'every3' });
+
+  let roster = [];
+  host.on('room:updated', ({ players: p }) => { roster = p; });
+
+  const a = await joinPlayer(code, 'Alpha', uid('s-a'));
+  const b = await joinPlayer(code, 'Beta', uid('s-b'));
+  await wait(200);
+
+  check('a new player defaults to a monogram',
+        roster.every(p => p.avatar?.kind === 'monogram'),
+        `(got ${JSON.stringify(roster.map(p => p.avatar))})`);
+
+  // A 1x1 PNG stands in for the posterised selfie the phone produces.
+  const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  a.emit('player:set_avatar', { kind: 'selfie', image: png });
+  await once(a, 'player:avatar_set', 5000);
+  await wait(200);
+  check('a selfie reaches the whole room',
+        roster.find(p => p.name === 'Alpha')?.avatar?.kind === 'selfie');
+
+  const rejected = [];
+  b.on('error', (e) => rejected.push(e.message));
+  b.emit('player:set_avatar', { kind: 'selfie', image: 'https://example.com/not-a-data-url.png' });
+  b.emit('player:set_avatar', { kind: 'selfie', image: `data:image/png;base64,${'A'.repeat(20000)}` });
+  await wait(300);
+  check('an unbounded or off-format image is refused', rejected.length >= 2,
+        `(got ${rejected.length})`);
+
+  // Settings are the host's until the game starts.
+  const settingsSeen = once(a, 'room:settings', 5000);
+  host.emit('host:update_settings', { rounds: 20, bettingFrequency: 'never' });
+  const { settings } = await settingsSeen;
+  check('settings changes reach the players',
+        settings.rounds === 20 && settings.bettingFrequency === 'never',
+        `(got ${JSON.stringify(settings)})`);
+
+  // The clock the whole board counts down from.
+  const t0 = Date.now();
+  const pong = await new Promise((res) => host.emit('time:ping', t0, res));
+  check('the server answers a clock ping',
+        typeof pong?.serverNow === 'number' && pong.clientSent === t0,
+        `(got ${JSON.stringify(pong)})`);
+
+  const start = once(a, 'round:start', 20000);
+  host.emit('host:start_game');
+  const intro = await once(a, 'round:intro', 10000);
+  check('the round is introduced before it starts',
+        intro.round === 1 && typeof intro.category === 'string' && intro.endsAt > intro.serverNow,
+        `(got ${JSON.stringify({ round: intro.round, category: intro.category })})`);
+
+  const round = await start;
+  check('the question phase carries the server clock',
+        round.phase === 'QUESTION' && round.endsAt - round.serverNow === 20000,
+        `(got ${round.endsAt - round.serverNow}ms, expected the host's 20s)`);
+
+  host.emit('host:end_game');
+  host.disconnect(); a.disconnect(); b.disconnect();
+  await wait(300);
+}
+
 // ─── run ─────────────────────────────────────────────────────────────────────
 
 (async () => {
   try {
     await testFifteenPlayersWithReconnect();
     await testInputValidation();
+    await testIdentityAndSettings();
   } catch (err) {
     failures++;
     log('ERROR', err.stack || err.message);
