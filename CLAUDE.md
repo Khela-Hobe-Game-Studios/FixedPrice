@@ -95,10 +95,18 @@ Two devices, two rules, and one breakpoint each.
 **The board scales; it does not reflow.** 1280×720 authored in absolute px, `min()`
 scaled to fit — a rule the ten host screens are allowed to rely on. What that cannot
 survive is a portrait phone: 16:9 in a 9:19.5 window is `width/1280`, so 0.30 and a
-5px header. Below **575px in portrait** the board is therefore not drawn at all —
-`.bd-turn` (`board.css` + `TurnGuard` in `Stage.jsx`) asks for the phone to be turned,
+5px header. Below **`PORTRAIT_PHONE`** (575px, portrait) the board is therefore not
+drawn at all — `Stage` mounts `TurnGuard` instead and asks for the phone to be turned,
 and landscape gets the board at 0.54, which is small but real. The mirror of the
 player's `RotateGuard`: the phone is played upright, the board is played wide.
+
+That breakpoint lives **only** in `hooks/useMediaQuery.js`. `Stage` decides whether to
+mount the guard; `board.css` just styles it. It was a `@media` block as well, which
+meant the same 575px in two files kept in step by a comment — and a breakpoint that
+drifts gives you either an unreadable board with no guard, or a guard over a board
+that was fine. `TurnGuard` takes an optional `onLeaveBoard`, offered only where there
+is nothing to abandon (host settings before a room exists); once a room is open, the
+way out is to turn the phone, not to walk out on fifteen people.
 
 **The phone is fluid vertically and capped horizontally.** It is never scaled — black
 bars down the sides of a device in the hand look broken — so instead every metric that
@@ -404,14 +412,15 @@ Track is randomly selected in `primeMusic()` each game. Adding new tracks: uploa
 ## Testing
 
 ```bash
-npm run verify              # the gate: lint -> build -> reliability -> fit -> browser
-npm run verify -- --fast    # skips the two browser steps
+npm run verify              # lint -> build -> reliability -> fit -> responsive -> browser
+npm run verify -- --fast    # skips the three browser steps
 ```
 
 | Suite | What it covers |
 |---|---|
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
-| `scripts/fit-check.js` | All 44 previews, at every size they have to survive — 78 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a column stack, nothing rendering blank |
+| `scripts/fit-check.js` | All 46 previews, at every size they have to survive — 80 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a vertical stack (column flex **or** grid), nothing rendering blank |
+| `scripts/responsive-check.js` | What fit-check structurally cannot see: the viewport *changing*. Drag a window narrow and the role guess follows; choose a side and it stops following; turn a phone and the board appears or asks to be turned. Plus the 44px floor under every control at 320×568 |
 | `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
 
 Browser tests select on **`data-testid`**, not text. The board is all-uppercase with

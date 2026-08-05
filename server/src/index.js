@@ -126,9 +126,11 @@ io.on('connection', (socket) => {
   socket.on('host:create_room', (settings = {}) => {
     if (!allow(socket, 'create', 2)) return;
 
-    // The token bucket only limits the rate, not the total: reconnecting resets it,
-    // so without a ceiling one client can still walk the whole 480-code space and
-    // lock the game out for everyone.
+    // A ceiling on top of the rate limit, to raise the cost of walking the 480-code
+    // space. It is not a guarantee: this counter lives on the socket, so reconnecting
+    // clears it exactly as it clears the token bucket. What actually closes the
+    // exhaustion hole is reaping abandoned empty lobbies on a short clock
+    // (EMPTY_LOBBY_MS in roomManager.js) — this just makes it slower to try.
     socket.data._created = (socket.data._created ?? []).filter((c) => rooms.has(c));
     if (socket.data._created.length >= MAX_ROOMS_PER_SOCKET) {
       return socket.emit('error', { message: 'Too many open rooms from this device' });

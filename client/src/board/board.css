@@ -208,13 +208,23 @@ body {
   }
 }
 
-/* …and the board never renders portrait on one. In portrait the stage scale is
- * width/1280, so 575px is where it drops below 0.45 and the band labels go under
- * 8px. See TurnGuard in Stage.jsx for why this is width-only. */
-@media (orientation: portrait) and (max-width: 575px) {
-  .bd-turn {
-    display: flex;
-  }
+/* …and the board never renders portrait on one. That breakpoint is NOT here: Stage
+ * decides whether to mount .bd-turn at all, from the PORTRAIT_PHONE constant in
+ * useMediaQuery.js. It was a media query, which meant the same 575px existed in two
+ * files kept in step by a comment. If it is mounted, it shows. */
+.bd-turn {
+  display: flex;
+}
+
+.bd-turn__exit {
+  margin-top: 6px;
+  padding: 12px 18px;
+  min-height: 44px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font: 800 14px/1 var(--f-word);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 /* ========================================================================== */

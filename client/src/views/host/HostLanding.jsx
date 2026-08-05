@@ -17,71 +17,25 @@ export const LOBBY_MARQUEE = ['খেলা হবে! · PLAYERS JOIN ON THEIR 
  * asks them to commit to something before they have been told what it is. So the
  * landing has a real phone layout, and the rotation contract starts one screen
  * later, once they have actually chosen to host.
+ *
+ * The two shapes differ in three things and nothing else — what wraps them, where
+ * the buttons sit, and the type scale (hs-landing--phone in host.css). The lockup
+ * itself is written once: as two branches, a change to the tagline had to be made
+ * twice, and the marquee had already gone missing from one of them.
  */
 export default function HostLanding({ onStart, onJoinInstead, pending, phone = false }) {
-  if (phone) {
-    return (
-      <PhoneScreen>
-        <Band height="var(--band-phone)">
-          <BandCell fill tone="green" align="between">
-            <span className="bd-word" style={{ fontSize: 15, letterSpacing: '0.26em' }}>
-              KHELA HOBE GAME STUDIOS
-            </span>
-            <Num size={13} style={{ color: 'rgba(255,248,236,.75)' }}>
-              v2.0
-            </Num>
-          </BandCell>
-        </Band>
+  const lockup = (
+    <div className={`hs-landing${phone ? ' hs-landing--phone' : ''}`}>
+      <img className="hs-landing__mark" src={LOGO} alt="" />
+      <div className="hs-landing__bn">এক দাম</div>
+      <h1 className="hs-landing__word">Fixed Price</h1>
+      <div className="hs-landing__tag">GUESS THE NUMBER · CLOSEST WINS</div>
 
-        <div className="hs-landing hs-landing--phone">
-          <img className="hs-landing__mark" src={LOGO} alt="" />
-          <div className="hs-landing__bn">এক দাম</div>
-          <h1 className="hs-landing__word">Fixed Price</h1>
-          <div className="hs-landing__tag">GUESS THE NUMBER · CLOSEST WINS</div>
-          <div className="hs-landing__meta">
-            <span className="bd-caret" />
-            2-15 PLAYERS · 15 MIN
-          </div>
-        </div>
-
-        <div className="ps-cta">
-          <Btn block cta onClick={onStart} disabled={!!pending} data-testid="host-start">
-            {pending ? 'OPENING THE ROOM' : 'START GAME'}
-          </Btn>
-          {/* Said before they tap, not after: the board is 16:9 and this is a phone. */}
-          <span className="bd-mono" style={{ fontSize: 11, textAlign: 'center' }}>
-            THE BOARD RUNS SIDEWAYS — A TV OR LAPTOP IS BETTER
-          </span>
-          {onJoinInstead && (
-            <Btn block small tone="panel" onClick={onJoinInstead} data-testid="join-instead">
-              JOINING A GAME INSTEAD?
-            </Btn>
-          )}
-        </div>
-      </PhoneScreen>
-    );
-  }
-
-  return (
-    <Stage>
-      <Band height={44}>
-        <BandCell fill tone="green" align="between">
-          <span className="bd-word" style={{ fontSize: 19, letterSpacing: '0.3em' }}>
-            KHELA HOBE GAME STUDIOS
-          </span>
-          <Num size={14} style={{ color: 'rgba(255,248,236,.75)' }}>
-            v2.0
-          </Num>
-        </BandCell>
-      </Band>
-
-      <div className="bd-body">
-        <div className="hs-landing">
-          <img className="hs-landing__mark" src={LOGO} alt="" />
-          <div className="hs-landing__bn">এক দাম</div>
-          <h1 className="hs-landing__word">Fixed Price</h1>
-          <div className="hs-landing__tag">GUESS THE NUMBER · CLOSEST WINS</div>
-
+      {/* On the board the controls sit in the middle of the screen with the lockup,
+          because there is nowhere else for them to be. On a phone they belong in the
+          pinned CTA stack, under the thumb. */}
+      {!phone && (
+        <>
           <Btn
             onClick={onStart}
             disabled={!!pending}
@@ -109,9 +63,61 @@ export default function HostLanding({ onStart, onJoinInstead, pending, phone = f
               JOINING A GAME INSTEAD?
             </button>
           )}
-        </div>
-      </div>
+        </>
+      )}
 
+      {phone && (
+        <div className="hs-landing__meta">
+          <span className="bd-caret" />
+          2-15 PLAYERS · 15 MIN
+        </div>
+      )}
+    </div>
+  );
+
+  const studioBand = (
+    <Band height={phone ? 'var(--band-phone)' : 44}>
+      <BandCell fill tone="green" align="between">
+        <span
+          className="bd-word"
+          style={{ fontSize: phone ? 15 : 19, letterSpacing: phone ? '0.26em' : '0.3em' }}
+        >
+          KHELA HOBE GAME STUDIOS
+        </span>
+        <Num size={phone ? 13 : 14} style={{ color: 'rgba(255,248,236,.75)' }}>
+          v2.0
+        </Num>
+      </BandCell>
+    </Band>
+  );
+
+  if (phone) {
+    return (
+      <PhoneScreen>
+        {studioBand}
+        {lockup}
+        <div className="ps-cta">
+          <Btn block cta onClick={onStart} disabled={!!pending} data-testid="host-start">
+            {pending ? 'OPENING THE ROOM' : 'START GAME'}
+          </Btn>
+          {/* Said before they tap, not after: the board is 16:9 and this is a phone. */}
+          <span className="bd-mono" style={{ fontSize: 11, textAlign: 'center' }}>
+            THE BOARD RUNS SIDEWAYS — A TV OR LAPTOP IS BETTER
+          </span>
+          {onJoinInstead && (
+            <Btn block small tone="panel" onClick={onJoinInstead} data-testid="join-instead">
+              JOINING A GAME INSTEAD?
+            </Btn>
+          )}
+        </div>
+      </PhoneScreen>
+    );
+  }
+
+  return (
+    <Stage>
+      {studioBand}
+      <div className="bd-body">{lockup}</div>
       <Marquee items={LOBBY_MARQUEE} />
     </Stage>
   );

@@ -15,6 +15,7 @@
     "questions:clean": "node questions/clean.js",
     "screens": "node capture-screens.js",
     "test:fit": "node scripts/fit-check.js",
+    "test:responsive": "node scripts/responsive-check.js",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client"
   },
   "devDependencies": {

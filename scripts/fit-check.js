@@ -109,9 +109,18 @@ function evaluateFit(page) {
      * through the next one. That reads as overlapping text and clipped buttons and
      * passes every check we had.
      *
-     * So: in a column stack, a child must stay inside its parent. Only column
-     * stacks, because sharing a line is the entire point of a row or a grid; and
-     * not scrollers, which are allowed more content than they can show. */
+     * So: in anything that stacks its children vertically, a child must stay inside
+     * its parent. That means column flex AND grid — grid was exempt when this was
+     * written, which let .bd-rows off, and .bd-rows is what the host reveal and
+     * scoreboard stack their rows in.
+     *
+     * Row flex and plain inline flow are deliberately out of scope. Not because
+     * overflow there is fine, but because their vertical geometry is a line box: a
+     * numeral at line-height 1, or the Bengali face inside a Latin wordmark, sticks
+     * out of its parent's box by a few px as a matter of typography rather than
+     * layout. Including them reported 30 of those and buried the real thing.
+     *
+     * Scrollers are exempt too: they are allowed more content than they can show. */
     const root = document.querySelector('[data-phone]') ?? stage;
     let burst = null;
     if (root) {
@@ -121,7 +130,9 @@ function evaluateFit(page) {
         const cs = getComputedStyle(el);
         if (cs.position === 'absolute' || cs.position === 'fixed') continue;
         const pcs = getComputedStyle(parent);
-        if (!pcs.display.includes('flex') || !pcs.flexDirection.startsWith('column')) continue;
+        const stacks = pcs.display.includes('grid')
+          || (pcs.display.includes('flex') && pcs.flexDirection.startsWith('column'));
+        if (!stacks) continue;
         if (pcs.overflowY === 'auto' || pcs.overflowY === 'scroll') continue;
 
         const r = el.getBoundingClientRect();

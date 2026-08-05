@@ -44,13 +44,15 @@ What it runs, cheapest first:
 | `vite build` | No import/syntax errors in any view |
 | `test-reliability.js` | 15 players, mid-game reconnect keeps score, duplicate names, input validation, colour stability, avatars, settings, the server clock, the finale |
 | `scripts/fit-check.js` | Every screen fits the screen it is meant for, and rendered at all |
+| `scripts/responsive-check.js` | Resizing and rotating pick the right side of the game, and every control clears 44px |
 | `test-game.js` | The real browser path through the real UI |
 
 Individually:
 
 ```bash
 npm run test:reliability   # socket-level, needs only the backend
-npm run test:fit           # every preview at its own viewport, needs the client
+npm run test:fit           # every preview at every size it must survive, needs the client
+npm run test:responsive    # resize + rotate + tap targets, needs the client
 npm run test:browser       # Playwright, needs both servers
 npm run questions:lint     # pure, needs nothing
 ```
@@ -101,6 +103,19 @@ and renders its contents straight through the next one. That is why the gate che
 for a *burst* as well as a spill, and why every metric that spends height on a phone
 is a `--phone-*` clamp token rather than a flat px (see Responsiveness in CLAUDE.md).
 Reach for a token before you type a pixel into `player.css`.
+
+**Nothing tappable goes under 44px — now enforced.** `npm run test:responsive` fails
+on any control under 44px at 320×568. Both times this was broken it was broken
+quietly: the avatar tabs shipped at 38px, and the pass that made the phone fluid took
+them to 34px on a short screen while every other control kept its floor.
+
+**The viewport changes, and that is its own class of bug.** `fit-check` proves
+geometry at fixed sizes; it cannot see a window being dragged narrow or a phone being
+turned over, which is where the role guess and the rotate guard live.
+`scripts/responsive-check.js` covers those, and it is worth confirming a new check
+there actually fails against the bug it describes — two of its assertions originally
+passed against a faithful reproduction of the regression, because both sides of the
+game render a phone screen and `[data-phone]` alone does not tell them apart.
 
 **15 players is the design target, not 5.** Layouts that look fine with the default
 5-player fixtures fall apart at 15 — that is how the reveal, the scoreboard and the

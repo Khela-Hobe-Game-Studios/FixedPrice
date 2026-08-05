@@ -105,6 +105,15 @@ function cleanup() {
     console.log('\n▸ fit check — skipped (--fast)');
   }
 
+  // 5b. What fit-check structurally cannot see: the decisions that depend on the
+  //     viewport *changing*. A window dragged narrow, a phone turned over, and the
+  //     44px floor under everything you tap.
+  if (!FAST) {
+    run('responsive check (resize + rotate)', process.execPath, ['scripts/responsive-check.js']);
+  } else {
+    console.log('\n▸ responsive check — skipped (--fast)');
+  }
+
   // 6. The real browser path through the real UI.
   if (!FAST) {
     run('browser smoke (host + 2 players)', process.execPath, ['test-game.js'],
