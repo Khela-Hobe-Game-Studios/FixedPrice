@@ -5,18 +5,21 @@ const cors = require('cors');
 const {
   rooms,
   MAX_PLAYERS,
+  normalizeSettings,
   createRoom,
   getRoom,
   touchRoom,
   sanitizeName,
   addPlayer,
+  setAvatar,
   findPlayerByPid,
   findPlayerBySocket,
   removePlayer,
   deleteRoom,
   startIdleSweeper,
 } = require('./roomManager');
-const { handleGameEvent, syncPlayerState, setQuestions, resetToLobby, sanitizePlayers } = require('./gameManager');
+const { handleGameEvent, syncPlayerState, setQuestions, resetToLobby } = require('./gameManager');
+const { sanitizePlayers } = require('./sanitize');
 const { loadQuestions } = require('./questionsLoader');
 
 const app = express();
@@ -97,23 +100,40 @@ function broadcastPlayers(code, room) {
 // ─── socket handlers ─────────────────────────────────────────────────────────
 
 io.on('connection', (socket) => {
-  socket.on('host:create_room', ({ questionCount, eliminationMode, bettingRounds } = {}) => {
+  // Clients derive every countdown from the server's clock rather than from a
+  // number handed to them once, so they measure the offset here first. Round-trip
+  // halved is close enough on a LAN and stops a slow socket from showing 30 when
+  // the board says 27.
+  socket.on('time:ping', (clientSent, ack) => {
+    const payload = { clientSent, serverNow: Date.now() };
+    if (typeof ack === 'function') return ack(payload);
+    socket.emit('time:pong', payload);
+  });
+
+  socket.on('host:create_room', (settings = {}) => {
     if (!allow(socket, 'create', 2)) return;
 
-    const count = [10, 15, 20].includes(Number(questionCount)) ? Number(questionCount) : 10;
-    const room = createRoom({
-      hostSocketId: socket.id,
-      questionCount: count,
-      eliminationMode: !!eliminationMode,
-      bettingRounds: !!bettingRounds,
-    });
+    const room = createRoom({ hostSocketId: socket.id, settings });
     if (!room) return socket.emit('error', { message: 'No rooms available right now — try again shortly' });
 
     socket.join(room.code);
     socket.data.roomCode = room.code;
     socket.data.isHost = true;
-    socket.emit('room:created', { code: room.code });
+    socket.emit('room:created', { code: room.code, settings: room.settings });
     console.log('room created:', room.code);
+  });
+
+  // Settings are editable until the game starts, so the host can open the room
+  // (and let people join and pick a face) before deciding how long to play for.
+  socket.on('host:update_settings', (settings = {}) => {
+    const room = getRoom(socket.data?.roomCode);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (room.state !== 'LOBBY') return;
+    if (!allow(socket, 'settings', 5)) return;
+
+    room.settings = normalizeSettings(settings, room.settings);
+    touchRoom(room);
+    io.to(room.code).emit('room:settings', { settings: room.settings });
   });
 
   socket.on('player:join', ({ code, name, pid } = {}) => {
@@ -147,9 +167,26 @@ io.on('connection', (socket) => {
     touchRoom(room);
 
     broadcastPlayers(room.code, room);
-    socket.emit('player:joined', { room: sanitizeRoom(room), you: { id: pid, name: player.name } });
+    socket.emit('player:joined', {
+      room: sanitizeRoom(room),
+      you: { id: pid, name: player.name, colorIndex: player.colorIndex, avatar: player.avatar },
+    });
     if (room.state !== 'LOBBY') syncPlayerState(socket, room, pid);
     console.log(`${player.name} joined room ${room.code}`);
+  });
+
+  socket.on('player:set_avatar', (avatar = {}) => {
+    if (!allow(socket, 'avatar', 3)) return;
+    const room = getRoom(socket.data?.roomCode);
+    const pid = socket.data?.pid;
+    if (!room || !pid) return;
+
+    const player = findPlayerByPid(room, pid);
+    if (!setAvatar(player, avatar)) return socket.emit('error', { message: 'That picture did not stick — try again' });
+
+    touchRoom(room);
+    socket.emit('player:avatar_set', { avatar: player.avatar });
+    broadcastPlayers(room.code, room);
   });
 
   // Fires on every reconnect, not just an explicit refresh.
@@ -175,13 +212,17 @@ io.on('connection', (socket) => {
     }
 
     player.socketId = socket.id;
-    player.connected = true;
+    player.connectionState = 'connected';
+    player.seatHoldUntil = null;
     socket.join(room.code);
     socket.data.roomCode = room.code;
     socket.data.pid = pid;
     touchRoom(room);
 
-    socket.emit('player:joined', { room: sanitizeRoom(room), you: { id: pid, name: player.name } });
+    socket.emit('player:joined', {
+      room: sanitizeRoom(room),
+      you: { id: pid, name: player.name, colorIndex: player.colorIndex, avatar: player.avatar },
+    });
     syncPlayerState(socket, room, pid);
     broadcastPlayers(room.code, room);
     console.log(`${player.name} rejoined room ${room.code}`);
@@ -273,18 +314,31 @@ io.on('connection', (socket) => {
     const player = findPlayerBySocket(room, socket.id);
     if (!player) return;
 
-    player.connected = false;
-    if (room.state !== 'LOBBY') handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { pid: player.id });
+    const inLobby = room.state === 'LOBBY';
+    const timeout = inLobby ? LOBBY_GRACE_MS : GAME_GRACE_MS;
+
+    player.connectionState = 'reconnecting';
+    player.seatHoldUntil = Date.now() + timeout;
+    if (!inLobby) handleGameEvent(io, room, 'PLAYER_DISCONNECTED', { pid: player.id });
     broadcastPlayers(code, room);
 
-    const timeout = room.state === 'LOBBY' ? LOBBY_GRACE_MS : GAME_GRACE_MS;
     player._disconnectTimer = setTimeout(() => {
-      if (player.connected === false) {
+      if (player.connectionState !== 'reconnecting') return;
+
+      // In the lobby a no-show is just gone. Mid-game they keep their seat and
+      // their score — a phone that dies at round 6 should still be on the final
+      // standings, and they can walk back in on the same name.
+      if (inLobby) {
         removePlayer(room, player.id);
-        broadcastPlayers(code, room);
-        // Nobody left and no host watching — let the room go.
-        if (room.players.length === 0 && !room.hostConnected) deleteRoom(code);
+      } else {
+        player.connectionState = 'dropped';
+        player.seatHoldUntil = null;
       }
+      broadcastPlayers(code, room);
+
+      // Nobody left to play and no host watching — let the room go.
+      const anyoneLeft = room.players.some(p => p.connectionState === 'connected');
+      if (!anyoneLeft && !room.hostConnected) deleteRoom(code);
     }, timeout);
   });
 });

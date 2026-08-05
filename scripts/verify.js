@@ -96,7 +96,16 @@ function cleanup() {
   //    score, duplicate names, answer validation.
   run('reliability suite (15 players)', process.execPath, ['test-reliability.js']);
 
-  // 5. The real browser path through the real UI.
+  // 5. Every screen fits the screen it is meant for. The host board is a TV
+  //    nobody touches — there is no scrollbar to rescue an overflow, and the
+  //    fifteen-player cases are the ones a change made at five silently breaks.
+  if (!FAST) {
+    run('fit check (every screen)', process.execPath, ['scripts/fit-check.js']);
+  } else {
+    console.log('\n▸ fit check — skipped (--fast)');
+  }
+
+  // 6. The real browser path through the real UI.
   if (!FAST) {
     run('browser smoke (host + 2 players)', process.execPath, ['test-game.js'],
       { env: { ROUNDS: '2', BETTING: 'false' } });

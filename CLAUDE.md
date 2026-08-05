@@ -25,45 +25,82 @@ The backend is stateful (in-memory rooms Map). Vercel/serverless won't work — 
 
 ## UI / Design System
 
-**The client uses `@khelahobe/kui` — the studio's shared component library.** Do NOT introduce CSS modules, Tailwind, styled-components, MUI, etc.
+**The client owns its design system: `client/src/board/`.** Plain React, plain CSS,
+no dependencies. Do NOT introduce CSS modules, Tailwind, styled-components, MUI, or a
+component library.
 
-> **KUI is currently frozen — we cannot publish to it.** So the old "add it upstream to
-> KUI" rule no longer applies. If you need a primitive KUI doesn't have, add it locally
-> under `client/src/components/` with plain CSS in `client/src/index.css` that reuses the
-> existing `--kui-*` tokens (see `EkCategoryBadge`, `JoinQR`). If you need to change the
-> *behaviour* of an existing KUI component, override it with a scoped rule in `index.css`
-> (see the `.ek-reveal-list--compact .kui-revcard` reflow) rather than forking the
-> library. Only if that proves impossible, vendor that single component by copying its
-> source from the local clone at `../kui/packages/lib/src/`.
+The v2.0 redesign ("DOT MATRIX") is a cricket-stadium LED scoreboard: the screen *is*
+the board. Two rules hold the whole system together:
 
-- KUI package: `@khelahobe/kui` (^0.3.0 at time of writing — registry: https://www.npmjs.com/package/@khelahobe/kui)
-- KUI repo: https://github.com/Khela-Hobe-Game-Studios/KUI (locally cloned at `../kui` sibling to this repo)
-- KUI docs site: deployed via the KUI repo's `Deploy Docs` workflow; run `pnpm docs` in the kui repo for a local copy
-- Spec: `../kui/SPEC.md` (authoritative prop signatures for every KUI component)
+1. **Numbers are amber, words are bone.** They never swap. This is the fix for the
+   worst bug in the old UI, where the correct answer and the players' guesses were
+   both gold and therefore indistinguishable.
+2. **Elevation is light output, not height.** No shadows, no borders, `border-radius:
+   0` everywhere. A "card" is a region at a different brightness — four steps
+   (100 / 55 / 32 / 12 % alpha on bone), which is why nothing needs an outline.
 
-**Theme:** `<KuiProvider theme="fixedprice" colorMode="light">` wired in `client/src/main.jsx`. The `fixedprice` theme lives in KUI's `tokens.scss` — BD-flag green (`#006A4E`) primary, BD-flag red (`#F42A41`) secondary, gold (`#FBBF24`) accent, warm cream (`#FFF8EC`) background. Dark mode is defined but not used (light reads better against the BD-flag gradient).
+`@khelahobe/kui` was dropped from this client in v2.0. KUI is frozen and shares no
+visual DNA with this design — matching it would have meant positional `nth-child`
+overrides on a third-party DOM across 23 screens. **KUI is untouched upstream and
+still used by the studio's other games.** `framer-motion` and `canvas-confetti` went
+with it: nothing in this design eases, and the handoff is explicit that there is no
+confetti — the board never breaks frame, brightness is the celebration.
 
-**Page background:** `.ek-page` (in `client/src/index.css`) provides a radial-gradient backdrop with BD-flag colors. Every view's root uses `<div className="ek-page">`. `.ek-page--center` modifier vertically centers content.
+### The board layer
 
-**Game-specific components from KUI's `fixedprice` subpath:** `QuestionCard`, `AnswerInput`, `BettingPanel`, `RevealCard`, `FunFact`, `MiniLeaderboard`. Imported as `from '@khelahobe/kui/fixedprice'`.
+| File | What it is |
+|---|---|
+| `board/tokens.css` | Every measured colour, band height and type size, plus day mode |
+| `board/fonts.css` | Self-hosted @font-face; DotGothic16 / Barlow Condensed / Hind Siliguri |
+| `board/board.css` | Primitives, the dot grid, the bezel, the keyframes |
+| `board/Stage.jsx` | The 1280×720 host board, scaled to fit any TV; `PhoneScreen` for phones |
+| `board/SplitColumns.jsx` | The two-wrapper-div pattern (see Gotchas) |
+| `board/AvatarTile.jsx` | Monogram / selfie / sprite tile + the 8-hue player ramp |
+| `board/Numeral.jsx` | `Num` and `FlapNum` (the split-flap correct answer) |
+| `board/*.jsx` | Band/Brand/Marquee, SegmentBar, Countdown, KeyTile/CodeEntry, Btn, Toasts |
 
-KUI's `CategoryBadge` is **not** used — it only knows `desh|cricket|taka|global|weird`, which left the sheet's `Price` (314) and `Sports` (63) categories with no badge at all. `client/src/components/EkCategoryBadge.jsx` replaces it, driven by `client/src/categories.js`, which maps every category spelling either bank uses (the Sheet's `Price`/`Sports` and questions.json's `Taka`/`Cricket`) onto one key set. **Add new categories there, not in two views.**
+Screens compose from these: `views/host/` (10) and `views/player/` (13), each with
+its own stylesheet (`host.css`, `player.css`).
 
-**Base components from KUI:** `Button`, `Card` (compound), `Input`, `Badge`, `Avatar`, `RoomCode`, `PlayerCard`, `ProgressBar`, `Timer`, `Leaderboard`, `Podium`, `WinnerDisplay`, `LoadingDot`, `SettingsPanel`, `TitleBlock`, `PageBackground`, `ConfettiBurst`, `CountdownSplash`, `ToastStack`, `PulseRing`, `StudioCredit`, `KuiProvider`.
+**Fonts are self-hosted** via `@fontsource` with our own `@font-face` block, at
+`font-display: block` — every position in this design is a measured value, so a
+fallback face reflowing the board is worse than a beat of nothing. The Bengali face is
+a **custom subset** (73 KB → 1.6 KB); if you add a Bengali string anywhere, extend the
+subset command in `board/fonts.css` and regenerate, or it silently falls back.
 
-**Vite dedupes React** in `client/vite.config.js` — required because the file-path KUI dep we used during pre-publish dev would otherwise pull a second React copy from `../kui/packages/lib/node_modules`. With `^0.3.0` from npm this is less critical but the dedupe stays as a safety net.
+**Typography:** `DotGothic16` for every number and machine label, `Barlow Condensed`
+700/800 for every word, `Hind Siliguri` 700 for Bengali only. Numerals are Latin
+everywhere, including the timer, for legibility at 3 metres.
+
+**Language rule:** English is the interface language. Bengali appears in exactly four
+places, all of them jokes or proper names — `এক দাম` in the lockup, `খেলা হবে!` /
+`খেলা শেষ!` in the marquees and game over, `এক দাম!` on the winner's band, and `দেশ`
+as a category name.
+
+**Day mode:** same geometry, `:root[data-lighting="day"]` swaps the palette and kills
+every glow. `AUTO` follows local time. **Phones are always night** — a phone is held
+close and glanced at, and the dark board is the more legible of the two at arm's
+length. Do not auto-switch phones with the host.
+
+**Motion:** nothing eases; everything is `steps()` or linear. `prefers-reduced-motion`
+and the MOTION: REDUCED setting kill shake, blink, strobe and the marquee, and keep
+the reveal's stagger at 60% duration — it must still read as a sequence.
 
 ---
 
 ## Branding
 
-**Logo:** `client/public/fixed_price_logo_bitmap.png` — cartoon-pastel game logo with mascot + wordmark. Used as:
-- The hero on the Landing home screen (~280px wide, scales to 70vw on mobile)
-- `favicon`, `apple-touch-icon`, `og:image` in `index.html`
+**Logo:** `client/public/fixed_price_logo_bitmap.png` — cartoon-pastel mascot +
+wordmark. Used as the landing hero (150px), the game-over mascot (186px), the phone's
+join and game-over marks (104/118px), a 34px round crop in every host header band, and
+`favicon` / `apple-touch-icon` / `og:image` in `index.html`.
 
-**`EkBrandLine` (`client/src/components/EkBrandLine.jsx`):** Small vertically-stacked "এক দাম / FIXED PRICE" wordmark pinned `position: fixed` to the top-right of the viewport. Rendered ONCE globally in `App.jsx` (outside the screen router) so it shows on every screen without per-view boilerplate. `pointer-events: none` so it never blocks clicks.
+The mascot's round crop is the one round thing in the system, because it is a picture
+of a logo rather than a UI element.
 
-**`StudioCredit` (from KUI):** Refined "A game by Khela Hobe Game Studios" credit with an ornamental rule. Rendered in `Landing.jsx` with `fixed` prop, so it sits at the viewport bottom across all three Landing sub-screens (home / host settings / join).
+`EkBrandLine` is gone: every host screen carries the brand lockup inside its 46px
+header band (`board/Band.jsx` → `Brand`), and the phone's header is the player's own
+colour with their name in it.
 
 ---
 
@@ -73,8 +110,12 @@ KUI's `CategoryBadge` is **not** used — it only knows `desh|cricket|taka|globa
 npm run dev          # both servers, background, returns when ready
 npm run dev:status   # what's running (and whether it's actually ours)
 npm run dev:stop
-npm run verify       # lint + build + reliability + browser tests
+npm run verify       # lint + build + reliability + fit + browser tests
 ```
+
+The dev servers do **not** hot-reload the backend: `scripts/dev.js` runs plain `node`,
+so a change under `server/` needs `npm run dev:restart` or you are testing the old
+code against the new client.
 
 `npm run dev:watch` is the old blocking two-terminal `concurrently` setup if you want
 live logs. See [AGENTS.md](AGENTS.md) for the full workflow.
@@ -99,47 +140,76 @@ The workflow is `verify → build → deploy`; a failing check blocks the deploy
 
 All events are bidirectional over a single Socket.io room (keyed by 4-letter code).
 
+**Every phase event carries the server's clock:** `{ phase, serverNow, startedAt,
+endsAt, durationMs }`. Clients measure their offset once per connect (`time:ping`) and
+derive the remaining time from `endsAt` — nobody counts down from a number they were
+handed once. See `client/src/game/clock.js`.
+
 ### Client → Server
 | Event | Payload | Description |
 |---|---|---|
-| `host:create_room` | `{ questionCount, eliminationMode, bettingRounds }` | Create a new room |
-| `host:rejoin` | `{ code }` | Host reconnect after refresh |
-| `host:start_game` | — | Start the game (requires ≥2 players) |
-| `player:join` | `{ code, name }` | Join a room in LOBBY state |
-| `player:rejoin` | `{ code, name }` | Player reconnect after refresh |
-| `player:submit_answer` | `{ answer }` | Submit numeric guess |
-| `player:submit_bet` | `{ targetId }` | Bet on another player (betting rounds) |
+| `time:ping` | `clientSent` (ack) | Clock sync; ack returns `{ clientSent, serverNow }` |
+| `host:create_room` | `settings` | Create a room (see Settings) |
+| `host:update_settings` | `settings` | Change settings; lobby only |
+| `host:rejoin` | `{ code }` | Host reconnect |
+| `host:start_game` | — | Start (requires ≥2 players) |
+| `host:skip` / `host:end_game` / `host:play_again` | — | Host controls |
+| `player:join` | `{ code, name, pid }` | Join a room in LOBBY |
+| `player:rejoin` | `{ code, pid, name }` | Player reconnect |
+| `player:set_avatar` | `{ kind, image?, spriteId? }` | Monogram / selfie / sprite |
+| `player:submit_answer` | `{ answer }` | Numeric guess |
+| `player:submit_bet` | `{ targetId }` | Back a guess |
 
 ### Server → Client
 | Event | Payload | Description |
 |---|---|---|
-| `room:created` | `{ code }` | Room successfully created |
-| `player:joined` | `{ room }` | Ack for joining, includes sanitized room |
-| `room:updated` | `{ players }` | Player list changed (join/leave/reconnect) |
-| `round:start` | `{ round, total, question, category, unit, isBettingRound, players, timer }` | New round begins |
-| `round:answer_count` | `{ count, total }` | Live count of submitted answers |
-| `round:betting` | `{ ranked: [{id, name}], timer }` | Betting phase (player names only, no guesses yet) |
-| `round:reveal` | `{ ranked, correctAnswer, unit, funFact, bets, scores, strikes }` | Reveal all answers |
-| `round:scoreboard` | `{ scoreboard: [{id, name, score, strikes, eliminated}] }` | Between-round scoreboard |
-| `game:over` | `{ final: [{id, name, score, strikes}] }` | Game ended |
-| `error` | `{ message }` | Error (Room not found, Game already started, etc.) |
+| `room:created` | `{ code, settings }` | Room opened |
+| `player:joined` | `{ room, you }` | Join ack; `you` carries `colorIndex` + `avatar` |
+| `room:updated` | `{ players }` | Roster changed |
+| `room:settings` | `{ settings }` | Host changed the settings |
+| `room:reset` | `{ players, settings }` | Rematch — same code and roster |
+| `round:intro` | `{ round, total, category, isBettingRound, finale? }` | 3s category flash |
+| `round:start` | `{ round, total, question, category, unit, isBettingRound, finale?, players }` | Question |
+| `round:answer_count` | `{ count, total, answered[] }` | Who has locked in |
+| `round:betting` | `{ options[] }` | `{id, name, guess, odds}`, randomised order |
+| `round:bet_count` | `{ count, total }` | Bets placed |
+| `round:reveal` | `{ ranked[], correctAnswer, unit, funFact, outcome, winnerIds, knockedOut, finale?, schedule, revealMs, scores, roundPoints }` | The reveal, with its beat schedule |
+| `round:scoreboard` | `{ scoreboard[], round, total, nextCategory }` | Standings; rows carry `delta` |
+| `round:finale_intro` | `{ finalists[], total }` | Sudden death begins |
+| `game:over` | `{ final[], rounds, finale? }` | Final table |
+| `game:paused` / `game:resumed` | `{ reason }` / timing | Host dropped / returned |
+| `error` | `{ message }` | Room not found, game started, bad input… |
+
+A `ranked` entry is `{ id, name, colorIndex, avatar, submitted, guess, distance, rank,
+points, isWinner, nearMiss, wildMiss, knockedOut }` — **the server decides all of it**,
+so the TV and fifteen phones cannot disagree about who was close.
+
+Sanitised player shape (`server/src/sanitize.js`): `{ id, name, score, colorIndex,
+avatar, connectionState, seatHoldUntil, eliminated }`.
 
 ---
 
 ## Game State Machine
 
 ```
-LOBBY → IN_GAME (startGame called)
-  └─ QUESTION (30s timer)
-       └─ [BETTING (20s, every 5th round if enabled)]
-            └─ REVEAL (5s)
-                 └─ SCOREBOARD (5s)
-                      └─ QUESTION (next round) or GAME_OVER
+LOBBY
+  └─ INTRO (3s) → QUESTION (0/20/30/45s) → [BETTING (20s)] → REVEAL (~4.6s) → SCOREBOARD (5s)
+       ↑                                                                            │
+       └────────────────────── advanceRound() ──────────────────────────────────────┘
+                                     │ (rounds exhausted)
+                            FINALE_INTRO (4s)
+                                     └─ sudden-death rounds until one is left → GAME_OVER
 ```
 
-Server-side state lives in `room.state`. All timers are `setTimeout`s stored on the room object (`room._questionTimer`, `room._bettingTimer`, etc.) and cleared when players advance a phase early.
+`advanceRound()` in `gameManager.js` is **the one place** a round ends and the next
+begins. It used to be written out three times — the scoreboard timer, the host's skip,
+and the resume-after-pause path — which is how a new phase ends up missing from one of
+them.
 
-**`syncPlayerState(socket, room)`** in `gameManager.js` re-emits the correct event for the current phase to a reconnecting socket, with a time-corrected timer value.
+All timers are `setTimeout`s stored on the room (`room._timers`) and cleared when a
+phase is cut short. `beginPhase()` stamps the clock; `syncPlayerState()` re-emits the
+current phase to a reconnecting socket **with real elapsed time**, including the
+reveal, which used to restart its whole animation for a phone that rejoined 8s in.
 
 ---
 
@@ -147,11 +217,18 @@ Server-side state lives in `room.state`. All timers are `setTimeout`s stored on 
 
 - Closest answer (solo) → **3 pts**
 - Tied closest → **2 pts each**
-- Second closest (only when one player is sole winner) → **1 pt**
-- Betting round bonus: winner gets +1 pt per player who bet on them; each correct bettor gets +1 pt
-- Elimination mode: furthest answer each round gets a strike; 3 strikes = eliminated
+- Second closest (only when one player is the sole winner) → **1 pt**
+- Betting round: the winner gets +1 per player who backed them, and each correct
+  bettor gets +1. Every player tied for closest pays out — not just the first one the
+  sort returned, which is what used to happen.
 
-`distance: null` means the player didn't submit — they lose nothing but win nothing. Never use `Infinity` for distance; `JSON.stringify` converts it to `null` silently and breaks downstream `.toLocaleString()` calls.
+`distance: null` means the player didn't submit — they lose nothing and win nothing.
+Never use `Infinity` for distance; `JSON.stringify` turns it into `null` silently and
+breaks downstream `.toLocaleString()` calls.
+
+**The finale** (sudden death) decides placings among finalists rather than points:
+see Settings. Three-strikes elimination was removed in v2.0 — knocking somebody out at
+round 6 of a fifteen-round party game left them watching for ten minutes.
 
 ---
 
@@ -159,75 +236,111 @@ Server-side state lives in `room.state`. All timers are `setTimeout`s stored on 
 
 ```
 server/src/
-  index.js          Socket.io handlers, disconnect/reconnect logic, sanitizePlayers()
-  gameManager.js    Full game state machine, all timers, scoring, syncPlayerState()
-  roomManager.js    In-memory rooms Map, player CRUD, Bangla word bank for room codes
-  questionsLoader.js  Loads from Google Sheet CSV or falls back to questions.json
+  index.js          Socket handlers, disconnect/seat-hold, validation, rate limits
+  gameManager.js    State machine, timers, scoring, reveal schedule, the finale
+  roomManager.js    Rooms Map, player CRUD, colour assignment, settings, code bank
+  sanitize.js       The one sanitizePlayers() — it used to be two copies
+  categories.js     Category matching for the deck filter (mirrors the client's)
+  questionsLoader.js  Google Sheet CSV or questions.json fallback
 
-client/
-  index.html        Favicon + apple-touch-icon + og:image wiring for the logo
-  vite.config.js    React dedupe (file:-dep era safety net), /socket.io proxy
-  public/
-    fixed_price_logo_bitmap.png  Game logo (mascot + wordmark)
-    CNAME                         ekdaam.khelahobe.store custom-domain pin
-  src/
-    main.jsx          Mounts <KuiProvider theme="fixedprice" colorMode="light">
-    App.jsx           Screen router, session persistence, primeMusic(), global EkBrandLine
-    socket.js         Socket.io client singleton (autoConnect: false)
-    index.css         Page background gradient, .ek-page / .ek-page--center / .ek-bengali
-    preview.jsx       ?preview=<name> URL switch with mock fixtures for screenshot validation
-    components/
-      EkBrandLine.jsx  Global top-right 'এক দাম / FIXED PRICE' wordmark
-    views/
-      Landing.jsx       Home (logo hero) + host settings + join form, KUI StudioCredit fixed at bottom
-      HostLobby.jsx     Host waiting room with KUI RoomCode + SettingsPanel + PlayerCard grid
-      PlayerLobby.jsx   Player waiting room (mobile)
-      HostGame.jsx      Host game (KUI Timer, QuestionCard, RevealCard list, Leaderboard)
-      PlayerGame.jsx    Player phone screen (AnswerInput, BettingPanel, MiniLeaderboard)
-      GameOver.jsx      WinnerDisplay + Podium + Leaderboard + Play Again
+client/src/
+  main.jsx          Mounts App (or a preview) and imports the three stylesheets
+  App.jsx           The router: host branch, player branch, device heuristic
+  socket.js         Socket.io singleton (autoConnect: false)
+  session.js        Durable pid, session persistence, ?join= deep link
+  categories.js     Category bands: name, label, fill, ink
+  previewData.js    Fixtures for the gallery, in the server's exact payload shapes
+  preview.jsx       ?preview=<key> — 42 screens, no backend needed
+  board/            The design system (see UI / Design System)
+  game/
+    useGameSocket.js  One reducer owning every socket event; screens are pure
+    clock.js          Server-time offset, phase remaining, second-aligned countdown
+    revealBeats.js    The reveal's beat clock and per-row stagger
+    avatar.js         Selfie → 2-tone posterised PNG, on the phone
+    settings.js       Board settings (lighting/sound/motion), localStorage
+  components/JoinQR.jsx   Real QR, deep-linked with the code prefilled
+  views/host/       Landing, Settings, Lobby, Intro, Finale, Question, Betting,
+                    Reveal, Scoreboard, GameOver, Pause
+  views/player/     Join, Avatar, Lobby, Question, Locked, Betting, Reveal,
+                    Scoreboard, Status (between / spectating / reconnecting /
+                    no-room / game-over), parts.jsx
 
-questions/
-  questions.json    Local fallback question bank
+scripts/
+  dev.js            Background dev servers, health checks, stale-listener rescue
+  verify.js         The gate: lint → build → reliability → fit → browser
+  fit-check.js      Every screen fits its viewport and rendered at all
 
-test-game.js        End-to-end Playwright test (run from project root)
+test-game.js        Browser: host + 2 phones through every phase (data-testid)
+test-reliability.js Socket: 15 players, reconnect, colours, avatars, clock, finale
+capture-screens.js  Every preview to .screens/, plus the live host+phone path
 ```
 
 ---
 
 ## Critical Gotchas
 
-**Player identity is a durable client-generated `pid`, never the socket id.** `client/src/session.js` mints it into `localStorage`; the client sends it on `player:join` / `player:rejoin`. The server keys `scores`, `strikes`, `answers` and `bets` off it and tracks the transport separately as `player.socketId`. Payloads still emit it as `id`. Socket ids change on every reconnect — keying game state off them silently reset a reconnecting player's score to 0.
+**Player identity is a durable client-generated `pid`, never the socket id.** `client/src/session.js` mints it into `localStorage`; the client sends it on `player:join` / `player:rejoin`. The server keys `scores`, `answers` and `bets` off it and tracks the transport separately as `player.socketId`. Payloads still emit it as `id`. Socket ids change on every reconnect — keying game state off them silently reset a reconnecting player's score to 0.
 
-**The client must re-announce itself on every `connect`, not just the first.** `App.jsx` uses `socket.on('connect')` reading a live session ref. It previously used `socket.once`, so socket.io's automatic reconnect (after a phone locks or switches apps) never re-emitted `player:rejoin` — the new socket wasn't in the room and the player silently stopped receiving the game.
+**Colour is assigned by the server from a counter, never from the roster index.** `room._nextColorIndex` hands out a colour at join that is unique in the room and stable for the session. The old client derived it from the array index in `room.players`, which is filtered on removal, so one player's grace expiring re-painted everyone after them. Colour is the identity token the whole board leans on: at 3 metres a 20px face is mush and a 20px colour block is instant.
 
-**`sanitizePlayers()` is mandatory before any Socket.io emit of player arrays.** Player objects have `_disconnectTimer` (a Node.js Timeout with circular linked list internals). Emitting raw player objects causes `RangeError: Maximum call stack size exceeded` in `hasBinary()`. Both `index.js` and `gameManager.js` have their own copy.
+**The client must re-announce itself on every `connect`, not just the first.** `useGameSocket` uses `socket.on('connect')` reading a live session ref. It previously used `socket.once`, so socket.io's automatic reconnect (after a phone locks or switches apps) never re-emitted `player:rejoin` — the new socket wasn't in the room and the player silently stopped receiving the game.
 
-**Background music only plays on the host device.** `primeMusic()` in `App.jsx` is called on the Start Game click (user gesture required for browser autoplay unlock). Uses Howler.js (Web Audio API) — not `new Audio()` — to avoid triggering the Windows SMTC / OS media session popup. Music stops on leaving `host-game` screen and the Howl is unloaded so a new random track plays next game.
+**`sanitizePlayers()` is mandatory before any Socket.io emit of player arrays.** Player objects carry `_disconnectTimer` (a Node.js Timeout with circular linked-list internals). Emitting them raw causes `RangeError: Maximum call stack size exceeded` inside `hasBinary()`. It lives in `server/src/sanitize.js` — one copy, because two copies is how a field added for the UI lands on some payloads and not others.
 
-**Session persistence:** `localStorage` stores `{ role, code, name?, settings? }` under key `ek_daam_session`. On socket connect, the client emits `host:rejoin` or `player:rejoin`. Cleared on `game:over` or on receiving `Room not found` / `Player not found in room` errors (server restarted, lost in-memory state).
+**Every countdown derives from the server's clock.** Phase events carry `endsAt`; the client measures its offset once per connect and computes the rest. Never hand a client a number of seconds and let it count down — a slow socket, a backgrounded tab and a mid-phase rejoin each drift differently. `useCountdown` also ticks on the second boundary rather than every 1000ms from mount: an interval started mid-second holds the last number too long, which on a 170px numeral is very visible.
 
-**Room codes** are 4-letter Bangla-transliterated words (AMMU, CHAI, DAAL, etc.) from a 48-word bank in `roomManager.js`, not random strings.
+**The server owns the reveal's beats.** `round:reveal` carries a `schedule` of offsets and a phase long enough to contain them. The host plays what it is given and computes nothing, and a phone that rejoins mid-reveal seeds from `startedAt` and lands on the right beat. The client used to time its own celebration at `min(animEnd, phaseEnd)`, which at 15 players could land the payoff before the winner resolved.
 
-**Betting round trigger:** `(currentRound + 1) % 5 === 0` — rounds 5, 10, 15, 20. `currentRound` is 0-indexed.
+**`steps(1)` is not "snap on".** It defaults to `jump-end`, whose output holds the FROM value for the whole duration — an element animated that way finishes its animation still invisible. Use `step-start` to snap on, and `jump-none` for anything whose END state matters (`dim`, `slam`, `shake`), or it freezes one step short and the board stays shifted after the winner flash.
 
-**Questions source:** Set `QUESTIONS_SHEET_URL` env var on Render to a Google Sheet "Publish to web → CSV" URL. Column order: `question | answer | unit | category | funFact`. Falls back to `questions/questions.json` if not set. Questions are cached in memory after first load.
+**Two columns fill top-to-bottom, never row-major.** Always `SplitColumns`. Rows placed directly into a two-column grid fill left-right, so a roster reads as a checkerboard and the reveal gives you every other rank down each column. Design review found this twice, which is why the pattern lives in one component.
 
-**Round 1 mount race (fixed).** The first `round:start` event fires while the host is still on `host-lobby`. App.jsx handles it and flips the screen to `host-game`, passing `initialRound` as a prop. HostGame's own `socket.on('round:start')` handler doesn't catch round 1 because it isn't mounted yet. `timeLeft` and `answerCount.total` are seeded from `initialRound` in HostGame's `useState` initializers so round 1 paints correctly. If you add similar live-updated state, seed it from the initial prop.
+**A CSS reset must not out-specify its own components.** `board.css` wraps its reset in `:where()`: `button { background: none }` beats `.bd-btn` on specificity and silently strips every button's fill.
 
-**Round counter is 1-indexed in payloads but 0-indexed in server state.** `round` in `round:start` payload is 1-indexed (display-ready). `currentRound` in server state is 0-indexed (controls betting trigger).
+**Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
+
+**Session persistence:** `localStorage` stores `{ role, code, name?, settings? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` — the server restarted and lost its in-memory rooms.
+
+**A mid-game drop keeps its seat.** 90 seconds of `reconnecting` with `seatHoldUntil`, then `dropped` — but the player stays in the roster with their score, so a phone that dies at round 6 is still on the final standings. Only a lobby no-show is removed.
+
+**Room codes** are 4-letter Bangla-transliterated words (AMMU, CHAI, DAAL…) from a 48-word bank in `roomManager.js`, not random strings.
+
+**Questions source:** set `QUESTIONS_SHEET_URL` on Render to a Google Sheet "Publish to web → CSV" URL. Column order: `question | answer | unit | category | funFact`. Falls back to `questions/questions.json`. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool.
+
+**Round counter is 1-indexed in payloads but 0-indexed in server state.** `round` in `round:start` is display-ready; `currentRound` is the index.
 
 ---
 
-## Settings (Host Configures Before Game)
+## Settings
+
+Set on the host's Settings screen (`views/host/HostSettings.jsx`), editable until the
+game starts. Server-side settings are normalised in `roomManager.normalizeSettings()`,
+which still accepts the pre-v2 `questionCount` / `bettingRounds` shape.
 
 | Setting | Default | Effect |
 |---|---|---|
-| `questionCount` | 10 | 10, 15, or 20 questions |
-| `eliminationMode` | false | Furthest answer each round gets a strike; 3 = eliminated |
-| `bettingRounds` | false | Betting phase every 5th question |
-| `backgroundMusic` | true | Background music on host device (Howler.js) |
+| `rounds` | 10 | 10 / 15 / 20 questions |
+| `secondsPerQuestion` | 30 | 20 / 30 / 45, or OFF — no clock, the host advances |
+| `bettingFrequency` | `never` | `every3` / `every` / `never` |
+| `categories` | `[]` (all) | Which categories are in the deck; empty means all |
+| `finale` | `auto` | Sudden death: `off` / `auto` (8+ players) / `on` |
 
-`backgroundMusic` is client-only — not sent to server. Other settings go to server via `host:create_room`. All four are displayed in the host lobby's SettingsPanel during the wait.
+**The finale.** After the last normal round the top few qualify — 3 under 10 players,
+5 at 10+, plus everyone level with the last qualifying score. They then play
+sudden-death rounds: everyone answers, the furthest guess is knocked out, repeat until
+one is left. Non-submitters forfeit first; a tie for furthest takes everyone tied
+unless that would empty the board, in which case nobody goes out and the round replays
+(capped at 3 such rounds). Points decide who qualified and where everyone else
+finishes; the finale decides the order among finalists, in reverse knockout order.
+
+Three more live on the host device only, in `localStorage`, because they are
+properties of the room the board is standing in rather than of the game:
+
+| Setting | Default | Effect |
+|---|---|---|
+| `lighting` | `auto` | AUTO (by local time) / NIGHT / DAY |
+| `sound` | on | Background music on the host device |
+| `motion` | `full` | REDUCED kills shake, blink, strobe and the marquee |
 
 ---
 
@@ -244,53 +357,67 @@ Track is randomly selected in `primeMusic()` each game. Adding new tracks: uploa
 
 ## Testing
 
-`test-game.js` at the project root is a Playwright script that drives 3 isolated browser contexts (host + Alice + Bob) through a full game. Selectors are stable text/role/`kui-*` class based (e.g. `.kui-qcard`, `.kui-answer__input`, text "Correct Answer") — DO NOT switch to ephemeral hashed-class selectors when editing.
-
 ```bash
-node test-game.js                              # default: 3 rounds, betting toggle on
-ROUNDS=5 BETTING=true  node test-game.js       # 5 rounds, exercises the round-5 betting phase
-ROUNDS=2 BETTING=false node test-game.js       # no-betting smoke (toggles off via Landing)
+npm run verify              # the gate: lint -> build -> reliability -> fit -> browser
+npm run verify -- --fast    # skips the two browser steps
 ```
 
-`test-reliability.js` is the socket-level regression suite for the party-scale failures —
-15 players through a full game, a mid-game disconnect/reconnect that must preserve score,
-duplicate names scoring independently, and answer validation. Needs only the backend:
+| Suite | What it covers |
+|---|---|
+| `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
+| `scripts/fit-check.js` | All 42 previews at their declared viewport: no scrolling, nothing spilling past the stage, nothing rendering blank |
+| `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
+
+Browser tests select on **`data-testid`**, not text. The board is all-uppercase with
+heavy letter-spacing and its copy is deliberately mutable; the previous suite also
+picked a settings toggle by index among `button[aria-pressed]`, which passes while
+toggling the wrong thing.
+
+**Preview gallery** — `http://localhost:5173/?preview=index`, no backend needed. The
+`PREVIEWS` map in `client/src/preview.jsx` is the single source of truth: the gallery,
+`capture-screens.js` and `fit-check.js` all derive from it, so adding an entry adds it
+everywhere. Keep the literal's shape (`group` and `viewport` as the first two keys) —
+the other two parse it as text.
 
 ```bash
-node test-reliability.js
+npm run screens     # every preview to .screens/, plus the live host + phone path
 ```
-
-Both dev servers must be running. The host's Betting Rounds toggle in Landing is selected via `button[aria-pressed]:nth(1)` since the pill switches don't carry visible ON/OFF text.
-
-**Preview mode** for screenshot validation without the backend: navigate to `http://localhost:5173/?preview=<key>`. Keys defined in `client/src/preview.jsx` — covers every screen/phase combination (`host-lobby`, `host-question`, `host-betting`, `host-reveal`, `host-scoreboard`, `player-question`, `player-locked`, `player-betting`, `player-reveal`, `player-scoreboard`, `game-over`). Gated on the query param; harmless in production.
 
 ---
 
-## Working with KUI (when changes are needed)
+## KUI
 
-If a view needs a primitive KUI doesn't provide, **add it to KUI rather than inlining it in this repo**. Steps:
+This client no longer consumes `@khelahobe/kui`. The v2.0 board is a local design
+system (`client/src/board/`), because the DOT MATRIX design shares no visual DNA with
+KUI — no radius, no cards, no shadows, different fonts — and KUI is frozen, so every
+screen would have been positional `nth-child` overrides on a third-party DOM.
 
-1. Edit/add the component in `../kui/packages/lib/src/components/base/` (or `fixedprice/` if game-specific)
-2. Export from the appropriate barrel (`src/index.ts` or `src/fixedprice.ts`)
-3. Add a Booth showcase in `../kui/packages/docs/src/sections/`
-4. Bump `../kui/packages/lib/package.json` version
-5. Commit + push to KUI's `main` — the publish workflow runs automatically when files under `packages/lib/**` change
-6. Wait for publish to land on npm (check `npm view @khelahobe/kui versions --json`)
-7. In this repo: bump `client/package.json` `@khelahobe/kui` to the new version, `npm install`, commit + push
+**KUI itself is untouched and still used by the studio's other games.** Its repo is at
+`../kui` and its own `CLAUDE.md` covers the publish pitfalls (the workflow is pinned to
+pnpm v10; Deploy Docs and Publish are independent, and a green docs run does not mean
+the npm publish succeeded).
 
-**KUI publish pitfalls (from earlier incidents — locked-in by docs in `../kui/CLAUDE.md`):**
-- Workflow is pinned to **pnpm v10** (NOT `latest`). pnpm v11's strict-builds gate (`ERR_PNPM_IGNORED_BUILDS`) breaks `pnpm install --frozen-lockfile` because the lockfile doesn't carry build approvals for `@parcel/watcher` / `esbuild`.
-- Workflow has `workflow_dispatch` enabled — manually trigger with `gh workflow run "Publish @khelahobe/kui" --repo Khela-Hobe-Game-Studios/KUI`.
-- Two CI workflows in KUI: **Deploy Docs** (GitHub Pages showcase) and **Publish @khelahobe/kui** (npm). They are independent. A green Deploy Docs run does NOT mean the npm publish succeeded.
+If this client ever needs a new primitive it goes in `client/src/board/` — plain React,
+plain CSS, tokens from `tokens.css`.
 
 ---
 
 ## Known Limitations / Future Work
 
-- All state is in-memory — server restart loses all rooms (Render spins down after inactivity)
-- No persistent user accounts or history
-- Questions loaded once at startup; adding questions requires server restart (or QUESTIONS_SHEET_URL set)
-- Timer duration is not configurable (hardcoded: 30s question, 20s betting, 5s reveal, 5s scoreboard)
-- No category filter in-game
-- Max ~20 players (untested beyond that)
-- Elimination mode: if last player gets eliminated on the final round, `endGame` is called early
+- **The twelve sprite avatars do not exist.** 16x16 pixel art, 2-3 colours,
+  transparent, drawn to read against both `#07090A` and a saturated fill; the subjects
+  are listed in `PlayerAvatar.jsx`. The picker's SPRITE tab is visibly locked until
+  they land, and they drop into the same 40px slots with no layout change. Do not
+  substitute emoji or an icon font — both break the pixel grid.
+- **The twelve sound cues are specified but not built** (relay clunk, mechanical flick,
+  low hum, rising hum, klaxon, crowd, tick, keypad tick, lock-in thunk, countdown beep,
+  category stab, fanfare). The host is the only audio source — fifteen phones must not
+  fight the TV.
+- Selfie capture needs a secure context. Fine on GitHub Pages; over plain http on a LAN
+  the picker falls through to the upload path.
+- All state is in memory — a server restart drops every live room (Render spins down
+  when idle).
+- No persistent accounts or history.
+- Questions load once at startup; adding questions needs a restart unless
+  `QUESTIONS_SHEET_URL` is set.
+- Max 20 players (untested beyond that; 15 is the design target).
