@@ -35,6 +35,14 @@ const initialState = {
     : null,
   me: RESTORED?.role === 'player' ? { id: PLAYER_ID, name: RESTORED.name } : null,
 
+  // The host's half of identity: minted by the server, held only here, presented on
+  // rejoin. Without it the room code alone reclaimed host control.
+  hostToken: RESTORED?.hostToken ?? null,
+  // Whether THIS session was restored from storage. It used to be read straight off
+  // the module-load constant inside the reducer, so a forget-then-join in the same
+  // page never showed the avatar picker again.
+  restored: !!RESTORED,
+
   phase: null,          // 'intro' | 'question' | 'betting' | 'reveal' | 'scoreboard'
   timing: null,         // { phase, serverNow, startedAt, endsAt, durationMs }
   intro: null,
@@ -59,6 +67,7 @@ function clearRound(state) {
   return {
     ...state,
     intro: null,
+    finale: null,
     betting: null,
     reveal: null,
     scoreboard: null,
@@ -87,6 +96,7 @@ function reducer(state, action) {
         ...state,
         pending: null,
         role: 'host',
+        hostToken: payload.hostToken ?? state.hostToken,
         screen: state.screen === 'landing' || state.screen === 'host-settings' ? 'host-lobby' : state.screen,
         room: { ...state.room, code: payload.code, players: state.room?.players ?? [], settings: payload.settings ?? state.room?.settings ?? {} },
       };
@@ -101,7 +111,7 @@ function reducer(state, action) {
         screen: ['landing', 'player-join', 'player-lobby'].includes(state.screen)
           // A returning player skips the picker: their face is already chosen and
           // the game may well be mid-round.
-          ? (payload.room?.state === 'LOBBY' && !RESTORED ? 'player-avatar' : 'player-lobby')
+          ? (payload.room?.state === 'LOBBY' && !state.restored ? 'player-avatar' : 'player-lobby')
           : state.screen,
       };
 
@@ -109,6 +119,20 @@ function reducer(state, action) {
       const room = state.room ? { ...state.room, players: payload.players } : state.room;
       const mine = payload.players?.find((p) => p.id === state.me?.id);
       return { ...state, room, me: mine ? { ...state.me, ...mine } : state.me };
+    }
+
+    // One player changed their face — patch that row rather than taking a whole new
+    // roster (and every avatar on it) for it.
+    case 'player:avatar': {
+      if (!state.room?.players) return state;
+      const players = state.room.players.map((p) => (
+        p.id === payload.id ? { ...p, avatar: payload.avatar } : p
+      ));
+      return {
+        ...state,
+        room: { ...state.room, players },
+        me: state.me?.id === payload.id ? { ...state.me, avatar: payload.avatar } : state.me,
+      };
     }
 
     case 'room:settings':
@@ -182,7 +206,18 @@ function reducer(state, action) {
       return { ...state, myBet: payload };
 
     case 'forget':
-      return { ...initialState, role: null, screen: 'landing', room: null, me: null, connState: state.connState };
+      // initialState is a module-load snapshot of the restored session, so every
+      // field it seeded from that session has to be cleared explicitly here.
+      return {
+        ...initialState,
+        role: null,
+        screen: 'landing',
+        room: null,
+        me: null,
+        hostToken: null,
+        restored: false,
+        connState: state.connState,
+      };
 
     default:
       return state;
@@ -225,7 +260,7 @@ export default function useGameSocket({ notify, dismiss }) {
       // the player silently stops receiving the game.
       const s = sessionRef.current;
       if (!s?.code) return;
-      if (s.role === 'host') socket.emit('host:rejoin', { code: s.code });
+      if (s.role === 'host') socket.emit('host:rejoin', { code: s.code, hostToken: s.hostToken });
       else if (s.role === 'player') socket.emit('player:rejoin', { code: s.code, pid: PLAYER_ID, name: s.name });
     }));
 
@@ -238,7 +273,7 @@ export default function useGameSocket({ notify, dismiss }) {
     offs.push(on('connect_error', () => dispatch({ type: 'conn', payload: 'reconnecting' })));
 
     for (const event of [
-      'room:created', 'player:joined', 'room:updated', 'room:settings', 'room:reset',
+      'room:created', 'player:joined', 'room:updated', 'player:avatar', 'room:settings', 'room:reset',
       'round:finale_intro', 'round:intro', 'round:start', 'round:answer_count', 'round:bet_count', 'round:betting',
       'round:reveal', 'round:scoreboard', 'game:over', 'game:paused', 'game:resumed',
     ]) {
@@ -253,16 +288,14 @@ export default function useGameSocket({ notify, dismiss }) {
       notify('Host is back — resuming', { type: 'success' });
     }));
 
+    // The server restarted and lost its in-memory rooms, or this device is no longer
+    // the host — either way the stored session is stale and retrying into it loops.
+    const FATAL = ['Room not found', 'Player not found in room', 'Not the host of this room'];
+
     offs.push(on('error', ({ message }) => {
       dispatch({ type: 'pending', payload: null });
-      // The server restarted and lost its in-memory rooms — drop the stale session
-      // rather than retrying into a room that no longer exists.
-      if (message === 'Room not found' || message === 'Player not found in room') {
-        forget();
-        notify(message, { type: 'danger' });
-      } else {
-        notify(message, { type: 'danger' });
-      }
+      if (FATAL.includes(message)) forget();
+      notify(message, { type: 'danger' });
     }));
 
     socket.connect();
@@ -293,12 +326,20 @@ export default function useGameSocket({ notify, dismiss }) {
   }, [state.pending, notify, dismiss]);
 
   // Persist so a refresh — or a reconnect — can re-announce us.
+  //
+  // Deps are the four fields that actually go into the session. `state` itself used
+  // to be in here too, which made the rest of the list decorative and wrote to
+  // localStorage on every socket event, answer counts included.
+  const { role, me, hostToken } = state;
+  const roomCode = state.room?.code;
+  const roomSettings = state.room?.settings;
+  const myName = me?.name;
+
   useEffect(() => {
-    const { role, room, me } = state;
-    if (!room?.code) return;
-    if (role === 'host') persist({ role: 'host', code: room.code, settings: room.settings });
-    else if (role === 'player' && me?.name) persist({ role: 'player', code: room.code, name: me.name });
-  }, [state.role, state.room?.code, state.room?.settings, state.me?.name, persist, state]);
+    if (!roomCode) return;
+    if (role === 'host') persist({ role: 'host', code: roomCode, settings: roomSettings, hostToken });
+    else if (role === 'player' && myName) persist({ role: 'player', code: roomCode, name: myName });
+  }, [role, roomCode, roomSettings, myName, hostToken, persist]);
 
   return { state, dispatch, forget };
 }
