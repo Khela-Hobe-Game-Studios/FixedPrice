@@ -36,6 +36,19 @@ function readPreviews() {
   const out = [];
   let m;
   while ((m = re.exec(body))) out.push({ key: m[1], group: m[2], viewport: m[3] });
+
+  // The parse is a regex over JSX, so an entry reformatted past the pattern simply
+  // stops being checked — and the run still prints "all N screens fit", for a
+  // smaller N. Count the keys independently and refuse to run if the two disagree:
+  // a gate that silently shrinks is worse than one that fails.
+  const declared = (body.match(/^\s{2}'[a-z0-9-]+':\s*\{/gm) ?? []).length;
+  if (out.length !== declared) {
+    console.error(
+      `fit-check: parsed ${out.length} previews but preview.jsx declares ${declared}.\n` +
+      "Keep 'group' and 'viewport' as the first two keys of each entry (see CLAUDE.md)."
+    );
+    process.exit(1);
+  }
   return out;
 }
 
@@ -44,6 +57,36 @@ function settleFor(key) {
   if (key.includes('reveal')) return 5200;
   if (key.includes('intro') || key.includes('finale')) return 1200;
   return 700;
+}
+
+/** The three checks, run inside the page: does it scroll, does it spill, did it render. */
+function evaluateFit(page) {
+  return page.evaluate(() => {
+    const doc = document.documentElement;
+    const overflowY = doc.scrollHeight - window.innerHeight;
+    const overflowX = doc.scrollWidth - window.innerWidth;
+
+    // Inside the board, "fits" means fits the stage, not the window: the stage is
+    // scaled, so a child hanging out of it is invisible rather than scrollable.
+    const stage = document.querySelector('[data-stage]');
+    let spill = null;
+    if (stage) {
+      const box = stage.getBoundingClientRect();
+      for (const el of stage.querySelectorAll('*')) {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        const over = Math.max(r.bottom - box.bottom, r.right - box.right);
+        if (over > 2 && (!spill || over > spill.over)) {
+          spill = {
+            over: Math.round(over),
+            tag: el.tagName.toLowerCase(),
+            cls: (el.className?.baseVal ?? el.className ?? '').toString().slice(0, 40),
+          };
+        }
+      }
+    }
+    return { overflowY, overflowX, spill, empty: doc.innerText.trim().length === 0 };
+  });
 }
 
 (async () => {
@@ -68,35 +111,20 @@ function settleFor(key) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
 
-    await page.goto(`${URL}/?preview=${key}`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(settleFor(key));
-
-    const result = await page.evaluate(() => {
-      const doc = document.documentElement;
-      const overflowY = doc.scrollHeight - window.innerHeight;
-      const overflowX = doc.scrollWidth - window.innerWidth;
-
-      // Inside the board, "fits" means fits the stage, not the window: the stage is
-      // scaled, so a child hanging out of it is invisible rather than scrollable.
-      const stage = document.querySelector('[data-stage]');
-      let spill = null;
-      if (stage) {
-        const box = stage.getBoundingClientRect();
-        for (const el of stage.querySelectorAll('*')) {
-          const r = el.getBoundingClientRect();
-          if (r.width === 0 || r.height === 0) continue;
-          const over = Math.max(r.bottom - box.bottom, r.right - box.right);
-          if (over > 2 && (!spill || over > spill.over)) {
-            spill = {
-              over: Math.round(over),
-              tag: el.tagName.toLowerCase(),
-              cls: (el.className?.baseVal ?? el.className ?? '').toString().slice(0, 40),
-            };
-          }
-        }
-      }
-      return { overflowY, overflowX, spill, empty: doc.innerText.trim().length === 0 };
-    });
+    // A screen that cannot even be loaded is a failed check, not a crashed run. Left
+    // unguarded this rejected out of Promise.all, skipped browser.close() and leaked
+    // a Chromium process behind a stack trace that named no screen.
+    let result;
+    try {
+      await page.goto(`${URL}/?preview=${key}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(settleFor(key));
+      result = await evaluateFit(page);
+    } catch (err) {
+      failures.push(`${key} (${size.width}x${size.height}) — ${err.message.split('\n')[0]}`);
+      console.log(`  FAIL ${key}: ${err.message.split('\n')[0]}`);
+      await page.close().catch(() => {});
+      return;
+    }
 
     const problems = [];
     if (result.overflowY > 0) problems.push(`scrolls ${result.overflowY}px vertically`);
@@ -116,13 +144,16 @@ function settleFor(key) {
   }
 
   const queue = [...previews];
-  await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
-      while (queue.length) await checkOne(queue.shift());
-    })
-  );
-
-  await browser.close();
+  try {
+    await Promise.all(
+      Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+        while (queue.length) await checkOne(queue.shift());
+      })
+    );
+  } finally {
+    // Even on a launch-level failure, don't leave Chromium running.
+    await browser.close().catch(() => {});
+  }
 
   console.log('');
   if (failures.length) {
