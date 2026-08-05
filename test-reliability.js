@@ -54,9 +54,12 @@ function autoPlay(sock, guessFor) {
     if (d.alreadySubmitted) return;
     sock.emit('player:submit_answer', { answer: guessFor(d) });
   });
+  // round:betting carries `options` — the (shuffled, capped) set the board actually
+  // put up. This read `d.ranked`, which has never been on this payload; it only went
+  // unnoticed because every suite so far ran with betting off.
   sock.on('round:betting', (d) => {
     if (d.alreadySubmitted) return;
-    const target = d.ranked.find(p => p.id !== sock.__pid);
+    const target = (d.options ?? []).find(o => o.id !== sock.__pid);
     if (target) sock.emit('player:submit_bet', { targetId: target.id });
   });
 }
@@ -64,8 +67,8 @@ function autoPlay(sock, guessFor) {
 async function hostRoom(settings = {}) {
   const host = await connect();
   host.emit('host:create_room', { questionCount: QUESTION_COUNT, ...settings });
-  const { code } = await once(host, 'room:created');
-  return { host, code };
+  const { code, hostToken } = await once(host, 'room:created');
+  return { host, code, hostToken };
 }
 
 async function joinPlayer(code, name, pid) {
@@ -274,11 +277,15 @@ async function testIdentityAndSettings() {
 
   // A 1x1 PNG stands in for the posterised selfie the phone produces.
   const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  // One player's face now arrives as a one-player delta rather than a fresh roster
+  // carrying every avatar in the room.
+  const avatarSeen = once(b, 'player:avatar', 5000);
   a.emit('player:set_avatar', { kind: 'selfie', image: png });
   await once(a, 'player:avatar_set', 5000);
-  await wait(200);
-  check('a selfie reaches the whole room',
-        roster.find(p => p.name === 'Alpha')?.avatar?.kind === 'selfie');
+  const delta = await avatarSeen;
+  check('a selfie reaches the whole room as a one-player delta',
+        delta.avatar?.kind === 'selfie' && delta.id === a.__pid,
+        `(got ${JSON.stringify(delta)})`);
 
   const rejected = [];
   b.on('error', (e) => rejected.push(e.message));
@@ -379,6 +386,204 @@ async function testFinale() {
   await wait(300);
 }
 
+// ─── 7: host authority ───────────────────────────────────────────────────────
+
+async function testHostAuthority() {
+  log('TEST', 'host control needs the host token, not just the room code');
+  const { host, code, hostToken } = await hostRoom({ rounds: 10, secondsPerQuestion: 0 });
+
+  check('the room hands its creator a host token',
+        typeof hostToken === 'string' && hostToken.length >= 16,
+        `(got ${JSON.stringify(hostToken)})`);
+
+  const p1 = await joinPlayer(code, 'Real1', uid('h1'));
+  const p2 = await joinPlayer(code, 'Real2', uid('h2'));
+  await wait(200);
+
+  // The code is one of 48 dictionary words, so "knows the code" cannot be the test.
+  const attacker = await connect();
+  const refusals = [];
+  attacker.on('error', (e) => refusals.push(e.message));
+
+  attacker.emit('host:rejoin', { code });
+  attacker.emit('host:rejoin', { code, hostToken: 'not-the-token' });
+  await wait(300);
+
+  check('rejoining as host without the token is refused',
+        refusals.filter(m => m === 'Not the host of this room').length === 2,
+        `(got ${JSON.stringify(refusals)})`);
+
+  // And the refusal must be total: no room join, no host powers, and crucially the
+  // real host must not have been demoted by the attempt.
+  let started = false;
+  p1.on('round:intro', () => { started = true; });
+  attacker.emit('host:start_game');
+  attacker.emit('host:end_game');
+  await wait(300);
+  check('a refused host cannot drive the game', !started);
+
+  const introSeen = once(p1, 'round:intro', 10000);
+  host.emit('host:start_game');
+  await introSeen;
+  check('the real host still controls the room after the attempt', true);
+
+  // The legitimate reconnect path, with the token the server issued.
+  const rehost = await connect();
+  rehost.emit('host:rejoin', { code, hostToken });
+  const reclaimed = await once(rehost, 'room:created', 5000);
+  check('the real host reclaims the room with its token', reclaimed.code === code,
+        `(got ${JSON.stringify(reclaimed)})`);
+
+  rehost.emit('host:end_game');
+  await wait(200);
+
+  host.disconnect(); rehost.disconnect(); attacker.disconnect();
+  p1.disconnect(); p2.disconnect();
+  await wait(300);
+}
+
+// ─── 8: bets are limited to what the board offered ───────────────────────────
+
+async function testBetTargets() {
+  log('TEST', 'a bet can only back a guess the round actually put up');
+  // 8 players, so bettingOptions' cap of 6 leaves someone off the board.
+  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 0, bettingFrequency: 'every' });
+
+  const players = [];
+  for (let i = 0; i < 8; i++) {
+    const pid = uid(`b${i}`);
+    const sock = await joinPlayer(code, `B${i}`, pid);
+    sock.on('round:start', () => setTimeout(() => sock.emit('player:submit_answer', { answer: 100 + i * 37 }), 30));
+    players.push(sock);
+  }
+  await wait(300);
+
+  const betting = once(players[0], 'round:betting', 20000);
+  host.emit('host:start_game');
+  const offer = await betting;
+
+  check('the board offers a capped set of guesses', offer.options.length === 6,
+        `(got ${offer.options.length})`);
+
+  const offered = new Set(offer.options.map(o => o.id));
+  const notOffered = players.map(p => p.__pid).find(pid => !offered.has(pid));
+  check('with 8 players somebody is left off the board', !!notOffered);
+
+  let counted = 0;
+  players[0].on('round:bet_count', (d) => { counted = d.count; });
+
+  // A player the round never put up, and an id belonging to nobody at all.
+  players[0].emit('player:submit_bet', { targetId: notOffered });
+  players[0].emit('player:submit_bet', { targetId: uid('ghost') });
+  await wait(400);
+  check('a bet on an unoffered player is ignored', counted === 0, `(count=${counted})`);
+
+  // The same socket can still place a real bet — the guard rejects the target,
+  // not the bettor.
+  const valid = offer.options.find(o => o.id !== players[0].__pid);
+  players[0].emit('player:submit_bet', { targetId: valid.id });
+  await wait(400);
+  check('a bet on an offered player is accepted', counted === 1, `(count=${counted})`);
+
+  host.emit('host:end_game');
+  host.disconnect();
+  players.forEach(p => p.connected && p.disconnect());
+  await wait(300);
+}
+
+// ─── 9: the finale's tie paths ───────────────────────────────────────────────
+
+async function testFinaleTies() {
+  log('TEST', 'sudden death survives a round nobody can lose');
+  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 0, bettingFrequency: 'never', finale: 'on' });
+
+  const players = [];
+  for (let i = 0; i < 6; i++) {
+    const sock = await joinPlayer(code, `T${i}`, uid(`t${i}`));
+    // Identical guesses: everyone ties for furthest every single round, which is the
+    // branch that would otherwise empty the board. Nobody may go out, and the cap on
+    // no-kill rounds is the only thing that ends the game.
+    sock.on('round:start', () => setTimeout(() => sock.emit('player:submit_answer', { answer: 42 }), 30));
+    players.push(sock);
+  }
+  await wait(300);
+
+  let sawFinale = null;
+  const knockouts = [];
+  host.on('round:finale_intro', (d) => { sawFinale = d; });
+  host.on('round:reveal', (d) => {
+    if (d.finale && d.knockedOut?.length) knockouts.push(...d.knockedOut);
+  });
+
+  const gameOver = once(host, 'game:over', 180000);
+  host.emit('host:start_game');
+  const skipper = setInterval(() => host.emit('host:skip'), 250);
+  const { final } = await gameOver;
+  clearInterval(skipper);
+
+  check('the finale ran', !!sawFinale, `(finalists=${sawFinale?.finalists?.length})`);
+  check('an all-tied round knocks nobody out', knockouts.length === 0,
+        `(knockouts=${knockouts.length})`);
+  // The real assertion is that we got here at all: without the no-kill cap this
+  // loops until the timeout rather than reaching game:over.
+  check('the game still ended', Array.isArray(final) && final.length === 6,
+        `(final=${final?.length})`);
+  check('every finalist is still on the final table',
+        !!sawFinale && sawFinale.finalists.every(f => final.some(p => p.id === f.id)));
+
+  host.disconnect();
+  players.forEach(p => p.connected && p.disconnect());
+  await wait(300);
+}
+
+// ─── 10: a finalist who sits out forfeits first ──────────────────────────────
+
+async function testFinaleForfeit() {
+  log('TEST', 'a finalist who does not answer goes out first');
+  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 0, bettingFrequency: 'never', finale: 'on' });
+
+  const players = [];
+  for (let i = 0; i < 6; i++) {
+    const pid = uid(`x${i}`);
+    const sock = await joinPlayer(code, `X${i}`, pid);
+    sock.__finaleSilent = false;
+    sock.on('round:start', (d) => {
+      // Answer every normal round; go quiet the moment sudden death starts.
+      if (d.finale && sock.__finaleSilent) return;
+      setTimeout(() => sock.emit('player:submit_answer', { answer: 100 + i * 250 }), 30);
+    });
+    players.push(sock);
+  }
+  await wait(300);
+
+  let sawFinale = null;
+  const firstOut = [];
+  host.on('round:finale_intro', (d) => {
+    sawFinale = d;
+    // Silence exactly one qualifier once we know who qualified.
+    const victim = players.find(p => p.__pid === d.finalists[0].id);
+    if (victim) victim.__finaleSilent = true;
+  });
+  host.on('round:reveal', (d) => {
+    if (d.finale && d.knockedOut?.length && firstOut.length === 0) firstOut.push(...d.knockedOut);
+  });
+
+  const gameOver = once(host, 'game:over', 180000);
+  host.emit('host:start_game');
+  const skipper = setInterval(() => host.emit('host:skip'), 250);
+  await gameOver;
+  clearInterval(skipper);
+
+  check('the finale ran', !!sawFinale && sawFinale.finalists.length >= 2);
+  check('the silent finalist was the first one out',
+        firstOut.length === 1 && firstOut[0] === sawFinale?.finalists[0]?.id,
+        `(out=${JSON.stringify(firstOut)}, expected ${sawFinale?.finalists[0]?.id})`);
+
+  host.disconnect();
+  players.forEach(p => p.connected && p.disconnect());
+  await wait(300);
+}
+
 // ─── run ─────────────────────────────────────────────────────────────────────
 
 (async () => {
@@ -387,6 +592,10 @@ async function testFinale() {
     await testInputValidation();
     await testIdentityAndSettings();
     await testFinale();
+    await testHostAuthority();
+    await testBetTargets();
+    await testFinaleTies();
+    await testFinaleForfeit();
   } catch (err) {
     failures++;
     log('ERROR', err.stack || err.message);

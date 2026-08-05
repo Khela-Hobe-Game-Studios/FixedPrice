@@ -3,6 +3,7 @@ import { Howl } from 'howler';
 import socket from './socket';
 import { JOIN_CODE } from './session';
 import { useToasts } from './hooks/useToasts';
+import useMediaQuery, { BOARD_WIDTH, PORTRAIT_PHONE } from './hooks/useMediaQuery';
 import useGameSocket, { PLAYER_ID } from './game/useGameSocket';
 import { useBoardSettings } from './game/settings';
 import { Toasts } from './board';
@@ -45,20 +46,37 @@ export default function App() {
     betCount, reveal, scoreboard, final, finale, mySubmission, myBet, connState, paused, pending,
   } = state;
 
-  const isPhone = role === 'player';
+  /* Which side of the game this device is.
+   *
+   * Following a join link is unambiguous: you are a player. Otherwise guess from the
+   * screen — the board runs on a TV or a laptop, players arrive on phones — and let
+   * either side switch, because the guess is only ever a default.
+   *
+   * The guess follows the viewport until somebody overrules it. It used to be sampled
+   * once into a useState initialiser, so a window dragged down to phone width, or a
+   * tablet turned on its side, kept whichever answer was true when the tab opened —
+   * which on a narrow window is the 1280x720 board at 0.30 scale.
+   *
+   * `chose` is tri-state on purpose: null means nobody has said, so keep following
+   * the viewport. Once it is a boolean the override sticks, and resizing does not
+   * un-pick a side for you. */
+  const boardSized = useMediaQuery(BOARD_WIDTH);
+  const portraitPhone = useMediaQuery(PORTRAIT_PHONE);
+  const [chose, setChose] = useState(null);
+  const asHost = chose ?? (!JOIN_CODE && boardSized);
+
+  /* "Phones are always night" is a claim about the device, not about the role: a
+   * phone is held close and glanced at, and the dark board is the more legible of the
+   * two at arm's length. So the host's phone landing counts too — keyed off the role
+   * alone, a host on a phone got the day palette on a phone-shaped screen between 8
+   * and 5. A host in landscape is running the actual board and keeps day mode. */
+  const isPhone = role === 'player' || portraitPhone;
   const [board, setBoard] = useBoardSettings({ isPhone });
 
   const [code, setCode] = useState(JOIN_CODE ?? '');
   const [name, setName] = useState('');
   const [showPause, setShowPause] = useState(false);
   const bgMusic = useRef(null);
-
-  /* Which side of the game this device is.
-   *
-   * Following a join link is unambiguous: you are a player. Otherwise guess from the
-   * screen — the board runs on a TV or a laptop, players arrive on phones — and let
-   * either side switch, because the guess is only ever a default. */
-  const [asHost, setAsHost] = useState(() => !JOIN_CODE && window.innerWidth >= 900);
 
   const go = useCallback((next) => dispatch({ type: 'screen', payload: next }), [dispatch]);
 
@@ -119,8 +137,9 @@ export default function App() {
       view = (
         <HostLanding
           onStart={() => go('host-settings')}
-          onJoinInstead={() => setAsHost(false)}
+          onJoinInstead={() => setChose(false)}
           pending={pending}
+          phone={portraitPhone}
         />
       );
     } else if (screen === 'host-settings') {
@@ -139,6 +158,9 @@ export default function App() {
             }
           }}
           onClose={() => go(room?.code ? 'host-lobby' : 'landing')}
+          /* The rotate guard's way out, offered only while there is nothing to
+             abandon. Once a room is open this device is running a live game. */
+          onLeaveBoard={room?.code ? undefined : () => { setChose(false); go('landing'); }}
         />
       );
     } else if (screen === 'host-lobby') {
@@ -224,7 +246,7 @@ export default function App() {
         name={name}
         setName={setName}
         onJoin={join}
-        onHostInstead={() => setAsHost(true)}
+        onHostInstead={() => setChose(true)}
         pending={pending === 'join'}
       />
     );

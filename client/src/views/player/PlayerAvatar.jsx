@@ -51,9 +51,18 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
     };
   }, [tab, shot]);
 
+  // The stream resolves before the first frame does, so the button is live for a
+  // moment while videoWidth is still 0 — an eager tap used to throw out of the
+  // handler and just look broken.
   const capture = () => {
-    if (!videoRef.current) return;
-    setShot(posterise(videoRef.current, color));
+    const video = videoRef.current;
+    if (!video?.videoWidth) return;
+    try {
+      setShot(posterise(video, color));
+    } catch {
+      setCameraError('THAT PHOTO DID NOT TAKE — TRY AGAIN');
+      return;
+    }
     stopCamera(camera);
     setCamera(null);
   };
@@ -85,6 +94,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             colorIndex={me?.colorIndex}
             name={me?.name ?? ''}
             avatar={shot ? { kind: 'selfie', image: shot } : { kind: 'monogram' }}
+            label={shot ? 'Your posterised selfie' : 'Your monogram tile'}
           />
           <div style={{ minWidth: 0 }}>
             <div className="bd-label" style={{ fontSize: 13 }}>
@@ -133,7 +143,13 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             className="ps-scroll"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, paddingTop: 24 }}
           >
-            <AvatarTile size={140} colorIndex={me?.colorIndex} name={me?.name ?? ''} bar={8} />
+            <AvatarTile
+              size={140}
+              colorIndex={me?.colorIndex}
+              name={me?.name ?? ''}
+              bar={8}
+              label={`Your monogram tile, ${(me?.name ?? '').trim()[0] ?? ''}`}
+            />
             <span className="bd-mono bd-mono--wrap" style={{ fontSize: 12, textAlign: 'center' }}>
               YOUR LETTER ON YOUR COLOUR. THE COLOUR IS WHAT PEOPLE READ FROM THE SOFA — IT IS
               YOURS FOR THE WHOLE GAME AND NOBODY ELSE IN THE ROOM HAS IT.

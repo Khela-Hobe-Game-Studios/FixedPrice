@@ -370,7 +370,11 @@ function bettingOptions(ranked) {
 function submitBet(io, room, { pid, targetId }) {
   if (room.state !== 'BETTING') return;
   if (pid === targetId) return;
-  if (!room.players.some(p => p.id === targetId)) return;
+  // The board offers at most 6 of the room's guesses, so "is a player here" is the
+  // wrong question — a client could back somebody the round never put up. The
+  // offered set is one shuffle shared by everyone, so this is the same check for all.
+  const offered = room._lastBettingData?.options ?? [];
+  if (!offered.some(o => o.id === targetId)) return;
 
   room.bets[pid] = targetId;
   touchRoom(room);
@@ -652,9 +656,9 @@ function finaleOver(room) {
  * nobody goes out and the round replays. If nobody submitted at all, nobody goes out.
  */
 function resolveKnockout(room, ranked) {
-  const live = ranked.filter(r => !room.players.find(p => p.id === r.id)?.eliminated);
-  const missing = live.filter(r => r.distance === null);
-  const scored = live.filter(r => r.distance !== null);
+  // computeRanked already builds from activePlayers(), so everything here is live.
+  const missing = ranked.filter(r => r.distance === null);
+  const scored = ranked.filter(r => r.distance !== null);
 
   if (missing.length > 0 && scored.length > 0) return missing.map(r => r.id);
   if (scored.length <= 1) return [];

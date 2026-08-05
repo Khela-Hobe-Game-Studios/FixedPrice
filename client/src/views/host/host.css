@@ -55,6 +55,39 @@
   color: var(--out-45);
 }
 
+/* The same lockup on a phone. Only the type scale changes — the board's landing is
+ * 104px of "FIXED PRICE" across 1280px, which on a 390px screen is four letters and
+ * a scrollbar. Everything below the tagline moves into the pinned CTA stack, so the
+ * buttons sit where a thumb already is. */
+.hs-landing--phone {
+  gap: clamp(6px, 1.2svh, 10px);
+  padding: 0 var(--phone-pad);
+  text-align: center;
+}
+
+.hs-landing--phone .hs-landing__mark {
+  width: clamp(96px, 17.8svh, 150px);
+  height: clamp(96px, 17.8svh, 150px);
+  flex: none;
+}
+
+.hs-landing--phone .hs-landing__bn {
+  font-size: clamp(34px, 5.5svh, 46px);
+}
+
+.hs-landing--phone .hs-landing__word {
+  font-size: clamp(48px, 8.3svh, 70px);
+}
+
+.hs-landing--phone .hs-landing__tag {
+  font-size: clamp(12px, 1.7svh, 14px);
+  letter-spacing: 0.26em;
+}
+
+.hs-landing--phone .hs-landing__meta {
+  font-size: 13px;
+}
+
 /* ── Lobby ─────────────────────────────────────────────────────────────────── */
 
 .hs-lobby {
@@ -787,8 +820,19 @@
   background: rgba(7, 9, 10, 0.82);
 }
 
+/* The one host element that is not inside the stage, so it is not scaled with it —
+ * it is drawn at 1:1 over the top. That makes every number here a real px rather
+ * than a board-space one, and on a phone held sideways there is neither 640px of
+ * width nor 340px of height to have: unconstrained, this lost its PAUSED header off
+ * the top and clipped END GAME off the bottom, on the one screen whose whole job is
+ * to tell the host what is about to happen to fifteen people's game.
+ *
+ * So it is sized like the phone is: fluid against the viewport, saturating at the
+ * 720-tall board where the authored values are correct, with floors that keep the
+ * three buttons at 44px. */
 .hs-dialog {
-  width: 640px;
+  width: min(640px, 100vw - 32px);
+  max-height: calc(100dvh - 24px);
   background: var(--board);
   border: 2px solid var(--out-20);
   display: flex;
@@ -798,13 +842,25 @@
 .hs-dialog__body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 26px 28px;
+  gap: clamp(8px, 1.95svh, 14px);
+  padding: clamp(14px, 3.62svh, 26px) 28px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.hs-dialog__head {
+  font-size: clamp(26px, 5.57svh, 40px);
 }
 
 .hs-dialog__actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 0 28px 26px;
+  padding: 0 28px clamp(14px, 3.62svh, 26px);
+}
+
+.hs-dialog__actions .bd-btn {
+  height: clamp(44px, 7.51svh, 54px);
+  font-size: clamp(16px, 2.79svh, 20px);
+  padding: 0 8px;
 }

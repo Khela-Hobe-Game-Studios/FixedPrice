@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import useMediaQuery, { PORTRAIT_PHONE } from '../hooks/useMediaQuery';
 
 const STAGE_W = 1280;
 const STAGE_H = 720;
@@ -16,8 +17,9 @@ const STAGE_H = 720;
  * Inside the stage, layout still uses the flex/stretch discipline so a roster of 2
  * and a roster of 15 both fit without a fork.
  */
-export default function Stage({ children, className = '', ...rest }) {
+export default function Stage({ children, className = '', onLeaveBoard, ...rest }) {
   const ref = useRef(null);
+  const tooNarrow = useMediaQuery(PORTRAIT_PHONE);
 
   useEffect(() => {
     const el = ref.current;
@@ -42,6 +44,52 @@ export default function Stage({ children, className = '', ...rest }) {
         <span className="bd-rivet bd-rivet--br" />
         <div className="bd-screen">{children}</div>
       </div>
+      {tooNarrow && <TurnGuard onLeaveBoard={onLeaveBoard} />}
+    </div>
+  );
+}
+
+/**
+ * The board's half of the rotation contract.
+ *
+ * 16:9 inside a portrait phone can only ever be scale = width/1280 — 0.30 on a 390px
+ * screen, which is a 5px header and a room code nobody can read. There is no layout
+ * that fixes that; there is only a different shape of screen. So below the width
+ * where the board stops being legible, portrait asks for the phone to be turned, and
+ * landscape gets the board at 0.54, which is small but real.
+ *
+ * PORTRAIT_PHONE is that width, and it is a JS constant rather than a media query
+ * here precisely so it is only written once: this used to be a `@media` block in
+ * board.css that had to be kept in step with the hook by hand, and a breakpoint that
+ * drifts means either an unreadable board with no guard over it, or a guard over a
+ * board that was perfectly legible.
+ *
+ * `onLeaveBoard` is offered only where being here is a mistake you can still back out
+ * of — before a room exists. Once one does, this device is running a live game and
+ * the way out is to turn the phone, not to abandon fifteen people.
+ *
+ * The player has the mirror of this (RotateGuard): the phone is played upright, the
+ * board is played wide.
+ */
+function TurnGuard({ onLeaveBoard }) {
+  return (
+    <div className="bd-turn" data-testid="turn-guard">
+      <span className="bd-word" style={{ fontSize: 30 }}>
+        Turn your phone sideways
+      </span>
+      <span className="bd-mono" style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
+        THE BOARD IS 16:9 — IT WANTS A TV, AND WILL SETTLE FOR LANDSCAPE
+      </span>
+      {onLeaveBoard && (
+        <button
+          type="button"
+          className="bd-turn__exit"
+          onClick={onLeaveBoard}
+          data-testid="leave-board"
+        >
+          JOINING A GAME INSTEAD?
+        </button>
+      )}
     </div>
   );
 }

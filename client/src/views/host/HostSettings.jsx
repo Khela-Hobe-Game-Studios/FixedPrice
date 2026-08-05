@@ -45,7 +45,10 @@ function Seg({ options, value, onChange, tone = 'amber', testid }) {
  * rather than of the game, so they stay on this device and are not sent to the
  * server. Everything else changes how the game is played, so it is.
  */
-export default function HostSettings({ settings, board, onBoard, onSave, onClose, started }) {
+/* `onLeaveBoard` is passed through to the rotate guard, and only here: this is the
+ * one host screen you can reach on a portrait phone with no room open yet, so it is
+ * the one place where "actually, I meant to join" is still a coherent thing to say. */
+export default function HostSettings({ settings, board, onBoard, onSave, onClose, started, onLeaveBoard }) {
   const [draft, setDraft] = useState({ ...DEFAULTS, ...settings });
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -61,7 +64,7 @@ export default function HostSettings({ settings, board, onBoard, onSave, onClose
   const isOn = (key) => draft.categories.length === 0 || draft.categories.includes(key);
 
   return (
-    <Stage>
+    <Stage onLeaveBoard={onLeaveBoard}>
       <Band>
         <Brand />
         <BandCell fill tone="panel" align="center">

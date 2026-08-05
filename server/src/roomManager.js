@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const rooms = new Map();
 
 const WORD_BANK = [
@@ -11,6 +13,10 @@ const WORD_BANK = [
 const MAX_PLAYERS = 20;
 const NAME_MAX = 16;
 const IDLE_ROOM_MS = 2 * 60 * 60 * 1000; // reap rooms untouched for 2h
+// A room nobody ever joined, whose host is also gone, is abandoned rather than
+// idle. Holding those for the full 2h is what lets a few hundred create_room
+// calls exhaust the 480-code space and lock everyone out.
+const EMPTY_LOBBY_MS = 10 * 60 * 1000;
 
 // Never hand out a code that belongs to a live room — an in-progress game must
 // never be clobbered. Once the word bank is exhausted we suffix a digit rather
@@ -74,6 +80,12 @@ function createRoom({ hostSocketId, settings }) {
   const room = {
     code,
     hostSocketId,
+    // The room code is the only thing a host used to need to reclaim host control,
+    // and it is one of 48 dictionary words — guessable in seconds. This is the
+    // host's half of what a player's pid already is: a secret the client holds,
+    // minted here, required on rejoin. Never broadcast; only ever sent to the
+    // socket that created the room.
+    hostToken: crypto.randomBytes(24).toString('base64url'),
     hostConnected: true,
     state: 'LOBBY',
     players: [],
@@ -190,8 +202,11 @@ function findPlayerBySocket(room, socketId) {
   return room.players.find(p => p.socketId === socketId);
 }
 
+// Only ever a lobby no-show — a mid-game drop keeps its seat. Drop the score row
+// with them, or an abandoned lobby accumulates one forever.
 function removePlayer(room, pid) {
   room.players = room.players.filter(p => p.id !== pid);
+  delete room.scores[pid];
 }
 
 function clearRoomTimers(room) {
@@ -215,6 +230,9 @@ function deleteRoom(code) {
   const room = rooms.get(code);
   if (!room) return;
   clearRoomTimers(room);
+  // The host grace timer lives outside _timers. Left running it fires on a room
+  // that no longer exists, pausing a detached object and pinning it until it does.
+  if (room._hostTimer) { clearTimeout(room._hostTimer); delete room._hostTimer; }
   for (const p of room.players) {
     if (p._disconnectTimer) clearTimeout(p._disconnectTimer);
   }
@@ -223,12 +241,20 @@ function deleteRoom(code) {
 
 // Rooms used to leak forever: abandoned games kept their timer chains alive and
 // the code space filled up until new rooms overwrote live ones.
-function startIdleSweeper(intervalMs = 15 * 60 * 1000) {
+function startIdleSweeper(intervalMs = 5 * 60 * 1000) {
   const timer = setInterval(() => {
     const now = Date.now();
     for (const [code, room] of rooms) {
-      if (now - room.lastActivityAt > IDLE_ROOM_MS) {
-        console.log('[rooms] reaping idle room', code);
+      const idle = now - room.lastActivityAt;
+      // An empty lobby with no host attached is abandoned, not idle. Reaping it on
+      // the long clock is what makes the code space exhaustible.
+      const abandoned = room.state === 'LOBBY'
+        && room.players.length === 0
+        && !room.hostConnected
+        && idle > EMPTY_LOBBY_MS;
+
+      if (abandoned || idle > IDLE_ROOM_MS) {
+        console.log('[rooms] reaping', abandoned ? 'abandoned' : 'idle', 'room', code);
         deleteRoom(code);
       }
     }

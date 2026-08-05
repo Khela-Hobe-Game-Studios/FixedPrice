@@ -41,18 +41,18 @@ export default function PlayerQuestion({ round, timing, answerCount, onSubmit })
         right={`R${String(round?.round ?? 1).padStart(2, '0')}/${round?.total ?? '—'}`}
       />
 
-      <div className="ps-body" style={{ gap: 10 }}>
+      <div className="ps-body">
         <h2 className="ps-head">{round?.question}</h2>
 
-        <div className="bd-fill" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+        <div className="bd-fill ps-typing">
           <span className="bd-label" style={{ fontSize: 12, textAlign: 'center' }}>
             YOUR GUESS
           </span>
           <div className="ps-guess">
-            <Num size={72} glow data-testid="guess-value">
+            <Num size="var(--phone-guess)" glow data-testid="guess-value">
               {value === '' ? '' : formatNum(Number(value))}
             </Num>
-            <span className="bd-caret" style={{ width: 13, height: 56 }} />
+            <span className="bd-caret ps-guess__caret" />
           </div>
           <span className="ps-guess__rule" />
           {round?.unit && (
@@ -61,14 +61,14 @@ export default function PlayerQuestion({ round, timing, answerCount, onSubmit })
             </span>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 6 }}>
+          <div className="ps-clock">
             {left === null ? (
               <span className="bd-mono" style={{ fontSize: 14 }}>
                 NO CLOCK — TAKE YOUR TIME
               </span>
             ) : (
               <>
-                <Countdown seconds={left} size={52} />
+                <Countdown seconds={left} size="var(--phone-clock)" />
                 <span className="bd-label" style={{ fontSize: 13 }}>
                   SEC LEFT
                 </span>

@@ -156,11 +156,18 @@ body {
 /* ========================================================================== */
 
 /* The phone carries only what a thumb needs and what is personally yours; the TV
- * carries the story. It is never scaled and never switches to day mode. */
+ * carries the story. It is never scaled and never switches to day mode.
+ *
+ * It is also capped at --phone-w and centred, because a player on a laptop is still
+ * holding a controller: stretched to 1440px the number pad becomes three 480px keys
+ * and the screen reads as a broken web page rather than a device. The board colour
+ * on html/body (index.html) is what fills the space either side. */
 
 .bd-phone {
   position: relative;
   width: 100%;
+  max-width: var(--phone-w);
+  margin-inline: auto;
   min-height: 100dvh;
   height: 100dvh;
   background-color: var(--board);
@@ -170,8 +177,16 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* The game never renders landscape on a phone. */
-.bd-rotate {
+/* ========================================================================== */
+/* ROTATION                                                                   */
+/* ========================================================================== */
+
+/* The two halves of the same contract: the phone is played upright, the board is
+ * played wide. Both are full-bleed red, because both are the one moment the design
+ * stops showing you the game and asks you for something. */
+
+.bd-rotate,
+.bd-turn {
   position: fixed;
   inset: 0;
   z-index: 40;
@@ -186,10 +201,30 @@ body {
   text-align: center;
 }
 
+/* The game never renders landscape on a phone. */
 @media (orientation: landscape) and (max-height: 500px) {
   .bd-rotate {
     display: flex;
   }
+}
+
+/* …and the board never renders portrait on one. That breakpoint is NOT here: Stage
+ * decides whether to mount .bd-turn at all, from the PORTRAIT_PHONE constant in
+ * useMediaQuery.js. It was a media query, which meant the same 575px existed in two
+ * files kept in step by a comment. If it is mounted, it shows. */
+.bd-turn {
+  display: flex;
+}
+
+.bd-turn__exit {
+  margin-top: 6px;
+  padding: 12px 18px;
+  min-height: 44px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font: 800 14px/1 var(--f-word);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 /* ========================================================================== */
@@ -576,7 +611,7 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 64px;
+  height: var(--phone-field);
   padding: 0 14px;
   background: var(--panel);
   border-bottom: 4px solid var(--out-20);

@@ -80,11 +80,58 @@ as a category name.
 **Day mode:** same geometry, `:root[data-lighting="day"]` swaps the palette and kills
 every glow. `AUTO` follows local time. **Phones are always night** — a phone is held
 close and glanced at, and the dark board is the more legible of the two at arm's
-length. Do not auto-switch phones with the host.
+length. Do not auto-switch phones with the host. This is a claim about the device, not
+the role: `isPhone` in `App.jsx` is `role === 'player' || portraitPhone`, so the host's
+phone landing is night too.
 
 **Motion:** nothing eases; everything is `steps()` or linear. `prefers-reduced-motion`
 and the MOTION: REDUCED setting kill shake, blink, strobe and the marquee, and keep
 the reveal's stagger at 60% duration — it must still read as a sequence.
+
+### Responsiveness
+
+Two devices, two rules, and one breakpoint each.
+
+**The board scales; it does not reflow.** 1280×720 authored in absolute px, `min()`
+scaled to fit — a rule the ten host screens are allowed to rely on. What that cannot
+survive is a portrait phone: 16:9 in a 9:19.5 window is `width/1280`, so 0.30 and a
+5px header. Below **`PORTRAIT_PHONE`** (575px, portrait) the board is therefore not
+drawn at all — `Stage` mounts `TurnGuard` instead and asks for the phone to be turned,
+and landscape gets the board at 0.54, which is small but real. The mirror of the
+player's `RotateGuard`: the phone is played upright, the board is played wide.
+
+That breakpoint lives **only** in `hooks/useMediaQuery.js`. `Stage` decides whether to
+mount the guard; `board.css` just styles it. It was a `@media` block as well, which
+meant the same 575px in two files kept in step by a comment — and a breakpoint that
+drifts gives you either an unreadable board with no guard, or a guard over a board
+that was fine. `TurnGuard` takes an optional `onLeaveBoard`, offered only where there
+is nothing to abandon (host settings before a room exists); once a room is open, the
+way out is to turn the phone, not to walk out on fifteen people.
+
+**The phone is fluid vertically and capped horizontally.** It is never scaled — black
+bars down the sides of a device in the hand look broken — so instead every metric that
+spends height is a `--phone-*` token, `clamp(floor, Nsvh, 844-value)`, with each
+coefficient set just above its own 844 ratio so all of them saturate at 844 and the
+reference phone stays pixel-identical. `svh` so the layout does not resize under a
+thumb when the URL bar hides. Floors keep every tap target at 44px. Horizontally it is
+capped at `--phone-w` (440px) and centred, because a player on a laptop is still
+holding a controller.
+
+**`HostLanding` is the one host screen with a phone layout** (`phone` prop, driven by
+`PORTRAIT_PHONE`). It is the front door: answering somebody's first tap with a rotation
+demand asks them to commit before they have been told what they are committing to. The
+rotation contract starts one screen later.
+
+**The host/player guess is live.** `useMediaQuery(BOARD_WIDTH)` rather than a
+`window.innerWidth` read in a `useState` initialiser, so a window dragged narrow or a
+tablet turned over changes its mind. It stops following the viewport once the player
+picks a side — `chose` in `App.jsx`.
+
+**`.hs-dialog` is the exception to "the board scales".** The pause/end overlay is
+rendered beside the `Stage`, not inside it, so it is drawn at 1:1 and its pixels are
+real ones. It is sized like the phone instead — fluid against the viewport, saturating
+at 720 — because unconstrained it lost its header off the top of a sideways phone.
+Anything else that ever renders outside the stage needs the same treatment.
 
 ---
 
@@ -151,7 +198,7 @@ handed once. See `client/src/game/clock.js`.
 | `time:ping` | `clientSent` (ack) | Clock sync; ack returns `{ clientSent, serverNow }` |
 | `host:create_room` | `settings` | Create a room (see Settings) |
 | `host:update_settings` | `settings` | Change settings; lobby only |
-| `host:rejoin` | `{ code }` | Host reconnect |
+| `host:rejoin` | `{ code, hostToken }` | Host reconnect; the token is required |
 | `host:start_game` | — | Start (requires ≥2 players) |
 | `host:skip` / `host:end_game` / `host:play_again` | — | Host controls |
 | `player:join` | `{ code, name, pid }` | Join a room in LOBBY |
@@ -163,9 +210,10 @@ handed once. See `client/src/game/clock.js`.
 ### Server → Client
 | Event | Payload | Description |
 |---|---|---|
-| `room:created` | `{ code, settings }` | Room opened |
+| `room:created` | `{ code, settings, hostToken }` | Room opened; the token goes to this socket only |
 | `player:joined` | `{ room, you }` | Join ack; `you` carries `colorIndex` + `avatar` |
 | `room:updated` | `{ players }` | Roster changed |
+| `player:avatar` | `{ id, avatar }` | One player's face changed (lobby only) |
 | `room:settings` | `{ settings }` | Host changed the settings |
 | `room:reset` | `{ players, settings }` | Rematch — same code and roster |
 | `round:intro` | `{ round, total, category, isBettingRound, finale? }` | 3s category flash |
@@ -250,8 +298,10 @@ client/src/
   session.js        Durable pid, session persistence, ?join= deep link
   categories.js     Category bands: name, label, fill, ink
   previewData.js    Fixtures for the gallery, in the server's exact payload shapes
-  preview.jsx       ?preview=<key> — 42 screens, no backend needed
+  preview.jsx       ?preview=<key> — 44 screens, no backend needed
   board/            The design system (see UI / Design System)
+  hooks/
+    useMediaQuery.js  BOARD_WIDTH / PORTRAIT_PHONE, as state rather than a one-off read
   game/
     useGameSocket.js  One reducer owning every socket event; screens are pure
     clock.js          Server-time offset, phase remaining, second-aligned countdown
@@ -299,7 +349,11 @@ capture-screens.js  Every preview to .screens/, plus the live host+phone path
 
 **Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
 
-**Session persistence:** `localStorage` stores `{ role, code, name?, settings? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` — the server restarted and lost its in-memory rooms.
+**Session persistence:** `localStorage` stores `{ role, code, name?, settings?, hostToken? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` / `Not the host of this room` — the server restarted and lost its in-memory rooms.
+
+**Host control is a token, not the room code.** `createRoom` mints a `hostToken` and sends it only to the socket that created the room; `host:rejoin` requires it back. Codes are 48 dictionary words, so without this anyone who guessed one took over the game — and demoted the real host, whose socket id no longer matched. It is the host's equivalent of the player's `pid`: a secret the client holds, never broadcast.
+
+**Avatars are lobby-only and broadcast as a delta.** `player:set_avatar` is refused once the game starts, and the room gets `player:avatar` with one player on it. It used to re-emit the whole roster — twenty 12KB avatars to twenty sockets for one player changing their mind, and it could fire mid-reveal.
 
 **A mid-game drop keeps its seat.** 90 seconds of `reconnecting` with `seatHoldUntil`, then `dropped` — but the player stays in the roster with their score, so a phone that dies at round 6 is still on the final standings. Only a lobby no-show is removed.
 
@@ -358,14 +412,15 @@ Track is randomly selected in `primeMusic()` each game. Adding new tracks: uploa
 ## Testing
 
 ```bash
-npm run verify              # the gate: lint -> build -> reliability -> fit -> browser
-npm run verify -- --fast    # skips the two browser steps
+npm run verify              # lint -> build -> reliability -> fit -> responsive -> browser
+npm run verify -- --fast    # skips the three browser steps
 ```
 
 | Suite | What it covers |
 |---|---|
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
-| `scripts/fit-check.js` | All 42 previews at their declared viewport: no scrolling, nothing spilling past the stage, nothing rendering blank |
+| `scripts/fit-check.js` | All 46 previews, at every size they have to survive — 80 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a vertical stack (column flex **or** grid), nothing rendering blank |
+| `scripts/responsive-check.js` | What fit-check structurally cannot see: the viewport *changing*. Drag a window narrow and the role guess follows; choose a side and it stops following; turn a phone and the board appears or asks to be turned. Plus the 44px floor under every control at 320×568 |
 | `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
 
 Browser tests select on **`data-testid`**, not text. The board is all-uppercase with
@@ -378,6 +433,10 @@ toggling the wrong thing.
 `capture-screens.js` and `fit-check.js` all derive from it, so adding an entry adds it
 everywhere. Keep the literal's shape (`group` and `viewport` as the first two keys) —
 the other two parse it as text.
+
+`viewport` names a *set* of sizes, not one size: `phone` means all three phone
+heights. Do not add a preview whose only difference is the size it is judged at — the
+gate already runs every phone screen at every phone height.
 
 ```bash
 npm run screens     # every preview to .screens/, plus the live host + phone path
