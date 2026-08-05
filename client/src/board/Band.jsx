@@ -56,8 +56,7 @@ export function BandCell({
 }
 
 /**
- * The brand lockup that opens every host header. The mascot is the one round thing
- * in the system — it is a picture of a logo, not a UI element.
+ * The brand lockup that opens every host header.
  */
 export function Brand({ width, compact = false }) {
   return (

@@ -90,13 +90,17 @@ the reveal's stagger at 60% duration — it must still read as a sequence.
 
 ## Branding
 
-**Logo:** `client/public/fixed_price_logo_bitmap.png` — cartoon-pastel mascot +
-wordmark. Used as the landing hero (150px), the game-over mascot (186px), the phone's
-join and game-over marks (104/118px), a 34px round crop in every host header band, and
-`favicon` / `apple-touch-icon` / `og:image` in `index.html`.
+**Logo:** `client/public/fixed_price_logo_bitmap.png` — a price-tag icon holding a
+glowing amber ৳ glyph, styled as LED signage: hard angular corners, bone (#E8E4D8)
+outline, amber (#FFB423) glyph and glow, flat near-black fill. Used as the landing
+hero (150px), the game-over mascot (186px), the phone's join and game-over marks
+(104/118px), a 34px square crop in every host header band, and `favicon` /
+`apple-touch-icon` / `og:image` in `index.html`.
 
-The mascot's round crop is the one round thing in the system, because it is a picture
-of a logo rather than a UI element.
+No round crop — the icon follows the same `border-radius: 0` rule as everything else.
+The earlier cartoon-pastel mascot was the one thing in the system with a circular
+crop, because it was a photograph rather than a UI element; that carve-out went away
+with it.
 
 `EkBrandLine` is gone: every host screen carries the brand lockup inside its 46px
 header band (`board/Band.jsx` → `Brand`), and the phone's header is the player's own

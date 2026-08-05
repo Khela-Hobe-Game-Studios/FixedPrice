@@ -294,8 +294,7 @@ body {
   color: var(--board);
 }
 
-/* Brand lockup — a 34px round mascot is the one round thing in the system, because
- * it is a photograph of a logo rather than a UI element. */
+/* Brand lockup. */
 .bd-brand {
   flex: none;
   width: var(--brand-w);
@@ -311,9 +310,7 @@ body {
   width: 34px;
   height: 34px;
   flex: none;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--flag-bone);
+  object-fit: contain;
 }
 
 .bd-brand__word {
