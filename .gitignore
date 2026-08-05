@@ -7,3 +7,4 @@ dist/
 .playwright-mcp/
 .screens/
 .dev/
+.shots/
