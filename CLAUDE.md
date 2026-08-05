@@ -151,7 +151,7 @@ handed once. See `client/src/game/clock.js`.
 | `time:ping` | `clientSent` (ack) | Clock sync; ack returns `{ clientSent, serverNow }` |
 | `host:create_room` | `settings` | Create a room (see Settings) |
 | `host:update_settings` | `settings` | Change settings; lobby only |
-| `host:rejoin` | `{ code }` | Host reconnect |
+| `host:rejoin` | `{ code, hostToken }` | Host reconnect; the token is required |
 | `host:start_game` | — | Start (requires ≥2 players) |
 | `host:skip` / `host:end_game` / `host:play_again` | — | Host controls |
 | `player:join` | `{ code, name, pid }` | Join a room in LOBBY |
@@ -163,9 +163,10 @@ handed once. See `client/src/game/clock.js`.
 ### Server → Client
 | Event | Payload | Description |
 |---|---|---|
-| `room:created` | `{ code, settings }` | Room opened |
+| `room:created` | `{ code, settings, hostToken }` | Room opened; the token goes to this socket only |
 | `player:joined` | `{ room, you }` | Join ack; `you` carries `colorIndex` + `avatar` |
 | `room:updated` | `{ players }` | Roster changed |
+| `player:avatar` | `{ id, avatar }` | One player's face changed (lobby only) |
 | `room:settings` | `{ settings }` | Host changed the settings |
 | `room:reset` | `{ players, settings }` | Rematch — same code and roster |
 | `round:intro` | `{ round, total, category, isBettingRound, finale? }` | 3s category flash |
@@ -250,7 +251,7 @@ client/src/
   session.js        Durable pid, session persistence, ?join= deep link
   categories.js     Category bands: name, label, fill, ink
   previewData.js    Fixtures for the gallery, in the server's exact payload shapes
-  preview.jsx       ?preview=<key> — 42 screens, no backend needed
+  preview.jsx       ?preview=<key> — 44 screens, no backend needed
   board/            The design system (see UI / Design System)
   game/
     useGameSocket.js  One reducer owning every socket event; screens are pure
@@ -299,7 +300,11 @@ capture-screens.js  Every preview to .screens/, plus the live host+phone path
 
 **Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
 
-**Session persistence:** `localStorage` stores `{ role, code, name?, settings? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` — the server restarted and lost its in-memory rooms.
+**Session persistence:** `localStorage` stores `{ role, code, name?, settings?, hostToken? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` / `Not the host of this room` — the server restarted and lost its in-memory rooms.
+
+**Host control is a token, not the room code.** `createRoom` mints a `hostToken` and sends it only to the socket that created the room; `host:rejoin` requires it back. Codes are 48 dictionary words, so without this anyone who guessed one took over the game — and demoted the real host, whose socket id no longer matched. It is the host's equivalent of the player's `pid`: a secret the client holds, never broadcast.
+
+**Avatars are lobby-only and broadcast as a delta.** `player:set_avatar` is refused once the game starts, and the room gets `player:avatar` with one player on it. It used to re-emit the whole roster — twenty 12KB avatars to twenty sockets for one player changing their mind, and it could fire mid-reveal.
 
 **A mid-game drop keeps its seat.** 90 seconds of `reconnecting` with `seatHoldUntil`, then `dropped` — but the player stays in the roster with their score, so a phone that dies at round 6 is still on the final standings. Only a lobby no-show is removed.
 
@@ -365,7 +370,7 @@ npm run verify -- --fast    # skips the two browser steps
 | Suite | What it covers |
 |---|---|
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
-| `scripts/fit-check.js` | All 42 previews at their declared viewport: no scrolling, nothing spilling past the stage, nothing rendering blank |
+| `scripts/fit-check.js` | All 44 previews at their declared viewport: no scrolling, nothing spilling past the stage, nothing rendering blank |
 | `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
 
 Browser tests select on **`data-testid`**, not text. The board is all-uppercase with

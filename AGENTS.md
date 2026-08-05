@@ -66,7 +66,7 @@ the screen — see below.
 http://localhost:5173/?preview=index
 ```
 
-A gallery of all 42 screens with mock data. Each entry links to itself and states the
+A gallery of all 44 screens with mock data. Each entry links to itself and states the
 viewport it should be judged at. Defined in `client/src/preview.jsx` as the `PREVIEWS`
 map — the gallery and `capture-screens.js` both derive from it, so **adding an entry
 there automatically adds it to the gallery and the screenshot run**.
