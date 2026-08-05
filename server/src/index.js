@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -42,6 +43,7 @@ const GAME_GRACE_MS = 90000;
 const HOST_GRACE_MS = 20000;
 const GAME_OVER_ROOM_TTL = 10 * 60 * 1000;
 const MAX_ANSWER_MAGNITUDE = 1e15;
+const MAX_ROOMS_PER_SOCKET = 5;
 
 // ─── validation ──────────────────────────────────────────────────────────────
 
@@ -69,6 +71,17 @@ function isValidCode(code) {
 
 function isValidPid(pid) {
   return typeof pid === 'string' && pid.length > 0 && pid.length <= 64;
+}
+
+// Constant-time compare so a wrong host token cannot be narrowed down by timing.
+// Both sides are our own base64url, but length-equality is checked first because
+// crypto.timingSafeEqual throws on a mismatch rather than returning false.
+function timingSafeEqual(given, expected) {
+  if (typeof given !== 'string' || typeof expected !== 'string') return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 // Simple token bucket per socket — a spammed submit used to fan out a broadcast
@@ -113,13 +126,25 @@ io.on('connection', (socket) => {
   socket.on('host:create_room', (settings = {}) => {
     if (!allow(socket, 'create', 2)) return;
 
+    // The token bucket only limits the rate, not the total: reconnecting resets it,
+    // so without a ceiling one client can still walk the whole 480-code space and
+    // lock the game out for everyone.
+    socket.data._created = (socket.data._created ?? []).filter((c) => rooms.has(c));
+    if (socket.data._created.length >= MAX_ROOMS_PER_SOCKET) {
+      return socket.emit('error', { message: 'Too many open rooms from this device' });
+    }
+
     const room = createRoom({ hostSocketId: socket.id, settings });
     if (!room) return socket.emit('error', { message: 'No rooms available right now — try again shortly' });
 
     socket.join(room.code);
     socket.data.roomCode = room.code;
     socket.data.isHost = true;
-    socket.emit('room:created', { code: room.code, settings: room.settings });
+    socket.data.hostToken = room.hostToken;
+    socket.data._created.push(room.code);
+    // The token goes to this socket only, never over a broadcast — it is what the
+    // host presents on rejoin instead of just knowing the room code.
+    socket.emit('room:created', { code: room.code, settings: room.settings, hostToken: room.hostToken });
     console.log('room created:', room.code);
   });
 
@@ -175,22 +200,30 @@ io.on('connection', (socket) => {
     console.log(`${player.name} joined room ${room.code}`);
   });
 
+  // Picking a face is a lobby activity. Left ungated it also fired mid-reveal, and
+  // every call re-broadcast the whole roster — twenty 12KB avatars to twenty
+  // sockets for one player changing their mind, on a free-tier box.
   socket.on('player:set_avatar', (avatar = {}) => {
     if (!allow(socket, 'avatar', 3)) return;
     const room = getRoom(socket.data?.roomCode);
     const pid = socket.data?.pid;
     if (!room || !pid) return;
+    if (room.state !== 'LOBBY') return socket.emit('error', { message: 'Faces are locked once the game starts' });
 
     const player = findPlayerByPid(room, pid);
     if (!setAvatar(player, avatar)) return socket.emit('error', { message: 'That picture did not stick — try again' });
 
     touchRoom(room);
     socket.emit('player:avatar_set', { avatar: player.avatar });
-    broadcastPlayers(room.code, room);
+    // One player changed, so send one player — not the roster and every picture on it.
+    io.to(room.code).emit('player:avatar', { id: pid, avatar: player.avatar });
   });
 
   // Fires on every reconnect, not just an explicit refresh.
   socket.on('player:rejoin', ({ code, pid, name } = {}) => {
+    // In the lobby this is also a join path (it can call addPlayer), so it needs the
+    // same ceiling player:join has or it is simply the unlimited way in.
+    if (!allow(socket, 'join', 3)) return;
     if (!isValidCode(code) || !isValidPid(pid)) {
       return socket.emit('error', { message: 'Room not found' });
     }
@@ -228,10 +261,18 @@ io.on('connection', (socket) => {
     console.log(`${player.name} rejoined room ${room.code}`);
   });
 
-  socket.on('host:rejoin', ({ code } = {}) => {
+  socket.on('host:rejoin', ({ code, hostToken } = {}) => {
+    if (!allow(socket, 'hostrejoin', 3)) return;
     if (!isValidCode(code)) return socket.emit('error', { message: 'Room not found' });
     const room = getRoom(String(code).toUpperCase());
     if (!room) return socket.emit('error', { message: 'Room not found' });
+
+    // Host control used to be granted on the room code alone. The code is one of 48
+    // words and this handler is reachable by anyone, so guessing it took over the
+    // game and demoted the real host — their socket id no longer matched.
+    if (!timingSafeEqual(hostToken, room.hostToken)) {
+      return socket.emit('error', { message: 'Not the host of this room' });
+    }
 
     room.hostSocketId = socket.id;
     room.hostConnected = true;
@@ -240,9 +281,10 @@ io.on('connection', (socket) => {
     socket.join(room.code);
     socket.data.roomCode = room.code;
     socket.data.isHost = true;
+    socket.data.hostToken = room.hostToken;
     touchRoom(room);
 
-    socket.emit('room:created', { code: room.code });
+    socket.emit('room:created', { code: room.code, hostToken: room.hostToken });
     socket.emit('room:updated', { players: sanitizePlayers(room.players) });
     if (room.paused) handleGameEvent(io, room, 'HOST_BACK');
     syncPlayerState(socket, room, null);
