@@ -11,6 +11,8 @@ import {
 } from './views/player/PlayerStatus';
 import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
 import HostLanding from './views/host/HostLanding';
+import HostSettings from './views/host/HostSettings';
+import HostPause from './views/host/HostPause';
 import HostLobby from './views/host/HostLobby';
 import HostIntro from './views/host/HostIntro';
 import HostQuestion from './views/host/HostQuestion';
@@ -154,6 +156,27 @@ export const PREVIEWS = {
   'tv-landing': {
     group: 'Tv', viewport: 'tv', note: 'Before anyone joins',
     render: () => <HostLanding onStart={noop} />,
+  },
+  'tv-settings': {
+    group: 'Tv', viewport: 'tv', note: 'The densest board screen — two columns of controls',
+    render: () => (
+      <HostSettings
+        settings={fx.room5.settings}
+        board={{ lighting: 'auto', sound: true, motion: 'full' }}
+        onBoard={noop}
+        onSave={noop}
+        onClose={noop}
+      />
+    ),
+  },
+  'tv-pause': {
+    group: 'Tv', viewport: 'tv', note: 'Overlay over a live round — sits outside the scaled stage',
+    render: () => (
+      <>
+        <HostQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} players={fx.players15} />
+        <HostPause round={fx.round15} onResume={noop} onSettings={noop} onEnd={noop} />
+      </>
+    ),
   },
   'tv-lobby-one': {
     group: 'Tv', viewport: 'tv', note: 'One player — the QR is all that matters',

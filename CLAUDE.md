@@ -119,6 +119,12 @@ rotation contract starts one screen later.
 tablet turned over changes its mind. It stops following the viewport once the player
 picks a side — `chose` in `App.jsx`.
 
+**`.hs-dialog` is the exception to "the board scales".** The pause/end overlay is
+rendered beside the `Stage`, not inside it, so it is drawn at 1:1 and its pixels are
+real ones. It is sized like the phone instead — fluid against the viewport, saturating
+at 720 — because unconstrained it lost its header off the top of a sideways phone.
+Anything else that ever renders outside the stage needs the same treatment.
+
 ---
 
 ## Branding

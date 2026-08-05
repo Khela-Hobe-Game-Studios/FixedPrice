@@ -820,8 +820,19 @@
   background: rgba(7, 9, 10, 0.82);
 }
 
+/* The one host element that is not inside the stage, so it is not scaled with it —
+ * it is drawn at 1:1 over the top. That makes every number here a real px rather
+ * than a board-space one, and on a phone held sideways there is neither 640px of
+ * width nor 340px of height to have: unconstrained, this lost its PAUSED header off
+ * the top and clipped END GAME off the bottom, on the one screen whose whole job is
+ * to tell the host what is about to happen to fifteen people's game.
+ *
+ * So it is sized like the phone is: fluid against the viewport, saturating at the
+ * 720-tall board where the authored values are correct, with floors that keep the
+ * three buttons at 44px. */
 .hs-dialog {
-  width: 640px;
+  width: min(640px, 100vw - 32px);
+  max-height: calc(100dvh - 24px);
   background: var(--board);
   border: 2px solid var(--out-20);
   display: flex;
@@ -831,13 +842,25 @@
 .hs-dialog__body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 26px 28px;
+  gap: clamp(8px, 1.95svh, 14px);
+  padding: clamp(14px, 3.62svh, 26px) 28px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.hs-dialog__head {
+  font-size: clamp(26px, 5.57svh, 40px);
 }
 
 .hs-dialog__actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 0 28px 26px;
+  padding: 0 28px clamp(14px, 3.62svh, 26px);
+}
+
+.hs-dialog__actions .bd-btn {
+  height: clamp(44px, 7.51svh, 54px);
+  font-size: clamp(16px, 2.79svh, 20px);
+  padding: 0 8px;
 }

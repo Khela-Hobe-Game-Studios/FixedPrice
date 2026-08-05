@@ -27,9 +27,7 @@ export default function HostPause({ paused, round, onResume, onSettings, onEnd }
         </div>
 
         <div className="hs-dialog__body">
-          <h2 className="bd-word" style={{ fontSize: 40 }}>
-            End the game?
-          </h2>
+          <h2 className="bd-word hs-dialog__head">End the game?</h2>
           <p className="bd-mono bd-mono--wrap" style={{ fontSize: 14 }}>
             SCORES ARE KEPT. PLAYERS SEE THE FINAL STANDINGS AND THE PODIUM. THE ROOM CODE STOPS
             WORKING.
@@ -37,13 +35,13 @@ export default function HostPause({ paused, round, onResume, onSettings, onEnd }
         </div>
 
         <div className="hs-dialog__actions">
-          <Btn onClick={onResume} style={{ height: 54, fontSize: 20 }} data-testid="resume">
+          <Btn onClick={onResume} data-testid="resume">
             RESUME
           </Btn>
-          <Btn tone="ghost" onClick={onSettings} style={{ height: 54, fontSize: 20 }}>
+          <Btn tone="ghost" onClick={onSettings}>
             SETTINGS
           </Btn>
-          <Btn tone="red" onClick={onEnd} style={{ height: 54, fontSize: 20 }} data-testid="end-game">
+          <Btn tone="red" onClick={onEnd} data-testid="end-game">
             END GAME
           </Btn>
         </div>
