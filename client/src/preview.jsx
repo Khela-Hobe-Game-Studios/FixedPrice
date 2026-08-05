@@ -256,7 +256,13 @@ export const PREVIEWS = {
     render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} onStandings={noop} />,
   },
 
-  // ── Phone: a controller, not a small TV. Judged at 390x844 and 375x667. ──
+  // ── Phone: a controller, not a small TV. Every one of these is judged at all
+  //    three phone sizes — 390x844, 375x667 and 360x640 — because the screens are
+  //    authored at 844 and the failure mode below it is silent (see fit-check). ──
+  'ph-landing': {
+    group: 'Phone', viewport: 'phone', note: 'The homepage on a phone — host or join, no board',
+    render: () => <HostLanding phone onStart={noop} onJoinInstead={noop} />,
+  },
   'ph-join': {
     group: 'Phone', viewport: 'phone', note: 'Code + name, QR deep-link fills the code',
     render: () => <PlayerJoin code="JHOL" setCode={noop} name="Nadia" setName={noop} onJoin={noop} />,
@@ -275,10 +281,6 @@ export const PREVIEWS = {
   },
   'ph-question': {
     group: 'Phone', viewport: 'phone', note: 'Number pad — no invalid key exists',
-    render: () => <PlayerQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} onSubmit={noop} />,
-  },
-  'ph-question-short': {
-    group: 'Phone', viewport: 'short', note: 'iPhone SE — the CTA must never move',
     render: () => <PlayerQuestion round={fx.round15} timing={fx.round15} answerCount={fx.answerCount15} onSubmit={noop} />,
   },
   'ph-locked': {
@@ -323,7 +325,10 @@ export const PREVIEWS = {
   },
 };
 
-const VIEWPORT_SIZES = { tv: '1280x720', phone: '390x844', short: '375x667' };
+/* What the gallery shows for a screen. `phone` is a range rather than a size — the
+ * gate runs every phone screen at 390x844, 375x667 and 360x640, so a dedicated
+ * "iPhone SE" preview would only be one of those three checks written out twice. */
+const VIEWPORT_SIZES = { tv: '1280x720', phone: '390x844 → 360x640' };
 
 function PreviewIndex() {
   const groups = [...new Set(Object.values(PREVIEWS).map(p => p.group))];

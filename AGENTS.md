@@ -67,7 +67,8 @@ http://localhost:5173/?preview=index
 ```
 
 A gallery of all 44 screens with mock data. Each entry links to itself and states the
-viewport it should be judged at. Defined in `client/src/preview.jsx` as the `PREVIEWS`
+viewport it should be judged at — a *set* of sizes for phones, which are checked at
+390×844, 375×667 and 360×640. Defined in `client/src/preview.jsx` as the `PREVIEWS`
 map — the gallery and `capture-screens.js` both derive from it, so **adding an entry
 there automatically adds it to the gallery and the screenshot run**.
 
@@ -85,11 +86,21 @@ These are the constraints that make this a party game rather than a web app. Bre
 them produces a green test run and a broken game night.
 
 **The host screen must never scroll — now enforced.** `npm run test:fit` loads every
-preview at its declared viewport and fails on a scrolling document, on anything
-spilling past the stage, and on a screen that rendered nothing. It runs inside
-`verify`. The board is also authored at a fixed 1280×720 and scaled to fit (see
-`board/Stage.jsx`), so an overflow hides content rather than adding a scrollbar —
-which is exactly why it needs a test rather than an eyeball.
+preview at every size it has to survive and fails on a scrolling document, on anything
+spilling past the stage, on anything bursting out of its parent in a column stack, and
+on a screen that rendered nothing. It runs inside `verify`. The board is also authored
+at a fixed 1280×720 and scaled to fit (see `board/Stage.jsx`), so an overflow hides
+content rather than adding a scrollbar — which is exactly why it needs a test rather
+than an eyeball.
+
+**A phone screen has three heights, not one.** They are authored at 390×844, and 844
+is the size that proves nothing: 667 is the SE and every small iPhone, 640 is most of
+the cheap Android fleet. `.bd-phone` is `overflow: hidden` at exactly `100dvh`, so a
+screen that does not fit never scrolls and never spills — it squashes one flex child
+and renders its contents straight through the next one. That is why the gate checks
+for a *burst* as well as a spill, and why every metric that spends height on a phone
+is a `--phone-*` clamp token rather than a flat px (see Responsiveness in CLAUDE.md).
+Reach for a token before you type a pixel into `player.css`.
 
 **15 players is the design target, not 5.** Layouts that look fine with the default
 5-player fixtures fall apart at 15 — that is how the reveal, the scoreboard and the
@@ -181,7 +192,8 @@ not about avoiding recent dates.
 
 1. `npm run verify` green.
 2. If you touched host layout: the three `-15` previews fit 1280×720 with no overflow.
-3. If you touched a question rule: both banks lint clean.
-4. Commit message says what changed **and why** — the repo's history is the design
+3. If you touched phone layout: it holds at 360×640, not just at 390×844.
+4. If you touched a question rule: both banks lint clean.
+5. Commit message says what changed **and why** — the repo's history is the design
    record. No Claude/Anthropic attribution (see the workspace `CLAUDE.md`).
-5. Don't push unless asked.
+6. Don't push unless asked.

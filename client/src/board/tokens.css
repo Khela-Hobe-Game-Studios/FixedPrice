@@ -105,12 +105,44 @@
   --band-h: 46px;           /* host header */
   --band-marquee: 36px;     /* host footer marquee */
   --band-action: 44px;      /* host game-over action bar */
-  --band-phone: 44px;       /* phone header */
-  --band-phone-cat: 34px;   /* phone category strip */
-  --cta-phone: 80px;        /* phone primary CTA */
-  --cta-phone-sm: 52px;     /* phone secondary */
 
   --brand-w: 300px;         /* host header brand lockup cell */
+
+  /* ---- Phone metrics -------------------------------------------------------
+   * The phone is authored at 390x844 and, unlike the host board, it is never
+   * scaled — a phone is a real viewport at its real size, and black bars down the
+   * sides of a device held in the hand look broken rather than cinematic.
+   *
+   * So the vertical rhythm is fluid instead: every metric that spends height is
+   * clamp(floor, Nsvh, 844-value). Each coefficient is set just above its own
+   * 844 ratio (44/844 = 5.213%, so 5.22svh), which means all of them saturate at
+   * their maximum at exactly 844 and the reference phone renders pixel-identical
+   * to before. Below it they give height back in proportion, which is what stops
+   * the guess block collapsing under the keypad on a 667 or 640 phone.
+   *
+   * svh, not vh or dvh: the small viewport is the one that includes the browser
+   * chrome, so the layout is sized for the worst case and does not resize under
+   * the player's thumb when the URL bar hides mid-round.
+   *
+   * The floors are the real constraint — nothing tappable goes under 44px. */
+  --band-phone: clamp(38px, 5.22svh, 44px);      /* phone header */
+  --band-phone-cat: clamp(28px, 4.03svh, 34px);  /* phone category strip */
+  --cta-phone: clamp(60px, 9.49svh, 80px);       /* phone primary CTA */
+  --cta-phone-sm: clamp(44px, 6.17svh, 52px);    /* phone secondary */
+  --phone-key: clamp(44px, 6.64svh, 56px);       /* number pad key */
+  --phone-gap: clamp(8px, 1.66svh, 14px);        /* stack gap */
+  --phone-pad: clamp(12px, 2.14svh, 18px);       /* body inset */
+  --phone-head: clamp(27px, 4.51svh, 38px);      /* the question */
+  --phone-guess: clamp(48px, 8.54svh, 72px);     /* the number being typed */
+  --phone-caret: clamp(38px, 6.64svh, 56px);
+  --phone-clock: clamp(36px, 6.17svh, 52px);
+  --phone-field: clamp(52px, 7.59svh, 64px);     /* name / text input */
+  --phone-row: clamp(28px, 4.03svh, 34px);       /* a standings row */
+
+  /* The widest a controller ever gets. Past this a phone screen stops being a
+   * phone screen and becomes a 1440px number pad, so on a laptop or a tablet the
+   * player's device is drawn at phone width, centred on the board. */
+  --phone-w: 440px;
 
   /* ---- Motion --------------------------------------------------------------
    * Nothing eases. A stadium board is a mechanical device: pixels are on or off.

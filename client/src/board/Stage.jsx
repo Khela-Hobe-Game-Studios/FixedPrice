@@ -42,6 +42,37 @@ export default function Stage({ children, className = '', ...rest }) {
         <span className="bd-rivet bd-rivet--br" />
         <div className="bd-screen">{children}</div>
       </div>
+      <TurnGuard />
+    </div>
+  );
+}
+
+/**
+ * The board's half of the rotation contract.
+ *
+ * 16:9 inside a portrait phone can only ever be scale = width/1280 — 0.30 on a 390px
+ * screen, which is a 5px header and a room code nobody can read. There is no layout
+ * that fixes that; there is only a different shape of screen. So below the width
+ * where the board stops being legible, portrait asks for the phone to be turned, and
+ * landscape gets the board at 0.54, which is small but real.
+ *
+ * 575px is that width: in portrait the scale is width/1280, so 575 is the 0.45 that
+ * keeps the 19px band labels above 8px. Deliberately width-only and portrait-only —
+ * gating on height too would put a phone that is already sideways behind a sign
+ * telling it to turn sideways.
+ *
+ * The player has the mirror of this (RotateGuard): the phone is played upright, the
+ * board is played wide.
+ */
+function TurnGuard() {
+  return (
+    <div className="bd-turn">
+      <span className="bd-word" style={{ fontSize: 30 }}>
+        Turn your phone sideways
+      </span>
+      <span className="bd-mono" style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
+        THE BOARD IS 16:9 — IT WANTS A TV, AND WILL SETTLE FOR LANDSCAPE
+      </span>
     </div>
   );
 }

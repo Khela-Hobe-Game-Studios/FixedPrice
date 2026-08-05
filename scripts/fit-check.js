@@ -6,9 +6,10 @@
  * fifteen-player screens are the hard cases, and they are exactly the ones a change
  * made at five players silently breaks.
  *
- * Every preview is loaded at the size it declares and checked for three things:
- * the document must not scroll, nothing may spill outside the stage, and no page
- * error may have fired while it rendered.
+ * Every preview is loaded at every size it has to survive and checked for four
+ * things: the document must not scroll, nothing may spill outside the stage, no
+ * element may burst out of the box that is meant to contain it, and no page error
+ * may have fired while it rendered.
  *
  *   node scripts/fit-check.js            all previews
  *   node scripts/fit-check.js tv-reveal  one of them
@@ -21,10 +22,24 @@ const { chromium } = require('playwright');
 const URL = process.env.PREVIEW_URL || 'http://localhost:5173';
 const ROOT = path.join(__dirname, '..');
 
+/* A viewport is a list, not a size.
+ *
+ * The board only ever has one shape, because it is scaled to whatever it is plugged
+ * into. The phone has three, because it is not scaled: it is authored at 390x844 and
+ * every metric that spends height gives some back below that (tokens.css), so 844 is
+ * the size that proves nothing. 667 is the SE and every small iPhone; 640 is most of
+ * the cheap Android fleet, which at a Dhaka party is most of the room.
+ *
+ * Checking phones at 844 alone is how the question screen shipped with its guess
+ * block squashed to 101px on a 640 phone, overflowing the clock through the segment
+ * bar and into the keypad. */
 const SIZES = {
-  tv: { width: 1280, height: 720 },
-  phone: { width: 390, height: 844 },
-  short: { width: 375, height: 667 },
+  tv: [{ label: 'tv', width: 1280, height: 720 }],
+  phone: [
+    { label: 'phone', width: 390, height: 844 },
+    { label: 'short', width: 375, height: 667 },
+    { label: 'tiny', width: 360, height: 640 },
+  ],
 };
 
 // Same contract capture-screens.js reads: the preview map is the source of truth
@@ -59,12 +74,16 @@ function settleFor(key) {
   return 700;
 }
 
-/** The three checks, run inside the page: does it scroll, does it spill, did it render. */
+/** The four checks, run inside the page: does it scroll, spill, burst, or render. */
 function evaluateFit(page) {
   return page.evaluate(() => {
     const doc = document.documentElement;
     const overflowY = doc.scrollHeight - window.innerHeight;
     const overflowX = doc.scrollWidth - window.innerWidth;
+    const name = (el) => ({
+      tag: el.tagName.toLowerCase(),
+      cls: (el.className?.baseVal ?? el.className ?? '').toString().slice(0, 40),
+    });
 
     // Inside the board, "fits" means fits the stage, not the window: the stage is
     // scaled, so a child hanging out of it is invisible rather than scrollable.
@@ -77,15 +96,45 @@ function evaluateFit(page) {
         if (r.width === 0 || r.height === 0) continue;
         const over = Math.max(r.bottom - box.bottom, r.right - box.right);
         if (over > 2 && (!spill || over > spill.over)) {
-          spill = {
-            over: Math.round(over),
-            tag: el.tagName.toLowerCase(),
-            cls: (el.className?.baseVal ?? el.className ?? '').toString().slice(0, 40),
-          };
+          spill = { over: Math.round(over), ...name(el) };
         }
       }
     }
-    return { overflowY, overflowX, spill, empty: doc.innerText.trim().length === 0 };
+
+    /* The phone's failure mode, which none of the above can see.
+     *
+     * .bd-phone is overflow:hidden and exactly 100dvh, so it never scrolls the
+     * document and nothing ever leaves it — a screen that does not fit resolves
+     * itself by squashing one flex child and letting its contents render straight
+     * through the next one. That reads as overlapping text and clipped buttons and
+     * passes every check we had.
+     *
+     * So: in a column stack, a child must stay inside its parent. Only column
+     * stacks, because sharing a line is the entire point of a row or a grid; and
+     * not scrollers, which are allowed more content than they can show. */
+    const root = document.querySelector('[data-phone]') ?? stage;
+    let burst = null;
+    if (root) {
+      for (const el of root.querySelectorAll('*')) {
+        const parent = el.parentElement;
+        if (!parent) continue;
+        const cs = getComputedStyle(el);
+        if (cs.position === 'absolute' || cs.position === 'fixed') continue;
+        const pcs = getComputedStyle(parent);
+        if (!pcs.display.includes('flex') || !pcs.flexDirection.startsWith('column')) continue;
+        if (pcs.overflowY === 'auto' || pcs.overflowY === 'scroll') continue;
+
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        const p = parent.getBoundingClientRect();
+        const over = Math.max(p.top - r.top, r.bottom - p.bottom);
+        if (over > 2 && (!burst || over > burst.over)) {
+          burst = { over: Math.round(over), ...name(el), parent: name(parent).cls };
+        }
+      }
+    }
+
+    return { overflowY, overflowX, spill, burst, empty: doc.innerText.trim().length === 0 };
   });
 }
 
@@ -98,16 +147,21 @@ function evaluateFit(page) {
     process.exit(1);
   }
 
+  // One job per (screen, size). The phone screens are the reason this is a cross
+  // product rather than a list: they have to hold at three heights, not one.
+  const jobs = previews.flatMap(({ key, viewport }) =>
+    (SIZES[viewport] ?? SIZES.tv).map((size) => ({ key, size }))
+  );
+
   const browser = await chromium.launch();
   const failures = [];
 
-  // Four at a time: the reveal alone needs a 5s settle, and forty-two of those in
+  // Four at a time: the reveal alone needs a 5s settle, and ninety of those in
   // series is a gate nobody runs.
   const CONCURRENCY = 4;
 
-  async function checkOne({ key, viewport }) {
-    const size = SIZES[viewport] ?? SIZES.tv;
-    const page = await browser.newPage({ viewport: size });
+  async function checkOne({ key, size }) {
+    const page = await browser.newPage({ viewport: { width: size.width, height: size.height } });
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
 
@@ -130,20 +184,26 @@ function evaluateFit(page) {
     if (result.overflowY > 0) problems.push(`scrolls ${result.overflowY}px vertically`);
     if (result.overflowX > 0) problems.push(`scrolls ${result.overflowX}px horizontally`);
     if (result.spill) problems.push(`${result.spill.tag}.${result.spill.cls} spills ${result.spill.over}px past the stage`);
+    if (result.burst) {
+      problems.push(
+        `${result.burst.tag}.${result.burst.cls} bursts ${result.burst.over}px out of .${result.burst.parent}`
+      );
+    }
     if (result.empty) problems.push('rendered nothing');
     if (errors.length) problems.push(errors[0].split('\n')[0]);
 
+    const where = `${key} @ ${size.label}`;
     if (problems.length) {
-      failures.push(`${key} (${size.width}x${size.height}) — ${problems.join('; ')}`);
-      console.log(`  FAIL ${key}: ${problems.join('; ')}`);
+      failures.push(`${where} (${size.width}x${size.height}) — ${problems.join('; ')}`);
+      console.log(`  FAIL ${where}: ${problems.join('; ')}`);
     } else {
-      console.log(`  ok   ${key}`);
+      console.log(`  ok   ${where}`);
     }
 
     await page.close();
   }
 
-  const queue = [...previews];
+  const queue = [...jobs];
   try {
     await Promise.all(
       Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
@@ -157,8 +217,8 @@ function evaluateFit(page) {
 
   console.log('');
   if (failures.length) {
-    console.log(`fit-check: ${failures.length} of ${previews.length} screens do not fit`);
+    console.log(`fit-check: ${failures.length} of ${jobs.length} checks failed`);
     process.exit(1);
   }
-  console.log(`fit-check: all ${previews.length} screens fit`);
+  console.log(`fit-check: ${previews.length} screens fit, at all ${jobs.length} sizes`);
 })();

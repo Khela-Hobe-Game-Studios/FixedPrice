@@ -80,11 +80,44 @@ as a category name.
 **Day mode:** same geometry, `:root[data-lighting="day"]` swaps the palette and kills
 every glow. `AUTO` follows local time. **Phones are always night** — a phone is held
 close and glanced at, and the dark board is the more legible of the two at arm's
-length. Do not auto-switch phones with the host.
+length. Do not auto-switch phones with the host. This is a claim about the device, not
+the role: `isPhone` in `App.jsx` is `role === 'player' || portraitPhone`, so the host's
+phone landing is night too.
 
 **Motion:** nothing eases; everything is `steps()` or linear. `prefers-reduced-motion`
 and the MOTION: REDUCED setting kill shake, blink, strobe and the marquee, and keep
 the reveal's stagger at 60% duration — it must still read as a sequence.
+
+### Responsiveness
+
+Two devices, two rules, and one breakpoint each.
+
+**The board scales; it does not reflow.** 1280×720 authored in absolute px, `min()`
+scaled to fit — a rule the ten host screens are allowed to rely on. What that cannot
+survive is a portrait phone: 16:9 in a 9:19.5 window is `width/1280`, so 0.30 and a
+5px header. Below **575px in portrait** the board is therefore not drawn at all —
+`.bd-turn` (`board.css` + `TurnGuard` in `Stage.jsx`) asks for the phone to be turned,
+and landscape gets the board at 0.54, which is small but real. The mirror of the
+player's `RotateGuard`: the phone is played upright, the board is played wide.
+
+**The phone is fluid vertically and capped horizontally.** It is never scaled — black
+bars down the sides of a device in the hand look broken — so instead every metric that
+spends height is a `--phone-*` token, `clamp(floor, Nsvh, 844-value)`, with each
+coefficient set just above its own 844 ratio so all of them saturate at 844 and the
+reference phone stays pixel-identical. `svh` so the layout does not resize under a
+thumb when the URL bar hides. Floors keep every tap target at 44px. Horizontally it is
+capped at `--phone-w` (440px) and centred, because a player on a laptop is still
+holding a controller.
+
+**`HostLanding` is the one host screen with a phone layout** (`phone` prop, driven by
+`PORTRAIT_PHONE`). It is the front door: answering somebody's first tap with a rotation
+demand asks them to commit before they have been told what they are committing to. The
+rotation contract starts one screen later.
+
+**The host/player guess is live.** `useMediaQuery(BOARD_WIDTH)` rather than a
+`window.innerWidth` read in a `useState` initialiser, so a window dragged narrow or a
+tablet turned over changes its mind. It stops following the viewport once the player
+picks a side — `chose` in `App.jsx`.
 
 ---
 
@@ -253,6 +286,8 @@ client/src/
   previewData.js    Fixtures for the gallery, in the server's exact payload shapes
   preview.jsx       ?preview=<key> — 44 screens, no backend needed
   board/            The design system (see UI / Design System)
+  hooks/
+    useMediaQuery.js  BOARD_WIDTH / PORTRAIT_PHONE, as state rather than a one-off read
   game/
     useGameSocket.js  One reducer owning every socket event; screens are pure
     clock.js          Server-time offset, phase remaining, second-aligned countdown
@@ -370,7 +405,7 @@ npm run verify -- --fast    # skips the two browser steps
 | Suite | What it covers |
 |---|---|
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
-| `scripts/fit-check.js` | All 44 previews at their declared viewport: no scrolling, nothing spilling past the stage, nothing rendering blank |
+| `scripts/fit-check.js` | All 44 previews, at every size they have to survive — 78 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a column stack, nothing rendering blank |
 | `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
 
 Browser tests select on **`data-testid`**, not text. The board is all-uppercase with
@@ -383,6 +418,10 @@ toggling the wrong thing.
 `capture-screens.js` and `fit-check.js` all derive from it, so adding an entry adds it
 everywhere. Keep the literal's shape (`group` and `viewport` as the first two keys) —
 the other two parse it as text.
+
+`viewport` names a *set* of sizes, not one size: `phone` means all three phone
+heights. Do not add a preview whose only difference is the size it is judged at — the
+gate already runs every phone screen at every phone height.
 
 ```bash
 npm run screens     # every preview to .screens/, plus the live host + phone path

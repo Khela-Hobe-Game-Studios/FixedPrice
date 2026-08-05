@@ -156,11 +156,18 @@ body {
 /* ========================================================================== */
 
 /* The phone carries only what a thumb needs and what is personally yours; the TV
- * carries the story. It is never scaled and never switches to day mode. */
+ * carries the story. It is never scaled and never switches to day mode.
+ *
+ * It is also capped at --phone-w and centred, because a player on a laptop is still
+ * holding a controller: stretched to 1440px the number pad becomes three 480px keys
+ * and the screen reads as a broken web page rather than a device. The board colour
+ * on html/body (index.html) is what fills the space either side. */
 
 .bd-phone {
   position: relative;
   width: 100%;
+  max-width: var(--phone-w);
+  margin-inline: auto;
   min-height: 100dvh;
   height: 100dvh;
   background-color: var(--board);
@@ -170,8 +177,16 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* The game never renders landscape on a phone. */
-.bd-rotate {
+/* ========================================================================== */
+/* ROTATION                                                                   */
+/* ========================================================================== */
+
+/* The two halves of the same contract: the phone is played upright, the board is
+ * played wide. Both are full-bleed red, because both are the one moment the design
+ * stops showing you the game and asks you for something. */
+
+.bd-rotate,
+.bd-turn {
   position: fixed;
   inset: 0;
   z-index: 40;
@@ -186,8 +201,18 @@ body {
   text-align: center;
 }
 
+/* The game never renders landscape on a phone. */
 @media (orientation: landscape) and (max-height: 500px) {
   .bd-rotate {
+    display: flex;
+  }
+}
+
+/* …and the board never renders portrait on one. In portrait the stage scale is
+ * width/1280, so 575px is where it drops below 0.45 and the band labels go under
+ * 8px. See TurnGuard in Stage.jsx for why this is width-only. */
+@media (orientation: portrait) and (max-width: 575px) {
+  .bd-turn {
     display: flex;
   }
 }
@@ -576,7 +601,7 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 64px;
+  height: var(--phone-field);
   padding: 0 14px;
   background: var(--panel);
   border-bottom: 4px solid var(--out-20);
