@@ -43,6 +43,7 @@ export default function AvatarTile({
   dim = false,
   bar,
   barColor,
+  label,
   className = '',
   style,
   ...rest
@@ -75,7 +76,10 @@ export default function AvatarTile({
         borderBottomColor: barColor ?? (hasPicture ? color : 'var(--board)'),
         ...style,
       }}
-      aria-hidden="true"
+      /* Decorative almost everywhere — the name sits right next to it, so announcing
+         the tile as well just says everything twice. Pass `label` on the one screen
+         where the tile IS the subject (the picker) and it becomes an image. */
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' })}
       {...rest}
     >
       {hasPicture ? <img className="bd-tile__img" src={avatar.image} alt="" /> : monogram}

@@ -47,9 +47,14 @@ export function posterise(source, color, { dither = 0.7, threshold = 0.5 } = {})
 
   // Square crop from the centre — a portrait cropped off-centre is a portrait of
   // someone's ear.
-  const w = source.videoWidth ?? source.naturalWidth ?? source.width;
-  const h = source.videoHeight ?? source.naturalHeight ?? source.height;
+  //
+  // `||` rather than `??`: a video element reports videoWidth 0 (not undefined)
+  // until loadedmetadata, and `??` walks straight past a 0 into a zero-width
+  // drawImage, which throws IndexSizeError instead of falling back.
+  const w = source.videoWidth || source.naturalWidth || source.width;
+  const h = source.videoHeight || source.naturalHeight || source.height;
   const side = Math.min(w, h);
+  if (!side) throw new Error('That image is not ready yet');
   ctx.drawImage(source, (w - side) / 2, (h - side) / 2, side, side, 0, 0, SIZE, SIZE);
 
   const img = ctx.getImageData(0, 0, SIZE, SIZE);
