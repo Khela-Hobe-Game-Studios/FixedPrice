@@ -10,6 +10,7 @@ import {
   PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver, PlayerSpectating,
 } from './views/player/PlayerStatus';
 import { BoardSpecimens, PhoneSpecimens } from './board/Specimens';
+import CueBench from './board/CueBench';
 import HostLanding from './views/host/HostLanding';
 import HostSettings from './views/host/HostSettings';
 import HostPause from './views/host/HostPause';
@@ -150,6 +151,10 @@ export const PREVIEWS = {
   'board-phone': {
     group: 'Board', viewport: 'phone', note: 'Phone primitives + tile size scale',
     render: () => <PhoneSpecimens />,
+  },
+  'board-cues': {
+    group: 'Board', viewport: 'tv', note: 'The twelve cues, one click each — audition and tune',
+    render: () => <CueBench />,
   },
 
   // ── The board. 1280x720, never scrolls, judged at 15 players. ──

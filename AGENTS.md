@@ -68,7 +68,7 @@ the screen — see below.
 http://localhost:5173/?preview=index
 ```
 
-A gallery of all 44 screens with mock data. Each entry links to itself and states the
+A gallery of all 47 screens with mock data. Each entry links to itself and states the
 viewport it should be judged at — a *set* of sizes for phones, which are checked at
 390×844, 375×667 and 360×640. Defined in `client/src/preview.jsx` as the `PREVIEWS`
 map — the gallery and `capture-screens.js` both derive from it, so **adding an entry
