@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { buzz } from '../game/haptics';
 
 /**
  * One letter of the room code, on its own lit tile.
@@ -65,14 +66,16 @@ export function CodeEntry({
         id={id}
         className="bd-codeentry__input"
         value={value}
-        onChange={(e) =>
-          onChange(
-            e.target.value
-              .toUpperCase()
-              .replace(/[^A-Z0-9]/g, '')
-              .slice(0, length)
-          )
-        }
+        onChange={(e) => {
+          const next = e.target.value
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '')
+            .slice(0, length);
+          // The keypad tick, on the one device that has a keypad. Only on growth —
+          // a backspace should not feel like a keypress.
+          if (next.length > value.length) buzz('keypad');
+          onChange(next);
+        }}
         maxLength={length}
         autoCapitalize="characters"
         autoCorrect="off"

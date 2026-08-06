@@ -302,7 +302,7 @@ client/src/
   session.js        Durable pid, session persistence, ?join= deep link
   categories.js     Category bands: name, label, fill, ink
   previewData.js    Fixtures for the gallery, in the server's exact payload shapes
-  preview.jsx       ?preview=<key> — 44 screens, no backend needed
+  preview.jsx       ?preview=<key> — 47 screens, no backend needed
   board/            The design system (see UI / Design System)
   hooks/
     useMediaQuery.js  BOARD_WIDTH / PORTRAIT_PHONE, as state rather than a one-off read
@@ -310,6 +310,9 @@ client/src/
     useGameSocket.js  One reducer owning every socket event; screens are pure
     clock.js          Server-time offset, phase remaining, second-aligned countdown
     revealBeats.js    The reveal's beat clock and per-row stagger
+    cues.js           The twelve cues, synthesised; channels, scheduling, the bed
+    useCues.js        Cues ↔ phase events and the reveal schedule; host only
+    haptics.js        The phone's half of the cue system — vibration, not sound
     avatar.js         Selfie → 2-tone posterised PNG, on the phone
     settings.js       Board settings (lighting/sound/motion), localStorage
   components/JoinQR.jsx   Real QR, deep-linked with the code prefilled
@@ -352,6 +355,24 @@ capture-screens.js  Every preview to .screens/, plus the live host+phone path
 **A CSS reset must not out-specify its own components.** `board.css` wraps its reset in `:where()`: `button { background: none }` beats `.bd-btn` on specificity and silently strips every button's fill.
 
 **Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
+
+**`ctx.state === 'running'` is the wrong gate for playing a cue.** `resume()` is
+asynchronous, so for tens of milliseconds after the click that unlocks audio the state
+still reads `suspended` — and every cue fired in that window is silently dropped. The
+same gap reopens after every `visibilitychange` resume. `cues.js` gates on `armed`
+instead: has a gesture ever happened. A resuming context honours what is scheduled
+against it; one that never had a gesture only accumulates nodes that never sound.
+
+**Every platform suspends the AudioContext and none of them resume it** — iOS on any
+interruption, Android Chrome when the tab backgrounds, desktop when the lid closes. A
+host that closed the laptop between rounds would come back to a silent board for the
+rest of the night. `cues.js` registers its own `visibilitychange` resume at context
+creation, where a caller cannot forget it.
+
+**A past-due filter must be `at < elapsed`, not `at <= elapsed + tolerance`.** The
+reveal's blackout sits at offset 0, so any tolerance at all swallows the beat the whole
+sequence opens on. Entries level with `elapsed` are scheduled and clamped to the
+current time by `voiceAt`.
 
 **Session persistence:** `localStorage` stores `{ role, code, name?, settings?, hostToken? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` / `Not the host of this room` — the server restarted and lost its in-memory rooms.
 
@@ -404,12 +425,54 @@ properties of the room the board is standing in rather than of the game:
 
 ## Audio
 
-3 tracks on Cloudflare R2 (`pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/`):
-- `the_scoring_bell.mp3`
-- `the_dhaka_lobby.mp3`
-- `square_wave_bazaar.mp3`
+**Music.** 3 tracks on Cloudflare R2
+(`pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/`): `the_scoring_bell.mp3`,
+`the_dhaka_lobby.mp3`, `square_wave_bazaar.mp3`. Randomly selected in `primeMusic()`
+each game. Adding tracks: upload to R2, add the URL to `soundUrls` in `App.jsx`.
 
-Track is randomly selected in `primeMusic()` each game. Adding new tracks: upload to R2, add URL to `soundUrls` array in `App.jsx`.
+**The twelve cues are synthesised, not sampled** — `game/cues.js`, plain Web Audio,
+no files and no dependency. Every voice is a filtered noise burst or a square wave
+with a 1-3ms attack, because that is what the board looks like: relays, split-flaps
+and LED signage. A sampled library would have been someone else's idea of a
+scoreboard bolted onto ours, and it could not be retuned by changing a number.
+
+| Cue | Fires on |
+|---|---|
+| `stab` | `round:intro`, and under the winner beat |
+| `clunk` | every phase change; the reveal's blackout and dim frames |
+| `thunk` | each player locking in (full weight on the last), the points beat |
+| `keypad` | a bet placed |
+| `humRise` | the last 8s of a timed phase |
+| `beep` | each of the last five seconds |
+| `klaxon` | the clock beating the room; a sudden-death knockout |
+| `flick` | one per character of the target, at `schedule.digitStep` |
+| `tick` | one per reveal row, at its own `rowDelays()` offset |
+| `crowd` | the winner beat |
+| `deflate` | the winner beat when the outcome is `nobody_close` |
+| `fanfare` | game over |
+
+Plus a persistent low **bed** — the board switched on and left on. It drops for the
+reveal, because the blackout is a hole in the sound as well as in the light, and for
+game over, so the fanfare lands on silence.
+
+**Cues read the same clock the pixels do.** `useCues` turns the server's reveal
+`schedule` and each phase's `endsAt` into AudioContext-time offsets and hands the
+whole sequence to Web Audio in one pass. Nothing counts down, ticks, or fires off a
+render. Two consequences, both the same rules the visuals already obey: a host that
+rejoins mid-reveal seeds from `elapsedMs` and only schedules the beats still ahead of
+it, and every phase can be cut short (`killAll()` on transition, `kill('clock')` for
+the narrower case of a resume rescheduling its countdown).
+
+**Host device only.** Fifteen phones must not fight the TV, and the one on a slow
+link is the one everybody hears. The phone confirms with the motor instead —
+`game/haptics.js`, feature-detected, silently absent on iOS.
+
+Gated on the same SOUND toggle as the music, and deliberately **not** on MOTION:
+REDUCED — someone who kills the strobe still wants to hear the klaxon.
+
+Audition and tune every voice at `?preview=board-cues`, including the reveal
+sequence at nine players, which is the only one whose character lives in the spacing
+rather than in any single sound.
 
 ---
 
@@ -423,7 +486,7 @@ npm run verify -- --fast    # skips the three browser steps
 | Suite | What it covers |
 |---|---|
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
-| `scripts/fit-check.js` | All 46 previews, at every size they have to survive — 80 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a vertical stack (column flex **or** grid), nothing rendering blank |
+| `scripts/fit-check.js` | All 47 previews, at every size they have to survive — 81 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a vertical stack (column flex **or** grid), nothing rendering blank |
 | `scripts/responsive-check.js` | What fit-check structurally cannot see: the viewport *changing*. Drag a window narrow and the role guess follows; choose a side and it stops following; turn a phone and the board appears or asks to be turned. Plus the 44px floor under every control at 320×568 |
 | `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
 
@@ -472,10 +535,14 @@ plain CSS, tokens from `tokens.css`.
   are listed in `PlayerAvatar.jsx`. The picker's SPRITE tab is visibly locked until
   they land, and they drop into the same 40px slots with no layout change. Do not
   substitute emoji or an icon font — both break the pixel grid.
-- **The twelve sound cues are specified but not built** (relay clunk, mechanical flick,
-  low hum, rising hum, klaxon, crowd, tick, keypad tick, lock-in thunk, countdown beep,
-  category stab, fanfare). The host is the only audio source — fifteen phones must not
-  fight the TV.
+- **The crowd is the one cue synthesis cannot fake.** It is a filtered noise swell
+  standing in for four hundred people, and it is the weakest voice in the set. A real
+  recording is a one-line change: `loadCrowd(url)` in `cues.js` decodes it and every
+  later winner beat uses it instead. Everything else is mechanical and belongs in an
+  oscillator.
+- **iOS respects the ringer switch for Web Audio.** A host on an iPad with the switch
+  flipped gets a silent board and no indication why. Not worth the silent-audio-element
+  hack while the host is a TV or a laptop; revisit if iPad hosting becomes real.
 - Selfie capture needs a secure context. Fine on GitHub Pages; over plain http on a LAN
   the picker falls through to the upload path.
 - All state is in memory — a server restart drops every live room (Render spins down

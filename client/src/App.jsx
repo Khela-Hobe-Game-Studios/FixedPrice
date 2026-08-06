@@ -6,6 +6,8 @@ import { useToasts } from './hooks/useToasts';
 import useMediaQuery, { BOARD_WIDTH, PORTRAIT_PHONE } from './hooks/useMediaQuery';
 import useGameSocket, { PLAYER_ID } from './game/useGameSocket';
 import { useBoardSettings } from './game/settings';
+import useCues from './game/useCues';
+import { buzz } from './game/haptics';
 import { Toasts } from './board';
 
 import HostLanding from './views/host/HostLanding';
@@ -99,6 +101,20 @@ export default function App() {
     }
   }, [role, screen, board.sound]);
 
+  /* The music sits in the same low band as the reveal's clunks and the bed, so it
+   * has to get out of the way for the one sequence built to be listened to. Howler
+   * owns its own fade because the track is an <audio> element, not a Web Audio
+   * buffer — the cue engine cannot reach it. */
+  const duckMusic = useCallback((to, ms) => {
+    const h = bgMusic.current;
+    if (h) h.fade(h.volume(), to, ms);
+  }, []);
+
+  /* The twelve cues. Host device only, gated on the same SOUND toggle as the music
+   * — but deliberately NOT on MOTION: REDUCED, which is a separate accessibility
+   * axis. Somebody who kills the strobe still wants to hear the klaxon. */
+  useCues({ enabled: asHost && board.sound, state, duck: duckMusic });
+
   // Esc is the host's way out of a game that has to end early.
   useEffect(() => {
     if (role !== 'host') return undefined;
@@ -119,13 +135,17 @@ export default function App() {
     socket.emit('player:join', { code, name, pid: PLAYER_ID });
   };
 
+  // The phone's confirmation is the motor, not a speaker — see game/haptics.js.
   const submitAnswer = (value) => {
+    buzz('lock');
     dispatch({ type: 'answered', payload: value });
     socket.emit('player:submit_answer', { answer: value });
   };
 
   const placeBet = () => {
-    if (myBet) socket.emit('player:submit_bet', { targetId: myBet });
+    if (!myBet) return;
+    buzz('bet');
+    socket.emit('player:submit_bet', { targetId: myBet });
   };
 
   // ── host ───────────────────────────────────────────────────────────────────
