@@ -106,30 +106,45 @@ export const betCount = { count: 9, total: 15 };
 
 const CORRECT = 780;
 
-/** The reveal, decorated exactly as the server decorates it. */
-export function makeReveal(players, { outcome = 'single', elapsed = 4600 } = {}) {
+/**
+ * The reveal, decorated exactly as the server decorates it.
+ *
+ * `nobody_close` means what the server means by it: nobody submitted, so there is no
+ * winner for the red band to stand in for. A round where everyone guessed and
+ * everyone was miles out is `allWild` — it still has a winner, and the board still
+ * names them.
+ */
+export function makeReveal(players, { outcome = 'single', allWild = false, elapsed = 4600 } = {}) {
+  const nobody = outcome === 'nobody_close';
+
   const entries = players
     .map((p, i) => ({
       id: p.id,
       name: p.name,
       colorIndex: p.colorIndex,
       avatar: p.avatar,
-      submitted: true,
-      guess: GUESSES_15[i],
-      distance: Math.abs(GUESSES_15[i] - CORRECT),
+      submitted: !nobody,
+      guess: nobody ? null : GUESSES_15[i],
+      distance: nobody ? null : Math.abs(GUESSES_15[i] - CORRECT),
     }))
-    .sort((a, b) => a.distance - b.distance);
+    .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
 
   const tail = entries.length >= 6 ? entries.length - 3 : Infinity;
   const ranked = entries.map((e, i) => ({
     ...e,
-    rank: i + 1,
-    isWinner: i === 0 || (outcome === 'tie' && i === 1),
-    nearMiss: e.distance / CORRECT <= 0.05,
-    wildMiss: i > 0 && (i >= tail || e.distance / CORRECT > 1),
-    points: i === 0 ? (outcome === 'tie' ? 2 : 3) : outcome === 'tie' && i === 1 ? 2 : i === 1 ? 1 : 0,
+    rank: nobody ? null : i + 1,
+    isWinner: !nobody && (i === 0 || (outcome === 'tie' && i === 1)),
+    nearMiss: !nobody && e.distance / CORRECT <= 0.05,
+    wildMiss: !nobody && i > 0 && (i >= tail || allWild || e.distance / CORRECT > 1),
+    points: nobody ? 0
+      : i === 0 ? (outcome === 'tie' ? 2 : 3)
+      : outcome === 'tie' && i === 1 ? 2
+      : i === 1 ? 1 : 0,
   }));
 
+  // Mirrors revealSchedule(): the tail after the points beat is PAYOFF_HOLD, and the
+  // whole phase never comes in under 4600.
+  const points = players.length > 8 ? 4100 : 3400;
   const schedule = {
     blackout: 0,
     target: 400,
@@ -138,8 +153,8 @@ export function makeReveal(players, { outcome = 'single', elapsed = 4600 } = {})
     rowStep: players.length > 8 ? 60 : 100,
     dim: players.length > 8 ? 3600 : 2900,
     winner: players.length > 8 ? 3700 : 3000,
-    points: players.length > 8 ? 4100 : 3400,
-    total: players.length > 8 ? 4600 : 4000,
+    points,
+    total: Math.max(points + 2000, 4600),
   };
 
   return {
@@ -149,6 +164,7 @@ export function makeReveal(players, { outcome = 'single', elapsed = 4600 } = {})
     funFact: 'Beef in Dhaka crossed 800 taka a kilo for the first time in 2024, up from 600 in 2021.',
     bets: {},
     outcome,
+    allWild,
     winnerIds: ranked.filter((r) => r.isWinner).map((r) => r.id),
     schedule,
     revealMs: schedule.total,

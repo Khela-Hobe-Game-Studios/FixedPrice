@@ -66,7 +66,9 @@ function revealCues(reveal) {
   const knocked = (reveal.knockedOut ?? []).length > 0;
   if (reveal.finale && knocked) {
     out.push({ at: s.winner, name: 'klaxon' });
-  } else if (reveal.outcome === 'nobody_close') {
+  } else if (reveal.outcome === 'nobody_close' || reveal.allWild) {
+    // Nobody guessed, or everybody was miles out — either way the room did not earn
+    // a crowd. `allWild` still has a winner on the board; the sound is the comment.
     out.push({ at: s.winner, name: 'deflate' });
   } else {
     out.push({ at: s.winner, name: 'crowd', opts: { level: reveal.outcome === 'tie' ? 0.82 : 1 } });

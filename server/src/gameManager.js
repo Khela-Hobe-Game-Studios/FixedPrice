@@ -30,6 +30,8 @@ function questionTime(room) {
  *
  * Offsets in ms from the start of the reveal.
  */
+const PAYOFF_HOLD = 2000;
+
 function revealSchedule(rowCount) {
   const rowStep = rowCount > 8 ? 60 : 100;
   const rows = 1100;
@@ -48,7 +50,12 @@ function revealSchedule(rowCount) {
     winner: dim + 100,
     points: dim + 500,
   };
-  schedule.total = Math.min(Math.max(schedule.points + 500, 4000), 13000);
+  // The payoff needs to be readable, not merely reached. The phase used to end 500ms
+  // after the points landed, so the winner's name, their guess, their points and the
+  // fun fact all appeared and were gone inside half a second — worst in a small room,
+  // where the row chase is short and the floor was the only thing holding the screen
+  // up at all. The hold after the last beat is now the longest part of the reveal.
+  schedule.total = Math.min(Math.max(schedule.points + PAYOFF_HOLD, 4600), 13000);
   return schedule;
 }
 
@@ -475,11 +482,22 @@ function revealAnswers(io, room, rawRanked, bets = {}) {
 
   // Three outcomes, three different screens: a green winner band, a split band for a
   // tie, or a red "NOBODY WAS CLOSE" where the band would have been.
+  //
+  // That red band *replaces* the winner's band, so it may only be claimed when there
+  // is no winner to hide. It used to also fire whenever every guess was more than
+  // 100% out — which is a routine round in a game about guessing prices, and is
+  // especially routine when only one person answered, because then the field is one
+  // guess wide. The board announced that nobody was close while the scoreboard
+  // handed that same player 3 points four seconds later.
   let outcome = 'single';
-  if (scored.length === 0) outcome = 'nobody_close';
-  else if (scored.every(r => r.wildMiss || r.distance / Math.max(Math.abs(correctAnswer), 1) > WILD_MISS_SHARE)) {
-    outcome = 'nobody_close';
-  } else if (winners.length > 1) outcome = 'tie';
+  if (winners.length === 0) outcome = 'nobody_close';
+  else if (winners.length > 1) outcome = 'tie';
+
+  // The round was still terrible, and that is worth saying — as a line on the
+  // winner's band rather than instead of it. Measured on the raw share, because
+  // `wildMiss` exempts the winner by design: the closest guess is the closest guess.
+  const scale = Math.max(Math.abs(correctAnswer), 1);
+  const allWild = scored.length > 0 && scored.every(r => r.distance / scale > WILD_MISS_SHARE);
 
   const schedule = revealSchedule(Math.max(scored.length - winners.length, 1));
 
@@ -492,6 +510,7 @@ function revealAnswers(io, room, rawRanked, bets = {}) {
     scores: room.scores,
     roundPoints: room._roundPoints ?? {},
     outcome,
+    allWild,
     winnerIds: winners.map(w => w.id),
     knockedOut,
     finale: room.finale
