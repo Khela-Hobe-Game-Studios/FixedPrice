@@ -208,7 +208,7 @@ async function status() {
   // bank it was started with, and nothing on screen would otherwise say so.
   for (const host of HOSTS) {
     try {
-      const res = await fetch(`http://${host}:3001/health`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`http://${host}:${SERVICES.server.port}/health`, { signal: AbortSignal.timeout(1500) });
       const q = (await res.json()).questions;
       if (q) console.log(`deck   ${q.source}  (${q.count} questions)`);
       break;

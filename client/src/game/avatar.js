@@ -7,7 +7,7 @@
  * the player's colour — one hue, the one they already own.
  *
  * It is a *ramp* and not a threshold. Two levels is a screen-print, and a
- * screen-print of a face you have never seen at 96px is a blob: everything that
+ * screen-print of a face you have never seen at this size is a blob: everything that
  * identifies somebody — the shape of the nose, where the eyes sit, whether they are
  * smiling — lives in the midtones a 1-bit threshold throws away. Six levels keeps
  * the structure and still reads as one colour on the board rather than as a
@@ -121,7 +121,7 @@ export function posterise(source, color, { dither = 0.45, levels = LEVELS, mirro
       const t = Math.pow(Math.min(1, Math.max(0, (luma[i] - lo) / span)), 0.8);
 
       // The dither only ever has to carry across one step of the ramp, so it scales
-      // with the step size — at five levels that is a fifth of what a threshold needs,
+      // with the step size — at six levels that is a fifth of what a threshold needs,
       // which is the difference between texture and grain.
       const bias = ((BAYER[y % 4][x % 4] + 0.5) / 16 - 0.5) * dither / steps;
       const q = Math.min(1, Math.max(0, Math.round((t + bias) * steps) / steps));
@@ -176,17 +176,6 @@ export function releaseImage(source) {
 
 function fail(name, message) {
   return Object.assign(new Error(message), { name });
-}
-
-/**
- * getUserMedia exists behind a secure context and nowhere else. Checking before we
- * open the tab means a LAN test over plain http offers the upload path immediately,
- * instead of a dead viewfinder and a promise that rejected for reasons nobody sees.
- */
-export function cameraAvailable() {
-  if (typeof navigator === 'undefined') return false;
-  if (!navigator.mediaDevices?.getUserMedia) return false;
-  return window.isSecureContext !== false;
 }
 
 /* Descending order of ambition. Chrome and Safari both honour the first, but an
