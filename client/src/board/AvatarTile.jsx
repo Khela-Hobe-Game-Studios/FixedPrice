@@ -29,9 +29,9 @@ function barFor(size) {
 /**
  * One player, one hard square.
  *
- * Three sources — monogram (the zero-friction default), selfie (posterised to two
- * tones plus the player's colour so photos can't break the board), sprite (the
- * commissioned set, not yet drawn) — but the identity that actually carries across
+ * Three sources — monogram (the zero-friction default), selfie (quantised onto a
+ * six-step ramp of the player's own colour so photos can't break the board), sprite
+ * (the commissioned set, not yet drawn) — but the identity that actually carries across
  * the room is the colour, not the picture. At 3 metres a 20px face is mush and a
  * 20px colour block is instant.
  */

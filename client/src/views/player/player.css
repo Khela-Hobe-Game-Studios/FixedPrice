@@ -49,6 +49,18 @@
     calc(var(--phone-pad) + 6px + env(safe-area-inset-bottom, 0px));
 }
 
+/* Two secondary actions share one row rather than stacking, so a fallback appearing
+ * (RETRY, when the camera refused) does not spend another 52px of a 640px phone. */
+.ps-cta__row {
+  display: flex;
+  gap: 8px;
+}
+
+.ps-cta__row > .bd-btn {
+  flex: 1;
+  min-width: 0;
+}
+
 .ps-head {
   font: 800 var(--phone-head) / 1.04 var(--f-word);
   letter-spacing: 0.01em;
@@ -171,6 +183,7 @@
 }
 
 .ps-camera {
+  position: relative;
   width: min(250px, 29.63svh, 100%);
   height: min(250px, 29.63svh, 100%);
   flex: none;
@@ -195,6 +208,25 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* The preview is mirrored — a front camera that is not mirrored is a stranger.
+ * posterise() mirrors the capture to match, or the shutter appears to flip you. */
+.ps-camera__view {
+  transform: scaleX(-1);
+}
+
+/* Over the video rather than instead of it: the element has to stay mounted and
+ * drawn for iOS to decode a frame into it, so the placeholder floats on top and the
+ * video fades in underneath when the first frame lands. */
+.ps-camera__note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
 }
 
 /* ── Question ──────────────────────────────────────────────────────────────── */
