@@ -163,7 +163,8 @@ npm run dev          # both servers, background, returns when ready
 npm run dev:mock     # …against questions/questions.mock.json instead of the real bank
 npm run dev:status   # what's running (and whether it's actually ours), and which deck
 npm run dev:stop
-npm run verify       # lint + build + reliability + fit + browser tests
+npm run verify       # lint + build + music + reliability + fit + browser tests
+npm run check:music  # every track in the manifest is really on R2
 ```
 
 The dev servers do **not** hot-reload the backend: `scripts/dev.js` runs plain `node`,
@@ -322,6 +323,8 @@ client/src/
     cues.js           The twelve cues, synthesised; channels, scheduling, the bed
     useCues.js        Cues ↔ phase events and the reveal schedule; host only
     haptics.js        The phone's half of the cue system — vibration, not sound
+    tracks.js         The music manifest: three playlists, filenames only, no imports
+    music.js          The music engine — playlist switching, crossfades, failure
     avatar.js         Selfie → a 6-step ramp of the player's colour, on the phone
     useCamera.js      The viewfinder: acquire, attach, readiness, and the suspends
     settings.js       Board settings (lighting/sound/motion), localStorage
@@ -334,7 +337,8 @@ client/src/
 
 scripts/
   dev.js            Background dev servers, health checks, stale-listener rescue
-  verify.js         The gate: lint → build → reliability → fit → browser
+  verify.js         The gate: lint → build → music → reliability → fit → browser
+  check-music.js    HEADs every track in tracks.js against the bucket
   fit-check.js      Every screen fits its viewport and rendered at all
 
 test-game.js        Browser: host + 2 phones through every phase (data-testid)
@@ -370,7 +374,7 @@ near-black panel. Set `color` and `font-family` explicitly on any such root.
 
 **A CSS reset must not out-specify its own components.** `board.css` wraps its reset in `:where()`: `button { background: none }` beats `.bd-btn` on specificity and silently strips every button's fill.
 
-**Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
+**Background music only plays on the host device**, and it is armed by the host's *first* click anywhere, not by Start Game — browsers need a gesture to unlock autoplay, and the startup playlist has to be up on the landing screen. Uses Howler.js, not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Each playlist change picks a fresh track and avoids the one that pool played last, so a rematch never opens on the track it just finished.
 
 **`ctx.state === 'running'` is the wrong gate for playing a cue.** `resume()` is
 asynchronous, so for tens of milliseconds after the click that unlocks audio the state
@@ -452,10 +456,46 @@ properties of the room the board is standing in rather than of the game:
 
 ## Audio
 
-**Music.** 3 tracks on Cloudflare R2
-(`pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/`): `the_scoring_bell.mp3`,
-`the_dhaka_lobby.mp3`, `square_wave_bazaar.mp3`. Randomly selected in `primeMusic()`
-each game. Adding tracks: upload to R2, add the URL to `soundUrls` in `App.jsx`.
+**Music — three playlists, one per stretch of the night.** All on Cloudflare R2
+(`pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev`), one folder each:
+
+| Playlist | Folder | When | Level |
+|---|---|---|---|
+| `startup` | `startup-music/` | landing, settings, and the lobby filling up | 0.32 |
+| `game` | `bg-music/` | under the rounds | 0.35 |
+| `celebration` | `celebration-music/` | game over, for as long as the room argues about a rematch | 0.40 |
+
+`game/tracks.js` is the manifest — filenames and levels, **no imports**, so
+`scripts/check-music.js` can pull it straight into Node. `game/music.js` is the
+engine: a module singleton, not React state, handed a playlist name by `App` and
+owning the random pick, the crossfade, and every way a track can fail to arrive.
+Screens only say which stretch they are.
+
+Adding a track: upload it to the folder, add the filename to `tracks.js`, run
+`npm run check:music`.
+
+The whole pre-game is deliberately **one** track — cutting the music between Create
+Room and the lobby would be the board changing its mind in front of everybody — and
+celebration waits out the 1.2s `fanfare` cue, which is written to land on silence.
+
+Three failure modes it is built around, because the music is the one asset nothing
+else in the pipeline touches:
+
+- **Autoplay refused.** A track can only start inside a gesture and the landing
+  screen has not had one. `armMusic()` is on pointerdown/keydown for the whole
+  session, not once: a `playerror` mid-game disarms, and the next click is the fix.
+- **A track that isn't there.** A 404 strikes that URL off for the session and the
+  next candidate starts; a pool with nothing playable left falls through `FALLBACK`
+  to `bg-music` rather than standing in silence.
+- **Phases arriving faster than audio loads.** Every load carries a generation
+  stamp, so a track that finishes loading after the board moved on unloads instead
+  of playing over its successor.
+
+`game/music.js` publishes `window.__music()` in dev builds. That is not a
+convenience: in html5 mode Howler keeps its `<audio>` elements in an internal pool
+and never puts them in the document, and the network is not the answer either
+because a second track from the same folder is served from cache with no request to
+observe. `test-game.js` asserts against it.
 
 **The twelve cues are synthesised, not sampled** — `game/cues.js`, plain Web Audio,
 no files and no dependency. Every voice is a filtered noise burst or a square wave
@@ -506,7 +546,7 @@ rather than in any single sound.
 ## Testing
 
 ```bash
-npm run verify              # lint -> build -> reliability -> fit -> responsive -> browser
+npm run verify              # lint -> build -> music -> reliability -> fit -> responsive -> browser
 npm run verify -- --fast    # skips the three browser steps
 ```
 
@@ -515,7 +555,8 @@ npm run verify -- --fast    # skips the three browser steps
 | `test-reliability.js` | Socket-level: 15 players, a mid-game drop that keeps score and colour, duplicate names, input validation, avatars, settings propagation, the clock, and the finale converging on one winner |
 | `scripts/fit-check.js` | All 47 previews, at every size they have to survive — 81 checks, since a `phone` preview runs at 390×844, 375×667 and 360×640. No scrolling, nothing spilling past the stage, nothing bursting out of its parent in a vertical stack (column flex **or** grid), nothing rendering blank |
 | `scripts/responsive-check.js` | What fit-check structurally cannot see: the viewport *changing*. Drag a window narrow and the role guess follows; choose a side and it stops following; turn a phone and the board appears or asks to be turned. Plus the 44px floor under every control at 320×568 |
-| `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings |
+| `test-game.js` | The real browser path: host + two phones through intro, question, betting, reveal and standings — plus the music, which nothing else can see: silent until the first gesture, one track across the whole pre-game, the switch at Start Game, ducked under every reveal and back up after, silence through the fanfare, celebration at game over, and a rematch that does not reopen on the track it just finished |
+| `scripts/check-music.js` | Every filename in `game/tracks.js` HEADs 200 on R2. A typo here is the one bug with no console output and no visible symptom until game night. A 404 fails; an unreachable bucket only warns |
 
 Browser tests select on **`data-testid`**, not text. The board is all-uppercase with
 heavy letter-spacing and its copy is deliberately mutable; the previous suite also

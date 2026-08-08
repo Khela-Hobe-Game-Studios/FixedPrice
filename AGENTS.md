@@ -49,7 +49,7 @@ process, and a sheet URL left in the environment would quietly defeat that. Copy
 ## The verification gate
 
 ```bash
-npm run verify              # ~90s: lint + build + reliability + browser
+npm run verify              # ~90s: lint + build + music + reliability + browser
 npm run verify -- --fast    # ~60s: skips the browser test
 ```
 
