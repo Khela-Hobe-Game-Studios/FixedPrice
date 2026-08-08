@@ -43,6 +43,10 @@ export function useCamera(active) {
     let cancelled = false;
     let opened = null;
 
+    // Clear the last failure before asking again. Leaving it set meant a player who
+    // was refused once, switched tabs and came back got a working viewfinder behind
+    // a CTA still offering them the no-camera fallback.
+    setError(null);
     setReady(false);
     openCamera()
       .then((s) => {

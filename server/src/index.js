@@ -45,6 +45,8 @@ const io = new Server(server, {
   pingTimeout: 25000,
 });
 
+let questionCount = 0;
+
 /* `questions` is here so you can tell which deck is loaded without reading a log.
  * A game played against the wrong bank is only obvious once somebody recognises a
  * question, which is exactly one question too late. */
@@ -53,8 +55,6 @@ app.get('/health', (req, res) => res.json({
   rooms: rooms.size,
   questions: { source: questionSource(), count: questionCount },
 }));
-
-let questionCount = 0;
 
 const LOBBY_GRACE_MS = 15000;
 const GAME_GRACE_MS = 90000;

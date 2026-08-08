@@ -22,7 +22,11 @@ const SPRITES = [
 export default function PlayerAvatar({ me, onSet, onDone }) {
   const [tab, setTab] = useState('letter');
   const [shot, setShot] = useState(null);
-  const [uploadError, setUploadError] = useState(null);
+  // Whatever went wrong with the last thing the player tried by hand — a file that
+  // would not decode, a shutter that fired on a dead frame. Separate from the
+  // camera's own error, and cleared on every fresh attempt, or it outlives what it
+  // was describing and sits on top of a working viewfinder.
+  const [shotError, setShotError] = useState(null);
   const fileRef = useRef(null);
   const captureRef = useRef(null);
   const color = playerColor(me?.colorIndex);
@@ -32,7 +36,10 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
   // recording indicator off.
   const live = tab === 'selfie' && !shot;
   const { videoRef, ready, error: cameraError, retry } = useCamera(live);
-  const notice = uploadError ?? cameraError;
+  const notice = shotError ?? cameraError;
+
+  const retryCamera = () => { setShotError(null); retry(); };
+  const openTab = (next) => { setShotError(null); setTab(next); };
 
   // The stream resolves before the first frame does, so `ready` gates the shutter on
   // a decoded frame rather than on the existence of a stream — an eager tap used to
@@ -42,9 +49,9 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
     if (!ready || !video?.videoWidth) return;
     try {
       setShot(posterise(video, color, { mirror: true }));
-      setUploadError(null);
+      setShotError(null);
     } catch {
-      setUploadError('THAT PHOTO DID NOT TAKE — TRY AGAIN');
+      setShotError('THAT PHOTO DID NOT TAKE — TRY AGAIN');
     }
   };
 
@@ -54,9 +61,9 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
     try {
       img = await loadImageFile(file);
       setShot(posterise(img, color));
-      setUploadError(null);
+      setShotError(null);
     } catch {
-      setUploadError('THAT IMAGE COULD NOT BE READ');
+      setShotError('THAT IMAGE COULD NOT BE READ');
     } finally {
       releaseImage(img);
     }
@@ -107,7 +114,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             role="tab"
             className="ps-seg__btn"
             aria-selected={tab === 'selfie'}
-            onClick={() => setTab('selfie')}
+            onClick={() => openTab('selfie')}
           >
             SELFIE
           </button>
@@ -116,7 +123,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             role="tab"
             className="ps-seg__btn"
             aria-selected={tab === 'letter'}
-            onClick={() => setTab('letter')}
+            onClick={() => openTab('letter')}
             data-testid="avatar-letter"
           >
             LETTER
@@ -179,7 +186,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
               )}
             </div>
             <span className="bd-mono bd-mono--wrap" style={{ fontSize: 11 }}>
-              PHOTOS ARE POSTERISED TO 2 TONES + YOUR COLOUR, SO THEY READ AT 18PX ON THE TV AND
+              PHOTOS ARE POSTERISED ONTO YOUR OWN COLOUR, SO THEY READ AT 18PX ON THE TV AND
               NEVER FIGHT THE BOARD.
             </span>
           </div>
@@ -218,7 +225,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             )}
             <div className="ps-cta__row">
               {cameraError && (
-                <Btn small tone="ghost" onClick={retry}>
+                <Btn small tone="ghost" onClick={retryCamera}>
                   RETRY
                 </Btn>
               )}
@@ -258,7 +265,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
               block
               small
               tone="ghost"
-              onClick={() => { setShot(null); setUploadError(null); }}
+              onClick={() => { setShot(null); setShotError(null); }}
             >
               RETAKE
             </Btn>

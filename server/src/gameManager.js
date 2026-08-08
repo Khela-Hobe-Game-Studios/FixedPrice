@@ -14,6 +14,9 @@ const BETTING_TIME = 20000;
 // next question. Without it every screen in the game is the same temperature.
 const INTRO_TIME = 3000;
 
+// How long the reveal holds after its last beat. See revealSchedule().
+const PAYOFF_HOLD = 2000;
+
 function questionTime(room) {
   const s = room.settings.secondsPerQuestion;
   return s > 0 ? s * 1000 : null; // null = no clock, host advances the round
@@ -30,8 +33,6 @@ function questionTime(room) {
  *
  * Offsets in ms from the start of the reveal.
  */
-const PAYOFF_HOLD = 2000;
-
 function revealSchedule(rowCount) {
   const rowStep = rowCount > 8 ? 60 : 100;
   const rows = 1100;
