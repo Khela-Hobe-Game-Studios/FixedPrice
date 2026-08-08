@@ -11,7 +11,8 @@ Read this first, then `CLAUDE.md` for architecture.
 
 ```bash
 npm run dev            # start both servers in the background, returns when ready
-npm run dev:status     # what's actually running
+npm run dev:mock       # …against the mock question bank instead of the real one
+npm run dev:status     # what's actually running, and which deck it loaded
 npm run verify         # the full gate — run before you commit
 npm run dev:stop       # stop them
 ```
@@ -23,6 +24,25 @@ genuinely answer, and returns. (`npm run dev:watch` is the old blocking
 If something looks wrong, `npm run dev:status` is the first thing to run. It shows the
 PID we started, the PIDs actually listening on each port, and warns when they differ —
 see "The stale server trap" below.
+
+### Testing without burning the real questions
+
+Playing a test round against the real bank spends it: you cannot un-know an answer,
+and there are only so many questions. `npm run dev:mock` runs the server against
+`questions/questions.mock.json` — 61 invented questions across all six category
+bands, with answers spread from 1 to 12.5 million so the flap, the number
+formatting and the wild-miss thresholds all get exercised. `npm run dev:restart`
+puts the real bank back.
+
+It restarts rather than starts, because the deck is read once at boot — pointing an
+already-running server at a different bank does nothing, and the failure is silent
+until somebody recognises a question. `dev:status` and `/health` both report which
+deck is loaded for the same reason.
+
+Under the hood it is `QUESTIONS_FILE`, which takes any local JSON bank and wins over
+`QUESTIONS_SHEET_URL` — the point of setting it is to keep the real bank out of the
+process, and a sheet URL left in the environment would quietly defeat that. Copy
+`.env.example` to `.env` if you want it to be the default for every run.
 
 ---
 

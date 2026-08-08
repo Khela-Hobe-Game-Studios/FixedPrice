@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev.js up",
+    "dev:mock": "node scripts/dev.js restart --mock",
     "dev:stop": "node scripts/dev.js down",
     "dev:status": "node scripts/dev.js status",
     "dev:restart": "node scripts/dev.js restart",

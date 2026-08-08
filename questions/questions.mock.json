@@ -1,0 +1,429 @@
+[
+  {
+    "question": "How many stray cats live in the Mock Bazaar car park?",
+    "answer": 7,
+    "unit": "cats",
+    "category": "Weird Facts",
+    "funFact": "Six of them answer to the name Biriyani. The seventh has never answered to anything."
+  },
+  {
+    "question": "How many floors does the Fictional Textile Tower have?",
+    "answer": 3,
+    "unit": "floors",
+    "category": "Desh",
+    "funFact": "The lift only stops at two of them."
+  },
+  {
+    "question": "How many umbrellas does the Imaginary Tea Stall lose every monsoon?",
+    "answer": 12,
+    "unit": "umbrellas",
+    "category": "Weird Facts",
+    "funFact": "Nine are recovered from the same drain every October."
+  },
+  {
+    "question": "How many overs did Mock XI bowl before their first wicket?",
+    "answer": 18,
+    "unit": "overs",
+    "category": "Cricket",
+    "funFact": "The wicket was a run-out, so technically the bowlers are still waiting."
+  },
+  {
+    "question": "How many taka did a cup of tea cost at the Pretend Ferry Ghat in 2024?",
+    "answer": 25,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "It was 8 taka before the ghat was renamed."
+  },
+  {
+    "question": "How many pigeons live on the roof of the Made-Up Museum?",
+    "answer": 41,
+    "unit": "pigeons",
+    "category": "Weird Facts",
+    "funFact": null
+  },
+  {
+    "question": "How many countries competed in the Invented Games of 1987?",
+    "answer": 58,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "Four of them were the same country under different flags, which nobody noticed until 1991."
+  },
+  {
+    "question": "How many runs did Nonexistent Nadia score in her final innings?",
+    "answer": 96,
+    "unit": "runs",
+    "category": "Cricket",
+    "funFact": "She was four short of a century and has mentioned it at every family gathering since."
+  },
+  {
+    "question": "How many minutes does the Fictional Ferry take to cross the Notional River?",
+    "answer": 110,
+    "unit": "minutes",
+    "category": "Desh",
+    "funFact": "The timetable says forty."
+  },
+  {
+    "question": "How many goals were scored in the Imaginary League's longest match?",
+    "answer": 14,
+    "unit": "goals",
+    "category": "Sports",
+    "funFact": "The match went to eleven periods of extra time and the referee eventually went home."
+  },
+  {
+    "question": "How many taka is a kilo of make-believe mangoes in Fictional Rajshahi?",
+    "answer": 180,
+    "unit": "taka / kg",
+    "category": "Taka",
+    "funFact": "The stall next door sells them for 175 and has done since the day it opened, purely to be annoying."
+  },
+  {
+    "question": "How many steps lead up to the Pretend Parliament?",
+    "answer": 233,
+    "unit": "steps",
+    "category": "Desh",
+    "funFact": "The architect designed 234 and then removed one, for reasons documented nowhere."
+  },
+  {
+    "question": "How many spectators fit in the Hypothetical Stadium?",
+    "answer": 26500,
+    "unit": "seats",
+    "category": "Cricket",
+    "funFact": "The record attendance is 31,000, which the stadium's own management describes as 'cosy'."
+  },
+  {
+    "question": "How many bicycles are parked outside the Notional University on a Tuesday?",
+    "answer": 640,
+    "unit": "bicycles",
+    "category": "Desh",
+    "funFact": "Forty of them have been there since 2019 and are now considered part of the architecture."
+  },
+  {
+    "question": "How many days did the Fictional Postal Strike last?",
+    "answer": 74,
+    "unit": "days",
+    "category": "Global",
+    "funFact": "Letters posted on day one arrived on day 302, which the service counted as a success."
+  },
+  {
+    "question": "How many taka did the Made-Up Bridge cost to build in 2019?",
+    "answer": 4200000,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "The original estimate was 900,000 taka and the original deadline was a Thursday."
+  },
+  {
+    "question": "How many wickets did Fictional Fahim take across his whole career?",
+    "answer": 312,
+    "unit": "wickets",
+    "category": "Cricket",
+    "funFact": "He describes 311 of them as skill."
+  },
+  {
+    "question": "How many varieties of imaginary rice are grown in Notional Barisal?",
+    "answer": 47,
+    "unit": "varieties",
+    "category": "Desh",
+    "funFact": "Nine of them are considered the same variety by everyone except the people who grow them."
+  },
+  {
+    "question": "How many kilometres is the Pretend Coastal Highway?",
+    "answer": 1150,
+    "unit": "km",
+    "category": "Desh",
+    "funFact": "It is 1,150 km on the map and roughly 1,400 km if you include the diversions that are now permanent."
+  },
+  {
+    "question": "How many cups of tea does the Mock Bazaar drink in a week?",
+    "answer": 18400,
+    "unit": "cups per week",
+    "category": "Weird Facts",
+    "funFact": "This figure is from a survey of eleven people, one of whom was interviewed four times."
+  },
+  {
+    "question": "How many marathons has Invented Ibrahim finished?",
+    "answer": 29,
+    "unit": "marathons",
+    "category": "Sports",
+    "funFact": "He has started 61."
+  },
+  {
+    "question": "How many taka was the entry fee to the Fictional Book Fair in 2025?",
+    "answer": 50,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "It was free until someone worked out how many people were coming."
+  },
+  {
+    "question": "How many languages are spoken in the Imaginary Republic?",
+    "answer": 84,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "The constitution is printed in all of them and says something slightly different in each."
+  },
+  {
+    "question": "How many sixes were hit in the Fictional Twenty20 Final?",
+    "answer": 23,
+    "unit": "sixes",
+    "category": "Cricket",
+    "funFact": "Nineteen were hit by the same batter, who then got out attempting the twentieth."
+  },
+  {
+    "question": "How many people attended the Pretend Independence Day parade?",
+    "answer": 215000,
+    "unit": "people",
+    "category": "Desh",
+    "funFact": "Organisers said half a million, police said eighty thousand, and this number is what they agreed on over tea."
+  },
+  {
+    "question": "How many hours a day does the Notional Power Station actually run?",
+    "answer": 9,
+    "unit": "hours",
+    "category": "Desh",
+    "funFact": "The schedule says eighteen, and the schedule is printed annually."
+  },
+  {
+    "question": "How many species live in the Made-Up Mangrove?",
+    "answer": 1370,
+    "unit": "species",
+    "category": "Global",
+    "funFact": "Four hundred of them were catalogued by one extremely determined person over eleven years."
+  },
+  {
+    "question": "How many taka a month does a Fictional Dhaka flat rent for?",
+    "answer": 32000,
+    "unit": "taka / month",
+    "category": "Taka",
+    "funFact": "The listing describes it as spacious, which in this market means it has a window."
+  },
+  {
+    "question": "How many balls did the slowest Imaginary Test century take?",
+    "answer": 441,
+    "unit": "balls",
+    "category": "Cricket",
+    "funFact": "Two spectators fell asleep and one of them was the scorer, which is why this number is disputed."
+  },
+  {
+    "question": "How many trophies has Nonexistent United won?",
+    "answer": 6,
+    "unit": "trophies",
+    "category": "Sports",
+    "funFact": "Four of them are for the same competition, which has been renamed three times."
+  },
+  {
+    "question": "How many rickshaws are registered in Pretend Chittagong?",
+    "answer": 78000,
+    "unit": "rickshaws",
+    "category": "Desh",
+    "funFact": "The number of unregistered ones is a subject nobody at the city corporation enjoys discussing."
+  },
+  {
+    "question": "How many seconds is the world record for the Invented Sprint?",
+    "answer": 11,
+    "unit": "seconds",
+    "category": "Sports",
+    "funFact": "The record has stood since 1994 and is disputed by everyone who was there."
+  },
+  {
+    "question": "How many taka did the Fictional Film gross on opening weekend?",
+    "answer": 1750000,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "It cost more than that to make, which the producer describes as 'a rounding issue'."
+  },
+  {
+    "question": "How many islands make up the Imaginary Archipelago?",
+    "answer": 462,
+    "unit": "islands",
+    "category": "Global",
+    "funFact": "Thirty-one of them are only islands at low tide, which the tourist board has decided not to mention."
+  },
+  {
+    "question": "How many times has the Mock Bazaar clock tower been struck by lightning?",
+    "answer": 4,
+    "unit": "times",
+    "category": "Weird Facts",
+    "funFact": "Three of those were in the same storm, and the clock has been eleven minutes fast ever since."
+  },
+  {
+    "question": "How many kilograms of imaginary hilsa are landed at Notional Ghat each day?",
+    "answer": 2600,
+    "unit": "kg per day",
+    "category": "Desh",
+    "funFact": "About four hundred kilos of that is landed by one family who have never given an interview."
+  },
+  {
+    "question": "How many players have scored a double century for Fictional Bangladesh?",
+    "answer": 5,
+    "unit": "players",
+    "category": "Cricket",
+    "funFact": "Two of them did it in the same match, on the same afternoon, which has never been repeated."
+  },
+  {
+    "question": "How many pages long is the Pretend Tax Code?",
+    "answer": 3840,
+    "unit": "pages",
+    "category": "Taka",
+    "funFact": "Two thousand of those pages are appendices, and eleven of them are blank."
+  },
+  {
+    "question": "How many hours does the Invented Cricket Board's AGM last?",
+    "answer": 14,
+    "unit": "hours",
+    "category": "Cricket",
+    "funFact": "Eleven of those hours are the agenda item titled 'Any Other Business'."
+  },
+  {
+    "question": "How many people live in the Imaginary Capital?",
+    "answer": 9400000,
+    "unit": "people",
+    "category": "Global",
+    "funFact": "The census counted twice and got two different answers, both of which are printed in the same report."
+  },
+  {
+    "question": "How many taka was a Fictional Bus fare across town in 2025?",
+    "answer": 35,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": null
+  },
+  {
+    "question": "How many medals did the Made-Up Nation win at the Invented Games?",
+    "answer": 2,
+    "unit": "medals",
+    "category": "Sports",
+    "funFact": "Both were bronze and both were in the same event, which was a two-person event."
+  },
+  {
+    "question": "How many potholes are there on the Notional Ring Road?",
+    "answer": 1284,
+    "unit": "potholes",
+    "category": "Weird Facts",
+    "funFact": "The count was done by a cyclist over one week and is widely regarded as conservative."
+  },
+  {
+    "question": "How many kilometres does the Pretend Metro cover?",
+    "answer": 21,
+    "unit": "km",
+    "category": "Desh",
+    "funFact": "Twenty of those kilometres opened on time. The last one took four years."
+  },
+  {
+    "question": "How many teams entered the first Imaginary Premier League?",
+    "answer": 10,
+    "unit": "teams",
+    "category": "Sports",
+    "funFact": "Three of the ten did not have a ground and played every fixture away."
+  },
+  {
+    "question": "How many taka does the Fictional Government spend on tea a year?",
+    "answer": 640000,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "This was discovered by an auditor who was looking for something else entirely."
+  },
+  {
+    "question": "How many hours of rain fell during the Made-Up Monsoon of '98?",
+    "answer": 260,
+    "unit": "hours",
+    "category": "Weird Facts",
+    "funFact": "It rained for nine days without stopping, and then did not rain again for four months."
+  },
+  {
+    "question": "How many countries has the Imaginary Airline ever flown to?",
+    "answer": 31,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "It currently flies to four, and the in-flight magazine still lists all thirty-one."
+  },
+  {
+    "question": "How many catches did Fictional Farhana take behind the stumps?",
+    "answer": 148,
+    "unit": "catches",
+    "category": "Cricket",
+    "funFact": "Thirty-one of them were off the same bowler, who still sends her a card at Eid."
+  },
+  {
+    "question": "How many kilometres long is the Notional Border?",
+    "answer": 4096,
+    "unit": "km",
+    "category": "Global",
+    "funFact": "Nobody has ever walked all of it, though one man got two thirds of the way and wrote a very long book."
+  },
+  {
+    "question": "How many taka is a ticket to the Pretend Cricket Final?",
+    "answer": 850,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": "Resale tickets reached 9,000 taka, which is a fact the board has asked people to stop repeating."
+  },
+  {
+    "question": "How many minutes late does the Fictional Intercity Express usually run?",
+    "answer": 52,
+    "unit": "minutes",
+    "category": "Desh",
+    "funFact": "On one occasion it was early, and the resulting confusion delayed it by ninety minutes the following day."
+  },
+  {
+    "question": "How many trees are there in the Imaginary Botanical Garden?",
+    "answer": 5300,
+    "unit": "trees",
+    "category": "Global",
+    "funFact": null
+  },
+  {
+    "question": "How many hat-tricks were taken in the Invented Cup?",
+    "answer": 8,
+    "unit": "hat-tricks",
+    "category": "Cricket",
+    "funFact": "Three were in the qualifying rounds, which the record books have never been able to agree about."
+  },
+  {
+    "question": "How many taka did the Made-Up Bank lose in the Fictional Crash?",
+    "answer": 12500000,
+    "unit": "taka",
+    "category": "Taka",
+    "funFact": null
+  },
+  {
+    "question": "How many pairs of shoes does the Pretend Marathon Champion own?",
+    "answer": 84,
+    "unit": "pairs",
+    "category": "Sports",
+    "funFact": "He runs in the same two pairs and cannot explain the other eighty-two."
+  },
+  {
+    "question": "How many street food stalls line the Notional Riverfront?",
+    "answer": 219,
+    "unit": "stalls",
+    "category": "Desh",
+    "funFact": null
+  },
+  {
+    "question": "How many chess games has Imaginary Imran played simultaneously?",
+    "answer": 36,
+    "unit": "games",
+    "category": "Sports",
+    "funFact": "He won thirty-four, drew one, and lost to a nine-year-old who had learned the rules that morning."
+  },
+  {
+    "question": "How many words are in the Fictional National Anthem?",
+    "answer": 137,
+    "unit": "words",
+    "category": "Weird Facts",
+    "funFact": "It is 137 words in the original and 143 in the version everyone actually sings."
+  },
+  {
+    "question": "How many satellites does the Imaginary Space Agency operate?",
+    "answer": 3,
+    "unit": "satellites",
+    "category": "Global",
+    "funFact": "One of them stopped responding in 2011 and is still described as 'operational' in the annual report."
+  },
+  {
+    "question": "How many umbrellas does the Made-Up Cricket Ground own?",
+    "answer": 1,
+    "unit": "umbrella",
+    "category": "Cricket",
+    "funFact": "It is shared between the groundsman, both umpires and, during one memorable rain delay, a television crew."
+  }
+]

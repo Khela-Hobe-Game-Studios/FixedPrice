@@ -16,7 +16,8 @@ Multiplayer party game where players estimate numbers and the closest guess wins
 ```
 client/          React 19 + Vite — GitHub Pages
 server/          Node.js + Express + Socket.io — Render
-questions/       questions.json (fallback) or Google Sheet CSV via QUESTIONS_SHEET_URL env var
+questions/       questions.json (fallback), questions.mock.json (testing), or a
+                 Google Sheet CSV via QUESTIONS_SHEET_URL — see Questions source
 ```
 
 The backend is stateful (in-memory rooms Map). Vercel/serverless won't work — must be a persistent process. Render is what's deployed.
@@ -159,7 +160,8 @@ colour with their name in it.
 
 ```bash
 npm run dev          # both servers, background, returns when ready
-npm run dev:status   # what's running (and whether it's actually ours)
+npm run dev:mock     # …against questions/questions.mock.json instead of the real bank
+npm run dev:status   # what's running (and whether it's actually ours), and which deck
 npm run dev:stop
 npm run verify       # lint + build + reliability + fit + browser tests
 ```
@@ -407,7 +409,9 @@ unconditionally and hidden with opacity (iOS will not decode a frame into a
 
 **Room codes** are 4-letter Bangla-transliterated words (AMMU, CHAI, DAAL…) from a 48-word bank in `roomManager.js`, not random strings.
 
-**Questions source:** set `QUESTIONS_SHEET_URL` on Render to a Google Sheet "Publish to web → CSV" URL. Column order: `question | answer | unit | category | funFact`. Falls back to `questions/questions.json`. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool.
+**Questions source:** `QUESTIONS_FILE` (a local JSON bank, path relative to the repo root) beats `QUESTIONS_SHEET_URL` (a Google Sheet "Publish to web → CSV") beats `questions/questions.json`. Column order: `question | answer | unit | category | funFact`. Every source goes through the same validation — a non-finite answer is dropped with the row named, and a bank under 20 usable questions is refused rather than starting a server that cannot run a round. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool. `/health` reports which deck is loaded.
+
+**Test against the mock bank, not the real one.** `npm run dev:mock` points the server at `questions/questions.mock.json` — 61 invented questions across all six category bands, answers spread 1 → 12.5M. Playing a test round against the real bank spends it; you cannot un-know an answer. `npm run dev:restart` puts the real one back. It restarts rather than starts because the deck is read once at boot.
 
 **Round counter is 1-indexed in payloads but 0-indexed in server state.** `round` in `round:start` is display-ready; `currentRound` is the index.
 

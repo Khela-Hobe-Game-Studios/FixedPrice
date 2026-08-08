@@ -1,3 +1,12 @@
+const path = require('path');
+
+/* A repo-root .env, if there is one, before anything reads process.env. Local
+ * convenience only — Render sets its variables itself, and the file is gitignored.
+ * Real environment variables always win: loadEnvFile does not overwrite them. */
+try {
+  process.loadEnvFile(path.join(__dirname, '..', '..', '.env'));
+} catch { /* no .env, or a Node too old to have loadEnvFile — both are fine */ }
+
 const express = require('express');
 const crypto = require('crypto');
 const http = require('http');
@@ -21,7 +30,7 @@ const {
 } = require('./roomManager');
 const { handleGameEvent, syncPlayerState, setQuestions, resetToLobby } = require('./gameManager');
 const { sanitizePlayers } = require('./sanitize');
-const { loadQuestions } = require('./questionsLoader');
+const { loadQuestions, questionSource } = require('./questionsLoader');
 
 const app = express();
 app.use(cors());
@@ -36,7 +45,16 @@ const io = new Server(server, {
   pingTimeout: 25000,
 });
 
-app.get('/health', (req, res) => res.json({ ok: true, rooms: rooms.size }));
+/* `questions` is here so you can tell which deck is loaded without reading a log.
+ * A game played against the wrong bank is only obvious once somebody recognises a
+ * question, which is exactly one question too late. */
+app.get('/health', (req, res) => res.json({
+  ok: true,
+  rooms: rooms.size,
+  questions: { source: questionSource(), count: questionCount },
+}));
+
+let questionCount = 0;
 
 const LOBBY_GRACE_MS = 15000;
 const GAME_GRACE_MS = 90000;
@@ -403,7 +421,8 @@ const PORT = process.env.PORT || 3001;
 loadQuestions()
   .then(q => {
     setQuestions(q);
-    server.listen(PORT, () => console.log(`Server running on port ${PORT} — ${q.length} questions loaded`));
+    questionCount = q.length;
+    server.listen(PORT, () => console.log(`Server running on port ${PORT} — ${q.length} questions from ${questionSource()}`));
   })
   .catch(err => {
     console.error('[questions] Failed to load questions:', err.message);

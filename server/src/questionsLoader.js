@@ -1,16 +1,68 @@
 /**
- * Loads questions from a published Google Sheet CSV.
- * Set QUESTIONS_SHEET_URL env var to the sheet's "Publish to web" CSV link.
- * Falls back to local questions.json if the env var is not set.
+ * Where the deck comes from, in precedence order:
+ *
+ *   QUESTIONS_FILE       a local JSON file — a path relative to the repo root, or
+ *                        absolute. This is the testing hatch: point it at
+ *                        questions/questions.mock.json and play a whole game
+ *                        without learning a single real answer.
+ *   QUESTIONS_SHEET_URL  the published Google Sheet, "Publish to web" → CSV.
+ *   (neither)            questions/questions.json
  *
  * Sheet column order (row 1 = headers, ignored):
  *   question | answer | unit | category | funFact
+ *
+ * Every source goes through the same validation on the way in. It used to be only
+ * the CSV: a JSON file was `require`d and handed straight to the game, so one bad
+ * answer in it became a NaN distance, which is a round with no winner, no points
+ * and an empty winner band — at the point where fifteen people are looking at it.
  */
 
+const fs = require('fs');
+const path = require('path');
+
 let cachedQuestions = null;
+let source = null;
 
 // Below this a game cannot fill even the largest question count setting.
 const MIN_QUESTIONS = 20;
+
+const ROOT = path.join(__dirname, '..', '..');
+
+/** Drop what cannot be played, and say which row and why. */
+function validate(rows, label) {
+  if (!Array.isArray(rows)) throw new Error(`${label} is not a JSON array`);
+
+  let skipped = 0;
+  const ok = rows.map((r, i) => {
+    const answer = typeof r?.answer === 'string' ? parseFloat(r.answer) : r?.answer;
+    if (!r?.question || !Number.isFinite(answer)) {
+      if (r?.question) console.warn(`[questions] ${label} #${i + 1} skipped — bad answer "${r.answer}": ${String(r.question).slice(0, 60)}`);
+      skipped++;
+      return null;
+    }
+    return {
+      question: String(r.question).trim(),
+      answer,
+      unit: String(r.unit ?? '').trim(),
+      category: String(r.category ?? 'Global').trim(),
+      funFact: (r.funFact ? String(r.funFact).trim() : '') || null,
+    };
+  }).filter(Boolean);
+
+  if (skipped) console.warn(`[questions] ${label}: skipped ${skipped} malformed entr(ies)`);
+  return ok;
+}
+
+function readJsonBank(file, label) {
+  const abs = path.isAbsolute(file) ? file : path.join(ROOT, file);
+  if (!fs.existsSync(abs)) throw new Error(`${label} not found: ${abs}`);
+  return validate(JSON.parse(fs.readFileSync(abs, 'utf8')), path.basename(abs));
+}
+
+/** What the deck was actually loaded from — surfaced on /health. */
+function questionSource() {
+  return source;
+}
 
 function parseCSV(text) {
   const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
@@ -62,15 +114,35 @@ function splitCSVRow(line) {
   return result;
 }
 
+const DEFAULT_BANK = 'questions/questions.json';
+
+function useDefaultBank(why) {
+  console.log(`[questions] ${why} — using ${DEFAULT_BANK}`);
+  cachedQuestions = readJsonBank(DEFAULT_BANK, 'default bank');
+  source = DEFAULT_BANK;
+  return cachedQuestions;
+}
+
 async function loadQuestions() {
   if (cachedQuestions) return cachedQuestions;
 
-  const url = process.env.QUESTIONS_SHEET_URL;
-  if (!url) {
-    console.log('[questions] No QUESTIONS_SHEET_URL set — using local questions.json');
-    cachedQuestions = require('../../questions/questions.json');
+  // The override wins over the sheet on purpose: the point of setting it is to keep
+  // the real bank out of this process, and a sheet URL left in the environment
+  // would quietly defeat that.
+  const file = process.env.QUESTIONS_FILE;
+  if (file) {
+    const loaded = readJsonBank(file, 'QUESTIONS_FILE');
+    if (loaded.length < MIN_QUESTIONS) {
+      throw new Error(`QUESTIONS_FILE "${file}" has only ${loaded.length} usable questions (need ${MIN_QUESTIONS})`);
+    }
+    cachedQuestions = loaded;
+    source = file;
+    console.log(`[questions] Loaded ${loaded.length} questions from ${file}`);
     return cachedQuestions;
   }
+
+  const url = process.env.QUESTIONS_SHEET_URL;
+  if (!url) return useDefaultBank('No QUESTIONS_FILE or QUESTIONS_SHEET_URL set');
 
   console.log('[questions] Fetching from Google Sheet...');
   const res = await fetch(url, { redirect: 'follow' });
@@ -81,14 +153,13 @@ async function loadQuestions() {
   // A sheet that fetched but yielded nothing (wrong tab, unpublished, HTML error
   // page) would otherwise start a server that cannot run a single round.
   if (parsed.length < MIN_QUESTIONS) {
-    console.error(`[questions] Sheet returned only ${parsed.length} usable questions — falling back to questions.json`);
-    cachedQuestions = require('../../questions/questions.json');
-    return cachedQuestions;
+    return useDefaultBank(`Sheet returned only ${parsed.length} usable questions`);
   }
 
   cachedQuestions = parsed;
+  source = 'google-sheet';
   console.log(`[questions] Loaded ${cachedQuestions.length} questions from sheet`);
   return cachedQuestions;
 }
 
-module.exports = { loadQuestions };
+module.exports = { loadQuestions, questionSource };
