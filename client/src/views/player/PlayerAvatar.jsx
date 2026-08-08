@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { PhoneScreen, AvatarTile, Btn, playerColor } from '../../board';
 import { PhoneHeader, RotateGuard } from './parts';
-import { posterise, loadImageFile, openCamera, stopCamera } from '../../game/avatar';
+import { posterise, loadImageFile, releaseImage } from '../../game/avatar';
+import { useCamera } from '../../game/useCamera';
 
 /* The twelve are commissioned art, not shipped yet: 16x16 pixel art, 2-3 colours,
  * drawn to read against both the board and a saturated fill. Until they exist the
@@ -21,59 +22,50 @@ const SPRITES = [
 export default function PlayerAvatar({ me, onSet, onDone }) {
   const [tab, setTab] = useState('letter');
   const [shot, setShot] = useState(null);
-  const [camera, setCamera] = useState(null);
-  const [cameraError, setCameraError] = useState(null);
-  const videoRef = useRef(null);
+  // Whatever went wrong with the last thing the player tried by hand — a file that
+  // would not decode, a shutter that fired on a dead frame. Separate from the
+  // camera's own error, and cleared on every fresh attempt, or it outlives what it
+  // was describing and sits on top of a working viewfinder.
+  const [shotError, setShotError] = useState(null);
   const fileRef = useRef(null);
+  const captureRef = useRef(null);
   const color = playerColor(me?.colorIndex);
 
-  useEffect(() => {
-    if (tab !== 'selfie' || shot) return undefined;
-    let stream = null;
-    let cancelled = false;
+  // The camera runs only while the tab is open and nothing has been taken yet;
+  // switching away or landing a shot releases it, which is what turns the phone's
+  // recording indicator off.
+  const live = tab === 'selfie' && !shot;
+  const { videoRef, ready, error: cameraError, retry } = useCamera(live);
+  const notice = shotError ?? cameraError;
 
-    openCamera()
-      .then((s) => {
-        if (cancelled) return stopCamera(s);
-        stream = s;
-        setCamera(s);
-        if (videoRef.current) videoRef.current.srcObject = s;
-        return undefined;
-      })
-      // Camera needs a secure context, so on a LAN over plain http this is the
-      // normal path, not an error state — fall through to Upload instead.
-      .catch(() => !cancelled && setCameraError('NO CAMERA HERE — UPLOAD A PHOTO INSTEAD'));
+  const retryCamera = () => { setShotError(null); retry(); };
+  const openTab = (next) => { setShotError(null); setTab(next); };
 
-    return () => {
-      cancelled = true;
-      stopCamera(stream);
-      setCamera(null);
-    };
-  }, [tab, shot]);
-
-  // The stream resolves before the first frame does, so the button is live for a
-  // moment while videoWidth is still 0 — an eager tap used to throw out of the
-  // handler and just look broken.
+  // The stream resolves before the first frame does, so `ready` gates the shutter on
+  // a decoded frame rather than on the existence of a stream — an eager tap used to
+  // throw out of the handler and just look broken.
   const capture = () => {
     const video = videoRef.current;
-    if (!video?.videoWidth) return;
+    if (!ready || !video?.videoWidth) return;
     try {
-      setShot(posterise(video, color));
+      setShot(posterise(video, color, { mirror: true }));
+      setShotError(null);
     } catch {
-      setCameraError('THAT PHOTO DID NOT TAKE — TRY AGAIN');
-      return;
+      setShotError('THAT PHOTO DID NOT TAKE — TRY AGAIN');
     }
-    stopCamera(camera);
-    setCamera(null);
   };
 
   const upload = async (file) => {
     if (!file) return;
+    let img = null;
     try {
-      const img = await loadImageFile(file);
+      img = await loadImageFile(file);
       setShot(posterise(img, color));
+      setShotError(null);
     } catch {
-      setCameraError('THAT IMAGE COULD NOT BE READ');
+      setShotError('THAT IMAGE COULD NOT BE READ');
+    } finally {
+      releaseImage(img);
     }
   };
 
@@ -122,7 +114,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             role="tab"
             className="ps-seg__btn"
             aria-selected={tab === 'selfie'}
-            onClick={() => setTab('selfie')}
+            onClick={() => openTab('selfie')}
           >
             SELFIE
           </button>
@@ -131,7 +123,7 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             role="tab"
             className="ps-seg__btn"
             aria-selected={tab === 'letter'}
-            onClick={() => setTab('letter')}
+            onClick={() => openTab('letter')}
             data-testid="avatar-letter"
           >
             LETTER
@@ -162,22 +154,39 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             <div className="ps-camera">
               {shot ? (
                 <img src={shot} alt="Your posterised selfie" />
-              ) : camera ? (
-                <video ref={videoRef} autoPlay playsInline muted />
               ) : (
-                <span className="bd-mono bd-mono--wrap" style={{ fontSize: 12, textAlign: 'center' }}>
-                  {cameraError ?? (
-                    <>
-                      CAMERA PREVIEW
-                      <br />
-                      SQUARE CROP, CENTRED
-                    </>
+                <>
+                  {/* Mounted unconditionally and hidden with opacity, never with
+                    * `display: none` — iOS will not decode a frame into an element
+                    * it is not drawing, and the ref has to exist before the stream
+                    * arrives or it is attached to nothing. */}
+                  <video
+                    ref={videoRef}
+                    className="ps-camera__view"
+                    style={{ opacity: ready ? 1 : 0 }}
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                  {!ready && (
+                    <span
+                      className="ps-camera__note bd-mono bd-mono--wrap"
+                      style={{ fontSize: 12, textAlign: 'center' }}
+                    >
+                      {notice ?? (
+                        <>
+                          CAMERA PREVIEW
+                          <br />
+                          SQUARE CROP, CENTRED
+                        </>
+                      )}
+                    </span>
                   )}
-                </span>
+                </>
               )}
             </div>
             <span className="bd-mono bd-mono--wrap" style={{ fontSize: 11 }}>
-              PHOTOS ARE POSTERISED TO 2 TONES + YOUR COLOUR, SO THEY READ AT 18PX ON THE TV AND
+              PHOTOS ARE POSTERISED ONTO YOUR OWN COLOUR, SO THEY READ AT 18PX ON THE TV AND
               NEVER FIGHT THE BOARD.
             </span>
           </div>
@@ -200,18 +209,50 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
       <div className="ps-cta">
         {tab === 'selfie' && !shot && (
           <>
-            <Btn block cta onClick={capture} disabled={!camera}>
-              TAKE PHOTO
-            </Btn>
-            <Btn block small tone="ghost" onClick={() => fileRef.current?.click()}>
-              UPLOAD INSTEAD
-            </Btn>
+            {/* When getUserMedia will not play — an in-app webview, a locked-down
+              * iOS profile, a camera another app has — the file input with
+              * `capture` still opens the native camera. It is the one path that
+              * exists on every phone, so it takes over the primary slot rather
+              * than hiding behind a second tap. */}
+            {cameraError ? (
+              <Btn block cta onClick={() => captureRef.current?.click()}>
+                OPEN THE CAMERA APP
+              </Btn>
+            ) : (
+              <Btn block cta onClick={capture} disabled={!ready}>
+                {ready ? 'TAKE PHOTO' : 'STARTING CAMERA…'}
+              </Btn>
+            )}
+            <div className="ps-cta__row">
+              {cameraError && (
+                <Btn small tone="ghost" onClick={retryCamera}>
+                  RETRY
+                </Btn>
+              )}
+              <Btn small tone="ghost" onClick={() => fileRef.current?.click()}>
+                UPLOAD A PHOTO
+              </Btn>
+            </div>
+            <input
+              ref={captureRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              hidden
+              onChange={(e) => {
+                upload(e.target.files?.[0]);
+                e.target.value = ''; // so retaking the same shot re-fires change
+              }}
+            />
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
               hidden
-              onChange={(e) => upload(e.target.files?.[0])}
+              onChange={(e) => {
+                upload(e.target.files?.[0]);
+                e.target.value = '';
+              }}
             />
           </>
         )}
@@ -220,7 +261,12 @@ export default function PlayerAvatar({ me, onSet, onDone }) {
             <Btn block cta onClick={confirm} data-testid="use-avatar">
               USE THIS
             </Btn>
-            <Btn block small tone="ghost" onClick={() => setShot(null)}>
+            <Btn
+              block
+              small
+              tone="ghost"
+              onClick={() => { setShot(null); setShotError(null); }}
+            >
               RETAKE
             </Btn>
           </>

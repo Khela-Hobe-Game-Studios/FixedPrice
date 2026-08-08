@@ -4,9 +4,16 @@
  *
  *   node scripts/dev.js up       # start both in the background, wait until ready
  *   node scripts/dev.js down     # stop both
- *   node scripts/dev.js status   # what's running, and is it healthy
+ *   node scripts/dev.js status   # what's running, is it healthy, which deck
  *   node scripts/dev.js restart  # down then up
  *   node scripts/dev.js logs [server|client] [lines]
+ *
+ * `up` and `restart` also take:
+ *   --mock                 play against questions/questions.mock.json
+ *   --questions=<path>     …or any other local bank
+ *
+ * The flag exists rather than `QUESTIONS_FILE=… npm run dev` because that syntax is
+ * a parse error in PowerShell, which is where this repo is usually driven from.
  *
  * Why this exists: `npm run dev` uses concurrently, which blocks the terminal
  * forever — fine for a human with two tabs, useless for an agent that needs the
@@ -38,9 +45,18 @@ const SERVICES = {
 // health checks flap. Try every form before calling a service down.
 const HOSTS = ['127.0.0.1', '[::1]', 'localhost'];
 
+const MOCK_BANK = 'questions/questions.mock.json';
+
 const pidFile = n => path.join(RUN, `${n}.pid`);
 const logFile = n => path.join(RUN, `${n}.log`);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/** `--mock` / `--questions=<path>` → the QUESTIONS_FILE the server is started with. */
+function questionsFlag(argv) {
+  if (argv.includes('--mock')) return MOCK_BANK;
+  const explicit = argv.find(a => a.startsWith('--questions='));
+  return explicit ? explicit.slice('--questions='.length) : null;
+}
 
 async function isUp(svc) {
   for (const host of HOSTS) {
@@ -93,13 +109,18 @@ function findPortOwner(port) {
   } catch { return []; }
 }
 
-async function up() {
+async function up(questionsFile) {
   fs.mkdirSync(RUN, { recursive: true });
+
+  if (questionsFile) console.log(`deck   ${questionsFile}`);
 
   for (const [name, svc] of Object.entries(SERVICES)) {
     if (await isUp(svc)) {
       const ours = readPid(name);
-      console.log(`${name.padEnd(6)} already up on :${svc.port}${ours ? ` (pid ${ours})` : ' (not started by us)'}`);
+      const note = questionsFile && name === 'server'
+        ? ' — run `npm run dev:restart` to pick up the deck'
+        : '';
+      console.log(`${name.padEnd(6)} already up on :${svc.port}${ours ? ` (pid ${ours})` : ' (not started by us)'}${note}`);
       continue;
     }
 
@@ -121,7 +142,11 @@ async function up() {
       detached: true,
       windowsHide: true,
       stdio: ['ignore', out, out],
-      env: { ...process.env, FORCE_COLOR: '0' },
+      env: {
+        ...process.env,
+        FORCE_COLOR: '0',
+        ...(questionsFile && name === 'server' ? { QUESTIONS_FILE: questionsFile } : {}),
+      },
     });
     child.unref();
     fs.writeFileSync(pidFile(name), String(child.pid));
@@ -178,6 +203,17 @@ async function status() {
       `${healthy && !ownedByUs ? '  <- NOT the process we started; run `down` first' : ''}`
     );
   }
+
+  // Which deck is loaded. A server left running from a previous session serves the
+  // bank it was started with, and nothing on screen would otherwise say so.
+  for (const host of HOSTS) {
+    try {
+      const res = await fetch(`http://${host}:${SERVICES.server.port}/health`, { signal: AbortSignal.timeout(1500) });
+      const q = (await res.json()).questions;
+      if (q) console.log(`deck   ${q.source}  (${q.count} questions)`);
+      break;
+    } catch { /* try the next host form */ }
+  }
 }
 
 function logs(which, lines) {
@@ -189,16 +225,21 @@ function logs(which, lines) {
   }
 }
 
-const [cmd, a, b] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const [cmd, ...rest] = argv;
+const positional = rest.filter(a => !a.startsWith('--'));
+const deck = questionsFlag(argv);
+
 (async () => {
   switch (cmd) {
-    case 'up': return up();
+    case 'up': return up(deck);
     case 'down': return down();
-    case 'restart': down(); await sleep(800); return up();
+    case 'restart': down(); await sleep(800); return up(deck);
     case 'status': return status();
-    case 'logs': return logs(a, b && parseInt(b, 10));
+    case 'logs': return logs(positional[0], positional[1] && parseInt(positional[1], 10));
     default:
       console.log('usage: node scripts/dev.js up|down|restart|status|logs [server|client] [lines]');
+      console.log('       up|restart also take --mock or --questions=<path>');
       process.exit(1);
   }
 })();

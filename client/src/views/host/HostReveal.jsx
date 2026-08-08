@@ -96,8 +96,13 @@ export default function HostReveal({ reveal, round }) {
               {winners.map((w) => (
                 <div key={w.id} className="hs-winner__band">
                   <div className="hs-winner__head">
+                    {/* A round where every guess was over 100% out still has a
+                        winner, and the board has to name them — the scoreboard is
+                        about to. The joke goes on their band, not instead of it. */}
                     <span className="bd-word" style={{ fontSize: 14, letterSpacing: '0.3em', opacity: 0.7 }}>
-                      {winners.length > 1 ? 'JOINT CLOSEST' : 'CLOSEST'}
+                      {reveal?.allWild
+                        ? 'CLOSEST — AND STILL NOWHERE NEAR'
+                        : winners.length > 1 ? 'JOINT CLOSEST' : 'CLOSEST'}
                     </span>
                     <span className="hs-winner__stamp bd-bn">এক দাম!</span>
                   </div>

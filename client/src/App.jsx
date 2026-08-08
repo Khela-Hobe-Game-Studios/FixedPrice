@@ -199,7 +199,6 @@ export default function App() {
         <HostGameOver
           final={final}
           onPlayAgain={() => socket.emit('host:play_again')}
-          onStandings={() => setShowPause(true)}
         />
       );
     } else if (phase === 'finale') {

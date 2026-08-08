@@ -68,8 +68,11 @@ function cleanup() {
 }
 
 (async () => {
-  // 1. Question bank — pure, no servers needed, fails fastest.
+  // 1. Question banks — pure, no servers needed, fails fastest. The mock is linted
+  // by the same rules as the real bank: it is what you actually play against while
+  // testing, so a broken question in it wastes a whole session.
   run('questions lint', process.execPath, ['questions/lint.js']);
+  run('mock bank lint', process.execPath, ['questions/lint.js', 'questions/questions.mock.json']);
 
   // 2. Client build — catches import and syntax errors across every view.
   run('client build', process.execPath,
