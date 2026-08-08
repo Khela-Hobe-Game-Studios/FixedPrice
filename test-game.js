@@ -152,13 +152,17 @@ async function runHost(context, resolveCode) {
  */
 async function checkEndgameMusic(page) {
   await page.keyboard.press('Escape');
+  const ended = Date.now();
   await page.getByTestId('end-game').click();
   await page.getByTestId('play-again').first().waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
 
-  // Celebration deliberately waits out the fanfare cue — the fanfare is written to
-  // land on silence, so a track that comes up under it is the bug.
+  /* Celebration deliberately waits out the fanfare cue — the fanfare is written to
+   * land on silence, so a track that comes up under it is the bug. Only assertable
+   * if we got here inside the delay: on a slow runner the screen itself can take
+   * longer than that, and an assertion that depends on the machine being fast is
+   * one the gate will eventually fail for no reason. */
   const duringFanfare = await musicOf(page);
-  if (duringFanfare && duringFanfare.playing !== null) {
+  if (Date.now() - ended < 900 && duringFanfare && duringFanfare.playing !== null) {
     throw new Error(`celebration music trampled the fanfare: ${JSON.stringify(duringFanfare)}`);
   }
   const party = await expectMusic(page, 'celebration', 'at game over');

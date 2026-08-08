@@ -49,7 +49,7 @@ let pendingKey = null;    // the playlist `startTimer` is waiting to bring up
 
 /** The last track each pool handed out, so a rematch is a different one. */
 const lastPlayed = new Map();
-/** URLs that failed to load. Struck off for the session, not forever. */
+/** URLs that failed to load. Forgiven at the next playlist change — see `setMusic`. */
 const broken = new Set();
 
 /** A random track from one pool, avoiding the one it played last. */
@@ -188,6 +188,18 @@ export function setMusicEnabled(on) {
 export function setMusic(key) {
   if (want === key) return;
   want = key ?? null;
+
+  /* A playlist change is the retry point for tracks that failed to load. Without
+   * this, one bad minute of wifi during the lobby marks every track broken and the
+   * board is silent for the rest of the night with no way back.
+   *
+   * Forgiving here rather than inside the loaderror retry is what makes it safe:
+   * the retry walks *down* the candidate list and terminates, and phase changes
+   * are minutes apart, so a genuinely missing file costs a handful of 404s per
+   * game and is re-skipped immediately. `npm run check:music` is what catches
+   * those before they ship. */
+  broken.clear();
+
   sync();
 }
 
@@ -238,4 +250,4 @@ export function musicState() {
  * elements in an internal pool and never puts them in the document, so a test has
  * nothing to look at, and the network is not the answer either — a second track
  * from the same pool is served out of cache with no request to observe. */
-if (import.meta.env?.DEV) window.__music = musicState;
+if (import.meta.env.DEV) window.__music = musicState;
