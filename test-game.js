@@ -35,6 +35,30 @@ async function whichAppears(locA, locB, timeoutMs = PHASE_TIMEOUT) {
   ]);
 }
 
+/* ── the music ───────────────────────────────────────────────────────────────
+ *
+ * There is nothing on the page to assert against: Howler keeps its <audio>
+ * elements in an internal pool in html5 mode, and the network is not the answer
+ * either, because a second track out of the same folder is served from cache with
+ * no request to see. `game/music.js` publishes `window.__music()` in dev for
+ * exactly this. */
+const musicOf = (page) => page.evaluate(() => window.__music?.() ?? null);
+
+/** Wait for the board to land on a playlist — the crossfades take a beat. */
+async function expectMusic(page, playing, note, timeoutMs = 6000) {
+  const deadline = Date.now() + timeoutMs;
+  let last = null;
+  for (;;) {
+    last = await musicOf(page);
+    if (last === null) return null; // not a dev build — nothing to check
+    if (last.playing === playing) { log('HOST', `music: ${note} → ${last.playing} (${last.track})`); return last; }
+    if (Date.now() > deadline) {
+      throw new Error(`music: expected "${playing}" ${note}, got "${last.playing}" (${JSON.stringify(last)})`);
+    }
+    await page.waitForTimeout(200);
+  }
+}
+
 // ─── HOST ────────────────────────────────────────────────────────────────────
 
 async function runHost(context, resolveCode) {
@@ -42,7 +66,15 @@ async function runHost(context, resolveCode) {
   await page.goto(URL);
   log('HOST', 'board loaded');
 
+  // Nothing may play before a gesture: a track that starts on load is one the
+  // browser refused, and the refusal is what leaves the board silent all night.
+  const cold = await musicOf(page);
+  if (cold && cold.playing !== null) throw new Error(`music started before any gesture: ${JSON.stringify(cold)}`);
+
   await page.getByTestId('host-start').click();
+  // The first click is the one that arms audio, and the whole pre-game — landing,
+  // settings, lobby — is one track.
+  const armed = await expectMusic(page, 'startup', 'on the first click');
 
   // Betting cadence is a real setting now, so the test states which game it wants
   // rather than toggling whatever control happens to sit second on the screen.
@@ -63,8 +95,17 @@ async function runHost(context, resolveCode) {
     null,
     { timeout: PHASE_TIMEOUT }
   );
+  // Still the same startup track it started on — the settings screen and a lobby
+  // filling with players are not scene changes.
+  const inLobby = await musicOf(page);
+  if (armed && inLobby.track !== armed.track) {
+    throw new Error(`music restarted between the landing and the lobby: ${armed.track} → ${inLobby.track}`);
+  }
+
   await start.click();
   log('HOST', 'game started');
+
+  await expectMusic(page, 'game', 'when the game starts');
 
   for (let round = 1; round <= ROUNDS_TO_PLAY; round++) {
     log('HOST', `--- round ${round} ---`);
@@ -86,12 +127,49 @@ async function runHost(context, resolveCode) {
     }
     log('HOST', 'reveal');
 
+    // The music has to get out of the way of the one sequence built to be listened
+    // to. Checked every round: the un-duck is a cleanup, and a cleanup that stops
+    // running leaves the board quiet for the rest of the night.
+    const under = await musicOf(page);
+    if (under && under.playing && !under.ducked) {
+      throw new Error(`music did not duck under the reveal: ${JSON.stringify(under)}`);
+    }
+
     await page.getByTestId('score-row').first().waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
     log('HOST', 'scoreboard');
+
+    const after = await musicOf(page);
+    if (after && after.ducked) throw new Error(`music stayed ducked past the reveal: ${JSON.stringify(after)}`);
   }
 
   log('HOST', 'done');
   return page;
+}
+
+/**
+ * The last two transitions, run after every player has finished so that ending
+ * the game does not race a phone still waiting on its standings.
+ */
+async function checkEndgameMusic(page) {
+  await page.keyboard.press('Escape');
+  await page.getByTestId('end-game').click();
+  await page.getByTestId('play-again').first().waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+
+  // Celebration deliberately waits out the fanfare cue — the fanfare is written to
+  // land on silence, so a track that comes up under it is the bug.
+  const duringFanfare = await musicOf(page);
+  if (duringFanfare && duringFanfare.playing !== null) {
+    throw new Error(`celebration music trampled the fanfare: ${JSON.stringify(duringFanfare)}`);
+  }
+  const party = await expectMusic(page, 'celebration', 'at game over');
+
+  await page.getByTestId('play-again').first().click();
+  await page.getByTestId('start-game').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
+  const rematch = await expectMusic(page, 'startup', 'back in the lobby');
+
+  if (party && rematch && party.track === rematch.track) {
+    throw new Error(`the rematch opened on the same track it just finished on: ${rematch.track}`);
+  }
 }
 
 // ─── PLAYER ──────────────────────────────────────────────────────────────────
@@ -107,6 +185,11 @@ async function runPlayer(context, name, code) {
   await page.getByTestId('use-avatar').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
   await page.getByTestId('use-avatar').click();
   log(name, `joined ${code}`);
+
+  // A phone never plays music. Fifteen of them would fight the TV, and the one on
+  // the slow link is the one everybody hears.
+  const m = await musicOf(page);
+  if (m && (m.enabled || m.playing)) throw new Error(`${name}'s phone is playing music: ${JSON.stringify(m)}`);
 
   for (let round = 1; round <= ROUNDS_TO_PLAY; round++) {
     const lock = page.getByTestId('lock-in');
@@ -169,12 +252,15 @@ async function runPlayer(context, name, code) {
   try {
     const hostRun = runHost(tv, resolveCode);
     const code = await codePromise;
-    await Promise.all([
+    const [hostPage] = await Promise.all([
       hostRun,
       runPlayer(phones[0], 'Alice', code),
       runPlayer(phones[1], 'Bob', code),
     ]);
     log('DONE', `${ROUNDS_TO_PLAY} rounds complete (betting=${BETTING})`);
+
+    await checkEndgameMusic(hostPage);
+    log('DONE', 'game over and rematch music');
   } catch (err) {
     failures.push(err.message);
   }

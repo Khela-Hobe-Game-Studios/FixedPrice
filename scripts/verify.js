@@ -74,6 +74,12 @@ function cleanup() {
   run('questions lint', process.execPath, ['questions/lint.js']);
   run('mock bank lint', process.execPath, ['questions/lint.js', 'questions/questions.mock.json']);
 
+  // 1b. The music manifest against the bucket. Nothing else in the pipeline ever
+  // touches these three lists of filenames, so a typo ships as a silent board.
+  // Only a 404 fails it — an unreachable bucket is a network claim, not a
+  // missing-track one, and this sits inside the deploy gate.
+  run('music manifest (R2)', process.execPath, ['scripts/check-music.js']);
+
   // 2. Client build — catches import and syntax errors across every view.
   run('client build', process.execPath,
     [path.join(ROOT, 'client', 'node_modules', 'vite', 'bin', 'vite.js'), 'build'],

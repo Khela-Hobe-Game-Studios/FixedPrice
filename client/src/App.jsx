@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Howl } from 'howler';
+import { useCallback, useEffect, useState } from 'react';
 import socket from './socket';
 import { JOIN_CODE } from './session';
 import { useToasts } from './hooks/useToasts';
@@ -7,6 +6,7 @@ import useMediaQuery, { BOARD_WIDTH, PORTRAIT_PHONE } from './hooks/useMediaQuer
 import useGameSocket, { PLAYER_ID } from './game/useGameSocket';
 import { useBoardSettings } from './game/settings';
 import useCues from './game/useCues';
+import { setMusic, setMusicEnabled, armMusic, duckMusic, stopAllMusic } from './game/music';
 import { buzz } from './game/haptics';
 import { Toasts } from './board';
 
@@ -34,11 +34,18 @@ import {
   PlayerBetween, PlayerReconnecting, PlayerRoomError, PlayerGameOver, PlayerSpectating,
 } from './views/player/PlayerStatus';
 
-const soundUrls = [
-  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/the_scoring_bell.mp3',
-  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/the_dhaka_lobby.mp3',
-  'https://pub-039ad0fe61d64de69d722e5ecd00b200.r2.dev/bg-music/square_wave_bazaar.mp3',
-];
+/* Which playlist each host screen is standing in. The whole pre-game — the
+ * landing, the settings, the lobby filling up — is one stretch of the night and
+ * gets one track: cutting the music between Create Room and the lobby would be
+ * the board changing its mind in front of everybody. `game/tracks.js` says what
+ * each of these sounds like. */
+const MUSIC_BY_SCREEN = {
+  landing: 'startup',
+  'host-settings': 'startup',
+  'host-lobby': 'startup',
+  game: 'game',
+  'game-over': 'celebration',
+};
 
 export default function App() {
   const { toasts, notify, dismiss } = useToasts();
@@ -78,42 +85,42 @@ export default function App() {
   const [code, setCode] = useState(JOIN_CODE ?? '');
   const [name, setName] = useState('');
   const [showPause, setShowPause] = useState(false);
-  const bgMusic = useRef(null);
 
   const go = useCallback((next) => dispatch({ type: 'screen', payload: next }), [dispatch]);
 
-  // Autoplay needs a user gesture, so the track is primed on the host's own click.
-  const primeMusic = useCallback(() => {
-    if (!board.sound || bgMusic.current) return;
-    const url = soundUrls[Math.floor(Math.random() * soundUrls.length)];
-    bgMusic.current = new Howl({ src: [url], loop: true, volume: 0.35, html5: true });
-    bgMusic.current.play();
-  }, [board.sound]);
+  /* Music. Host device only — fifteen phones must not fight the TV — and gated on
+   * the same SOUND toggle as the cues. `role !== 'player'` rather than
+   * `role === 'host'` because the landing and the settings both run before a room
+   * exists, and those are the screens the startup track is for.
+   *
+   * The engine is a module singleton (game/music.js): it is handed a playlist name
+   * and owns the crossfade, the random pick, and every way a track can fail to
+   * arrive. Nothing here restarts on a render. */
+  const musicOn = asHost && board.sound;
+  const musicPhase = musicOn && role !== 'player' ? MUSIC_BY_SCREEN[screen] ?? null : null;
 
-  // Music belongs to the host device and only while a game is running. Unloading it
-  // between games means the next one opens on a different track.
+  useEffect(() => { setMusicEnabled(musicOn); }, [musicOn]);
+  useEffect(() => { setMusic(musicPhase); }, [musicPhase]);
+  useEffect(() => () => stopAllMusic(), []);
+
+  /* Autoplay needs a gesture, and these listeners stay up for the whole session
+   * rather than firing once: a browser that refuses a `play()` mid-game (Safari
+   * after an interruption) is recoverable only on the next click. Same reasoning
+   * as the cue engine's own arming, one layer up. */
   useEffect(() => {
-    const playing = role === 'host' && screen === 'game' && board.sound;
-    if (playing) bgMusic.current?.play();
-    else {
-      bgMusic.current?.unload();
-      bgMusic.current = null;
-    }
-  }, [role, screen, board.sound]);
-
-  /* The music sits in the same low band as the reveal's clunks and the bed, so it
-   * has to get out of the way for the one sequence built to be listened to. Howler
-   * owns its own fade because the track is an <audio> element, not a Web Audio
-   * buffer — the cue engine cannot reach it. */
-  const duckMusic = useCallback((to, ms) => {
-    const h = bgMusic.current;
-    if (h) h.fade(h.volume(), to, ms);
-  }, []);
+    if (!musicOn) return undefined;
+    window.addEventListener('pointerdown', armMusic);
+    window.addEventListener('keydown', armMusic);
+    return () => {
+      window.removeEventListener('pointerdown', armMusic);
+      window.removeEventListener('keydown', armMusic);
+    };
+  }, [musicOn]);
 
   /* The twelve cues. Host device only, gated on the same SOUND toggle as the music
    * — but deliberately NOT on MOTION: REDUCED, which is a separate accessibility
    * axis. Somebody who kills the strobe still wants to hear the klaxon. */
-  useCues({ enabled: asHost && board.sound, state, duck: duckMusic });
+  useCues({ enabled: musicOn, state, duck: duckMusic });
 
   // Esc is the host's way out of a game that has to end early.
   useEffect(() => {
@@ -188,10 +195,7 @@ export default function App() {
         <HostLobby
           room={room}
           onSettings={() => go('host-settings')}
-          onStart={() => {
-            primeMusic();
-            socket.emit('host:start_game');
-          }}
+          onStart={() => socket.emit('host:start_game')}
         />
       );
     } else if (screen === 'game-over') {

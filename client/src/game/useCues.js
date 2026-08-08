@@ -155,8 +155,11 @@ export default function useCues({ enabled, state, duck }) {
     sequence(revealCues(reveal), elapsedMs(reveal), 'reveal');
 
     // The bed and the music both sit in the same low band as the reveal's clunks.
-    duck?.(0.12, 250);
-    return () => duck?.(0.35, 700);
+    // How far the music drops, and how fast, is the music's business — this only
+    // says when. It used to pass absolute levels, which meant the track's normal
+    // volume was written down in two files.
+    duck?.(true);
+    return () => duck?.(false);
   }, [on, phase, reveal, duck]);
 
   // ── the clock ──────────────────────────────────────────────────────────────
