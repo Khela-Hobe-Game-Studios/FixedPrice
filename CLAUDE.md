@@ -278,6 +278,13 @@ reveal, which used to restart its whole animation for a phone that rejoined 8s i
 Never use `Infinity` for distance; `JSON.stringify` turns it into `null` silently and
 breaks downstream `.toLocaleString()` calls.
 
+**The board may never contradict the scoreboard.** `outcome: 'nobody_close'` puts a
+red band where the winner's band goes, so it is only claimed when there is no winner
+to hide — nobody submitted. A round where everyone guessed and everyone was over 100%
+out is `allWild`: still a winner, still named, still paid, with the joke moved onto
+their band. It used to be the same outcome, so the TV announced that nobody was close
+while the standings handed that player 3 points four seconds later.
+
 **The finale** (sudden death) decides placings among finalists rather than points:
 see Settings. Three-strikes elimination was removed in v2.0 — knocking somebody out at
 round 6 of a fifteen-round party game left them watching for ten minutes.
@@ -313,7 +320,8 @@ client/src/
     cues.js           The twelve cues, synthesised; channels, scheduling, the bed
     useCues.js        Cues ↔ phase events and the reveal schedule; host only
     haptics.js        The phone's half of the cue system — vibration, not sound
-    avatar.js         Selfie → 2-tone posterised PNG, on the phone
+    avatar.js         Selfie → a 6-step ramp of the player's colour, on the phone
+    useCamera.js      The viewfinder: acquire, attach, readiness, and the suspends
     settings.js       Board settings (lighting/sound/motion), localStorage
   components/JoinQR.jsx   Real QR, deep-linked with the code prefilled
   views/host/       Landing, Settings, Lobby, Intro, Finale, Question, Betting,
@@ -352,6 +360,12 @@ capture-screens.js  Every preview to .screens/, plus the live host+phone path
 
 **Two columns fill top-to-bottom, never row-major.** Always `SplitColumns`. Rows placed directly into a two-column grid fill left-right, so a roster reads as a checkerboard and the reveal gives you every other rank down each column. Design review found this twice, which is why the pattern lives in one component.
 
+**Anything rendered outside the stage inherits nothing from it.** `.bd-word` and the
+rest of the type primitives carry no colour of their own — they inherit `--bone` from
+`.bd-stagewrap`. The pause/end dialog is drawn *beside* that wrapper (see
+`.hs-dialog`), so it inherited the document default and rendered black on the
+near-black panel. Set `color` and `font-family` explicitly on any such root.
+
 **A CSS reset must not out-specify its own components.** `board.css` wraps its reset in `:where()`: `button { background: none }` beats `.bd-btn` on specificity and silently strips every button's fill.
 
 **Background music only plays on the host device.** Primed on the host's Start Game click (browsers need a user gesture to unlock autoplay). Uses Howler.js (Web Audio API), not `new Audio()`, to avoid the Windows SMTC / OS media-session popup. Unloaded when the game ends so the next one opens on a different track.
@@ -377,6 +391,15 @@ current time by `voiceAt`.
 **Session persistence:** `localStorage` stores `{ role, code, name?, settings?, hostToken? }` under `ek_daam_session`. On connect the client emits `host:rejoin` or `player:rejoin`. Cleared on `Room not found` / `Player not found in room` / `Not the host of this room` — the server restarted and lost its in-memory rooms.
 
 **Host control is a token, not the room code.** `createRoom` mints a `hostToken` and sends it only to the socket that created the room; `host:rejoin` requires it back. Codes are 48 dictionary words, so without this anyone who guessed one took over the game — and demoted the real host, whose socket id no longer matched. It is the host's equivalent of the player's `pid`: a secret the client holds, never broadcast.
+
+**A `<video>` cannot be mounted by the same state that carries its stream.** Rendering
+it only once `getUserMedia` resolves means the ref is still null when you assign
+`srcObject`, the assignment is a silent no-op, and the element then mounts with no
+source — a granted permission and a dead black square. `hooks`-style acquire and
+attach are two effects in `game/useCamera.js` for this reason, the element is mounted
+unconditionally and hidden with opacity (iOS will not decode a frame into a
+`display: none` element), and "ready" means `loadedmetadata` plus a non-zero
+`videoWidth`, never merely "we have a stream".
 
 **Avatars are lobby-only and broadcast as a delta.** `player:set_avatar` is refused once the game starts, and the room gets `player:avatar` with one player on it. It used to re-emit the whole roster — twenty 12KB avatars to twenty sockets for one player changing their mind, and it could fire mid-reveal.
 

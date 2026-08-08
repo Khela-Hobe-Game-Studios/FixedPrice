@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import {
-  Stage, Band, BandCell, ActionBar, AvatarTile, Num } from '../../board';
+  Stage, Band, BandCell, ActionBar, AvatarTile, Num, SplitColumns, playerColor } from '../../board';
 
 const LOGO = `${import.meta.env.BASE_URL}fixed_price_logo_bitmap.png`;
 
@@ -22,12 +23,23 @@ export function placings(final = [], hasFinale = false) {
   });
 }
 
-/** The winner, the podium, and the mascot's one big appearance. */
-export default function HostGameOver({ final, onPlayAgain, onStandings }) {
+/**
+ * The winner, the podium, and the mascot's one big appearance.
+ *
+ * The podium is three slots, so in a room of fifteen it is also the twelve people it
+ * does not mention — hence the second button. Everything it needs is already in the
+ * final payload, so the standings are a view of this screen rather than a trip back
+ * to the server.
+ */
+export default function HostGameOver({ final, onPlayAgain, initialStandings = false }) {
+  // `initialStandings` exists so the gallery can mount the second view; the fit gate
+  // derives from the gallery, and a screen it cannot mount is a screen nothing checks.
+  const [standings, setStandings] = useState(initialStandings);
   const results = placings(final?.final ?? [], !!final?.finale);
   const champions = results.filter((p) => p.place === 1);
   const winner = champions[0];
   const roundsTaken = winner?.roundsTaken;
+  const leader = Math.max(1, ...results.map((p) => p.score));
 
   // Podium slots come from the finishing order, not from the place number: with
   // shared places there may be no "3rd", and a column that silently vanishes
@@ -37,6 +49,76 @@ export default function HostGameOver({ final, onPlayAgain, onStandings }) {
     { slot: 1, height: '100%', player: results[0] },
     { slot: 3, height: '50%', player: results[2] },
   ];
+
+  if (standings) {
+    return (
+      <Stage>
+        <Band>
+          <BandCell fill tone="amber" align="center">
+            <span className="bd-word" style={{ fontSize: 23, letterSpacing: '0.3em' }}>
+              FINAL STANDINGS · {results.length} PLAYERS
+            </span>
+          </BandCell>
+        </Band>
+
+        <div className="bd-body">
+          <SplitColumns
+            className="hs-board"
+            items={results}
+            gap="0 26px"
+            rowMax={72}
+            columnClassName=""
+            renderItem={(p, i, col) => (
+              <div
+                key={p.id}
+                className={`hs-row${col === 1 ? ' hs-board__col--dim' : ''}`}
+                data-testid="final-row"
+              >
+                <Num size={17} className="hs-row__rank" style={{ opacity: col === 1 ? 0.6 : 1 }}>
+                  {String(p.place).padStart(2, '0')}
+                </Num>
+                <AvatarTile size={26} colorIndex={p.colorIndex} name={p.name} avatar={p.avatar} />
+                <div style={{ minWidth: 0 }}>
+                  <div className="hs-row__name">{p.name}</div>
+                  <div
+                    className="hs-row__bar"
+                    style={{
+                      '--bar-color': playerColor(p.colorIndex),
+                      width: `${18 + (p.score / leader) * 82}%`,
+                    }}
+                  />
+                </div>
+                <Num size={16} tone="green" style={{ opacity: p.place === 1 ? 0.85 : 0.25 }}>
+                  {p.place === 1 ? 'WON' : '—'}
+                </Num>
+                <Num size={32} tone="bone" style={{ textAlign: 'right' }}>
+                  {p.score}
+                </Num>
+              </div>
+            )}
+          />
+        </div>
+
+        <ActionBar>
+          <button
+            type="button"
+            onClick={onPlayAgain}
+            data-testid="play-again"
+            style={{ background: 'var(--led-green)', color: 'var(--board)' }}
+          >
+            PLAY AGAIN
+          </button>
+          <button
+            type="button"
+            onClick={() => setStandings(false)}
+            style={{ background: 'var(--panel)', color: 'var(--out-55)' }}
+          >
+            BACK TO THE PODIUM
+          </button>
+        </ActionBar>
+      </Stage>
+    );
+  }
 
   return (
     <Stage>
@@ -131,7 +213,8 @@ export default function HostGameOver({ final, onPlayAgain, onStandings }) {
         </button>
         <button
           type="button"
-          onClick={onStandings}
+          onClick={() => setStandings(true)}
+          data-testid="full-standings"
           style={{ background: 'var(--panel)', color: 'var(--out-55)' }}
         >
           FULL STANDINGS

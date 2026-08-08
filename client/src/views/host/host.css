@@ -810,6 +810,13 @@
 
 /* ── Pause overlay ─────────────────────────────────────────────────────────── */
 
+/* The colour and the face are set here and not inherited, because this is outside
+ * the stage. `.bd-word` and friends carry no colour of their own — they inherit
+ * `--bone` from `.bd-stagewrap`, which is exactly the wrapper this dialog is drawn
+ * beside rather than inside. Without this it inherited the document default, so END
+ * THE GAME? rendered black on the near-black panel and the one screen whose job is
+ * to tell the host what is about to happen to fifteen people could not be read.
+ * Anything else ever rendered outside the stage needs both of these too. */
 .hs-overlay {
   position: absolute;
   inset: 0;
@@ -818,6 +825,8 @@
   align-items: center;
   justify-content: center;
   background: rgba(7, 9, 10, 0.82);
+  color: var(--bone);
+  font-family: var(--f-word);
 }
 
 /* The one host element that is not inside the stage, so it is not scaled with it —
@@ -850,6 +859,14 @@
 
 .hs-dialog__head {
   font-size: clamp(26px, 5.57svh, 40px);
+}
+
+/* Louder than `.bd-mono` is elsewhere. 45% output is right for a caption beside
+ * something the room is already looking at; this paragraph is the only statement of
+ * what END GAME does to fifteen people's scores, and it is read once, quickly, by a
+ * host who is deciding. */
+.hs-dialog__body p {
+  color: var(--out-75);
 }
 
 .hs-dialog__actions {

@@ -236,8 +236,12 @@ export const PREVIEWS = {
     render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { outcome: 'tie' })} round={fx.round15} />,
   },
   'tv-reveal-nobody': {
-    group: 'Tv', viewport: 'tv', note: 'Nobody close — red band, price stays amber',
+    group: 'Tv', viewport: 'tv', note: 'Nobody guessed at all — red band, price stays amber',
     render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { outcome: 'nobody_close' })} round={fx.round15} />,
+  },
+  'tv-reveal-wild': {
+    group: 'Tv', viewport: 'tv', note: 'Everyone miles out — there is still a winner and the board names them',
+    render: () => <HostReveal reveal={fx.makeReveal(fx.players15, { allWild: true })} round={fx.round15} />,
   },
   'tv-reveal-two': {
     group: 'Tv', viewport: 'tv', note: '2 players — same grid, rows grow, no fork',
@@ -269,19 +273,23 @@ export const PREVIEWS = {
   },
   'tv-game-over': {
     group: 'Tv', viewport: 'tv', note: 'Winner, podium, mascot',
-    render: () => <HostGameOver final={fx.final5} onPlayAgain={noop} onStandings={noop} />,
+    render: () => <HostGameOver final={fx.final5} onPlayAgain={noop} />,
   },
   'tv-game-over-tie': {
     group: 'Tv', viewport: 'tv', note: 'Shared 2nd — the podium must still have three steps',
-    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 6).map((p, i) => ({ ...p, score: i === 0 ? 14 : 9 })), rounds: 15 }} onPlayAgain={noop} onStandings={noop} />,
+    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 6).map((p, i) => ({ ...p, score: i === 0 ? 14 : 9 })), rounds: 15 }} onPlayAgain={noop} />,
   },
   'tv-game-over-finale': {
     group: 'Tv', viewport: 'tv', note: 'After sudden death — order is the finale, not points',
-    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 5), rounds: 15, finale: { played: 3 } }} onPlayAgain={noop} onStandings={noop} />,
+    render: () => <HostGameOver final={{ final: fx.players15.slice(0, 5), rounds: 15, finale: { played: 3 } }} onPlayAgain={noop} />,
   },
   'tv-game-over-15': {
     group: 'Tv', viewport: 'tv', note: 'Podium must not collapse — align-items:stretch',
-    render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} onStandings={noop} />,
+    render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} />,
+  },
+  'tv-game-over-standings': {
+    group: 'Tv', viewport: 'tv', note: 'FULL STANDINGS — the twelve the podium does not mention',
+    render: () => <HostGameOver final={fx.final15} onPlayAgain={noop} initialStandings />,
   },
 
   // ── Phone: a controller, not a small TV. Every one of these is judged at all
