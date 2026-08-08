@@ -98,7 +98,7 @@ async function runHost(context, resolveCode) {
   // Still the same startup track it started on — the settings screen and a lobby
   // filling with players are not scene changes.
   const inLobby = await musicOf(page);
-  if (armed && inLobby.track !== armed.track) {
+  if (armed && inLobby && inLobby.track !== armed.track) {
     throw new Error(`music restarted between the landing and the lobby: ${armed.track} → ${inLobby.track}`);
   }
 
