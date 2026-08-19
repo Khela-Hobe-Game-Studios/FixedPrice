@@ -431,7 +431,7 @@ which still accepts the pre-v2 `questionCount` / `bettingRounds` shape.
 |---|---|---|
 | `rounds` | 10 | 10 / 15 / 20 questions |
 | `secondsPerQuestion` | 30 | 20 / 30 / 45, or OFF — no clock, the host advances |
-| `bettingFrequency` | `never` | `every3` / `every` / `never` |
+| `bettingFrequency` | `never` | `every3` / `every5` / `never` |
 | `categories` | `[]` (all) | Which categories are in the deck; empty means all |
 | `finale` | `auto` | Sudden death: `off` / `auto` (8+ players) / `on` |
 

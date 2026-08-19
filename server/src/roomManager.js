@@ -35,7 +35,7 @@ function generateCode() {
 
 const ROUND_OPTIONS = [10, 15, 20];
 const SECONDS_OPTIONS = [0, 20, 30, 45]; // 0 = no clock; the host advances the round
-const BETTING_FREQUENCIES = ['never', 'every3', 'every'];
+const BETTING_FREQUENCIES = ['never', 'every3', 'every5'];
 const FINALE_MODES = ['off', 'auto', 'on'];
 
 const DEFAULT_SETTINGS = {
@@ -53,6 +53,13 @@ function normalizeSettings(raw = {}, base = DEFAULT_SETTINGS) {
   const seconds = Number(raw.secondsPerQuestion);
 
   let bettingFrequency = raw.bettingFrequency;
+
+  /* v2.0 offered EVERY ROUND. It is gone — a betting round every round is nobody's
+   * idea of a party game — but a saved room or an older client can still ask for it,
+   * and falling through to the default would answer that by turning betting off
+   * entirely. Give it the closest surviving cadence instead. */
+  if (bettingFrequency === 'every') bettingFrequency = 'every3';
+
   if (!BETTING_FREQUENCIES.includes(bettingFrequency)) {
     bettingFrequency =
       raw.bettingRounds !== undefined

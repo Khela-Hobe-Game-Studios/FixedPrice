@@ -447,7 +447,16 @@ async function testHostAuthority() {
 async function testBetTargets() {
   log('TEST', 'a bet can only back a guess the round actually put up');
   // 8 players, so bettingOptions' cap of 6 leaves someone off the board.
-  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 0, bettingFrequency: 'every' });
+  const { host, code } = await hostRoom({ rounds: 10, secondsPerQuestion: 0, bettingFrequency: 'every3' });
+
+  /* EVERY ROUND is gone, so the earliest betting round is the third. Skipping the
+   * phases that only spend time — intro, reveal, scoreboard — gets there in about a
+   * second instead of sitting through two full rounds. Question and betting are
+   * left alone: the players answer those, and betting is the phase under test. */
+  const fastForward = () => host.emit('host:skip');
+  host.on('round:intro', fastForward);
+  host.on('round:reveal', fastForward);
+  host.on('round:scoreboard', fastForward);
 
   const players = [];
   for (let i = 0; i < 8; i++) {
@@ -458,7 +467,7 @@ async function testBetTargets() {
   }
   await wait(300);
 
-  const betting = once(players[0], 'round:betting', 20000);
+  const betting = once(players[0], 'round:betting', 30000);
   host.emit('host:start_game');
   const offer = await betting;
 

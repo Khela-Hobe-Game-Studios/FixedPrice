@@ -101,7 +101,7 @@ export default function HostSettings({ settings, board, onBoard, onSave, onClose
 
           <Group label="BETTING ROUND">
             <Seg
-              options={[['every3', 'EVERY 3RD'], ['every', 'EVERY ROUND'], ['never', 'NEVER']]}
+              options={[['every3', 'EVERY 3RD'], ['every5', 'EVERY 5TH'], ['never', 'NEVER']]}
               value={draft.bettingFrequency}
               onChange={(bettingFrequency) => set({ bettingFrequency })}
               tone="green"

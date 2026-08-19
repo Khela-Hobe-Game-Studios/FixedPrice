@@ -206,8 +206,8 @@ function startIntro(io, room) {
 function bettingRoundDue(room, roundIndex) {
   if (room.finale) return false; // sudden death is already the drama
   const freq = room.settings.bettingFrequency;
-  if (freq === 'every') return true;
   if (freq === 'every3') return (roundIndex + 1) % 3 === 0;
+  if (freq === 'every5') return (roundIndex + 1) % 5 === 0;
   return false;
 }
 
