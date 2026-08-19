@@ -414,7 +414,7 @@ unconditionally and hidden with opacity (iOS will not decode a frame into a
 
 **Room codes** are 4-letter Bangla-transliterated words (AMMU, CHAI, DAAL…) from a 48-word bank in `roomManager.js`, not random strings.
 
-**Questions source:** `QUESTIONS_FILE` (a local JSON bank, path relative to the repo root) beats `QUESTIONS_SHEET_URL` (a Google Sheet "Publish to web → CSV") beats `questions/questions.json`. Column order: `question | answer | unit | category | funFact | local?`. Every source goes through the same validation — a non-finite answer is dropped with the row named, and a bank under 20 usable questions is refused rather than starting a server that cannot run a round. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool. `/health` reports which deck is loaded.
+**Questions source:** `QUESTIONS_FILE` (a local JSON bank, path relative to the repo root) beats `QUESTIONS_SHEET_URL` (a Google Sheet "Publish to web → CSV") beats `questions/questions.json`. Column order: `question | answer | unit | category | funFact` — plus an optional column *headed* `local` (found by name, not position, so the next column added to the Sheet cannot silently re-tag the bank). Every source goes through the same validation — a non-finite answer is dropped with the row named, and a bank under 20 usable questions is refused rather than starting a server that cannot run a round. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool. `/health` reports which deck is loaded.
 
 **Test against the mock bank, not the real one.** `npm run dev:mock` points the server at `questions/questions.mock.json` — 61 invented questions across all six category bands, answers spread 1 → 12.5M. Playing a test round against the real bank spends it; you cannot un-know an answer. `npm run dev:restart` puts the real one back. It restarts rather than starts because the deck is read once at boot.
 
@@ -447,7 +447,10 @@ DESHI with only WEIRD ticked is a full game of global questions, not a short one
 per-question `local` flag is derived at load in `server/src/locality.js` — category
 `Desh`, a taka-denominated unit, or a place/name match — and an optional `local`
 column on the bank overrides it, so a row the derivation gets wrong is a Sheet edit
-rather than a deploy. DESHI stops at 75% on purpose: WEIRD and SPORTS have almost no
+rather than a deploy. Category is the hard filter and flavour the soft bias, in that
+order: a host who ticks WEIRD and asks for DESHI gets weird questions, and a ticked
+category too small to fill the game goes in whole before the flavour share applies to
+the top-up. DESHI stops at 75% on purpose: WEIRD and SPORTS have almost no
 local rows, and a dial that reached 100% would quietly delete two categories.
 
 **The finale.** After the last normal round the top few qualify — 3 under 10 players,

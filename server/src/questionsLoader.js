@@ -8,12 +8,14 @@
  *   QUESTIONS_SHEET_URL  the published Google Sheet, "Publish to web" → CSV.
  *   (neither)            questions/questions.json
  *
- * Sheet column order (row 1 = headers, ignored):
- *   question | answer | unit | category | funFact | local?
+ * Sheet column order (row 1 = headers):
+ *   question | answer | unit | category | funFact
  *
- * `local` is optional and rarely needed: locality is derived (see locality.js) and
- * the column only exists to settle the rows the derivation gets wrong, without a
- * deploy. TRUE/FALSE; anything else means "not stated, derive it".
+ * Those five are read by position. One more is understood and it is optional and
+ * rarely needed — a column *headed* `local`, anywhere in the row, TRUE/FALSE.
+ * Locality is derived (see locality.js); the column only exists to settle the rows
+ * the derivation gets wrong, without a deploy. Anything else in it, or no such
+ * header at all, means "not stated, derive it".
  *
  * Every source goes through the same validation on the way in. It used to be only
  * the CSV: a JSON file was `require`d and handed straight to the game, so one bad
@@ -74,6 +76,15 @@ function parseCSV(text) {
   const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
   const rows = lines.slice(1); // skip header row
 
+  /* The first five columns are positional, because they always have been. `local`
+   * is found by NAME, because it is optional: reading whatever happens to be in
+   * column six would let the next column somebody adds to the Sheet — difficulty,
+   * a source link, a review note — silently re-tag the bank, and since the column
+   * overrides every other signal it would do it to Desh rows too. No header called
+   * `local`, no override. */
+  const header = splitCSVRow(lines[0] ?? '').map(h => h.trim().toLowerCase());
+  const localCol = header.indexOf('local');
+
   let skipped = 0;
   const parsed = rows.map((line, i) => {
     const cols = splitCSVRow(line);
@@ -91,7 +102,10 @@ function parseCSV(text) {
       unit:     (cols[2] || '').trim(),
       category: (cols[3] || 'Global').trim(),
       funFact:  (cols[4] || '').trim() || null,
-      local:    isLocal({ question: cols[0], unit: cols[2], category: cols[3], funFact: cols[4], local: cols[5] }),
+      local:    isLocal({
+        question: cols[0], unit: cols[2], category: cols[3], funFact: cols[4],
+        local: localCol >= 0 ? cols[localCol] : undefined,
+      }),
     };
   }).filter(Boolean);
 

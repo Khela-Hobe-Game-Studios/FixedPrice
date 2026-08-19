@@ -183,14 +183,28 @@ function drawFrom(pool, n, budget) {
 }
 
 function pickQuestions(count, categories = [], flavour = DEFAULT_FLAVOUR) {
-  // An empty filter is the whole deck. A filter that starves the deck is ignored
-  // rather than obeyed — a host who unticks five of six categories should get a
-  // short game, not a broken one.
-  let pool = [...Array(questions.length).keys()];
+  const all = [...Array(questions.length).keys()];
+
+  /* Category is a hard filter and flavour is a soft bias, in that order — a host who
+   * ticks WEIRD and asks for DESHI gets weird questions, because Weird has no local
+   * rows and the box they ticked is the more specific instruction.
+   *
+   * An empty filter is the whole deck. A filter too small to fill the game is topped
+   * up from the rest of the bank rather than obeyed — five of six categories unticked
+   * should give a short game, not a broken one — but everything ticked goes in FIRST.
+   * Concatenating the two and shuffling, which is what this did, threw the preference
+   * away: ten sports questions in a 61-row bank, asked for 20 rounds, came back as
+   * three. The flavour share then applies to the top-up, which is the only part of
+   * the deck still free to choose. */
+  let pool = all;
+  let mandatory = [];
   if (categories.length > 0) {
-    const filtered = pool.filter(i => categories.some(c => matchesCategory(questions[i].category, c)));
-    if (filtered.length >= count) pool = filtered;
-    else if (filtered.length > 0) pool = [...filtered, ...pool.filter(i => !filtered.includes(i))];
+    const inFilter = new Set(all.filter(i => categories.some(c => matchesCategory(questions[i].category, c))));
+    if (inFilter.size >= count) pool = all.filter(i => inFilter.has(i));
+    else if (inFilter.size > 0) {
+      mandatory = all.filter(i => inFilter.has(i));
+      pool = all.filter(i => !inFilter.has(i));
+    }
   }
 
   // A ceiling, not a quota: questions with a tiny answer are only skipped once the
@@ -198,18 +212,20 @@ function pickQuestions(count, categories = [], flavour = DEFAULT_FLAVOUR) {
   // small or skewed enough that the deck would otherwise be short.
   const budget = { left: Math.max(1, Math.round(count * TIE_PRONE_SHARE)), skipped: [] };
 
-  const share = FLAVOUR_SHARE[flavour] ?? FLAVOUR_SHARE[DEFAULT_FLAVOUR];
+  const picked = drawFrom(shuffle(mandatory), count, budget);
+
+  const want = Math.round((count - picked.length) * (FLAVOUR_SHARE[flavour] ?? FLAVOUR_SHARE[DEFAULT_FLAVOUR]));
   const local = shuffle(pool.filter(i => questions[i].local));
   const rest  = shuffle(pool.filter(i => !questions[i].local));
 
-  const picked = drawFrom(local, Math.round(count * share), budget);
+  picked.push(...drawFrom(local, want, budget));
   picked.push(...drawFrom(rest, count - picked.length, budget));
   // Whichever pool ran out, the other one finishes the deck: DESHI on a bank with
   // forty local questions is still a full game, just a less local one than asked.
   if (picked.length < count) picked.push(...drawFrom(local, count - picked.length, budget));
   if (picked.length < count) picked.push(...budget.skipped.slice(0, count - picked.length));
 
-  // Both pools were drawn in order, so without this the local block would play first.
+  // Every pool was drawn in order, so without this the local block would play first.
   return shuffle(picked);
 }
 

@@ -27,20 +27,29 @@ const { normCategory } = require('./categories');
 
 const LOCAL_UNIT = /\b(bdt|taka|tk)\b/i;
 
+/* Regex literals, not strings, and not as a matter of taste: in a plain JS string
+ * `\b` is the backspace character rather than a word boundary, so the first version
+ * of this list compiled `'\bdhaka\b'` into two backspaces around the word and a
+ * question about Dhaka was tagged global. Nothing warns you — the RegExp builds
+ * fine and simply never matches. A literal's `.source` cannot go wrong that way.
+ *
+ * The boundaries are load-bearing wherever a short name is a substring of an
+ * unrelated word: without them "embrace" and "bracket" match BRAC, "Bengaluru"
+ * matches Bengal, and "Takahashi" is a taka price. */
 const LOCAL_TEXT = new RegExp([
-  'bangladesh', 'bangladeshi', 'bangla\b', 'bengali', 'bengal\b', '\bdhaka\b',
-  'chittagong', 'chattogram', 'sylhet', 'khulna', 'rajshahi', 'barisal', 'barishal',
-  'rangpur', 'mymensingh', 'comilla', 'cumilla', 'bogra', 'jessore', 'narayanganj',
-  "cox'?s bazar", 'teknaf', 'sundarban', 'saint martin', 'kuakata', 'sajek',
-  'padma', 'jamuna', 'meghna', 'buriganga', 'karnaphuli',
-  'bangabandhu', 'mujib', 'sheikh hasina', 'ziaur rahman', 'ershad', 'shaheed minar',
-  'lalbagh', 'ahsan manzil', 'sonargaon', 'paharpur', 'bagerhat', 'shahbag',
-  'gulshan', 'banani', 'uttara', 'mirpur', 'motijheel', 'metro rail',
-  'ekushey', 'pohela boishakh', 'baishakh', 'liberation war', '\b1971\b',
-  'shakib al hasan', 'tamim iqbal', 'mushfiqur', 'mashrafe', 'mustafizur',
-  'litton das', '\bbpl\b', 'grameen', 'muhammad yunus', '\bbrac\b',
-  'ilish', 'hilsa', 'rickshaw', '\btaka\b',
-].join('|'), 'i');
+  /bangladesh/, /\bbangla\b/, /bengali/, /\bbengal\b/, /\bdhaka\b/,
+  /chittagong/, /chattogram/, /sylhet/, /khulna/, /rajshahi/, /barisal/, /barishal/,
+  /rangpur/, /mymensingh/, /comilla/, /cumilla/, /bogra/, /jessore/, /narayanganj/,
+  /cox'?s bazar/, /teknaf/, /sundarban/, /saint martin/, /kuakata/, /sajek/,
+  /padma/, /jamuna/, /meghna/, /buriganga/, /karnaphuli/,
+  /bangabandhu/, /mujib/, /sheikh hasina/, /ziaur rahman/, /ershad/, /shaheed minar/,
+  /lalbagh/, /ahsan manzil/, /sonargaon/, /paharpur/, /bagerhat/, /shahbag/,
+  /gulshan/, /banani/, /uttara/, /mirpur/, /motijheel/, /metro rail/,
+  /ekushey/, /pohela boishakh/, /baishakh/, /liberation war/, /\b1971\b/,
+  /shakib al hasan/, /tamim iqbal/, /mushfiqur/, /mashrafe/, /mustafizur/,
+  /litton das/, /\bbpl\b/, /grameen/, /muhammad yunus/, /\bbrac\b/,
+  /ilish/, /hilsa/, /rickshaw/, /\btaka\b/,
+].map((re) => re.source).join('|'), 'i');
 
 /** Parse the optional `local` column. Anything unrecognised means "not stated". */
 function explicitLocal(raw) {
