@@ -484,6 +484,17 @@ else in the pipeline touches:
 - **Autoplay refused.** A track can only start inside a gesture and the landing
   screen has not had one. `armMusic()` is on pointerdown/keydown for the whole
   session, not once: a `playerror` mid-game disarms, and the next click is the fix.
+  Those listeners are **ungated** — gating them on `musicOn` lost the click on
+  RUNNING THE BOARD INSTEAD, which is the gesture that makes `musicOn` true. The cue
+  engine keeps its gate, because `unlockAudio()` builds an AudioContext and no cue is
+  due for many clicks after the switch.
+- **Refused after loading.** Howler defers `node.play()` to the load event when the
+  sound is not loaded, so in html5 mode the first play always lands outside the
+  gesture — allowed by Chrome, refused by Safari. `playerror` therefore *keeps* the
+  loaded Howl and sets `blocked`; the next gesture calls `play()` on it
+  synchronously. Unloading and rebuilding, which is what it used to do, reproduced
+  the same miss on every click. Symptom to recognise: cues play, music never does —
+  cues are synthesised and never touch a media element.
 - **A track that isn't there.** A 404 strikes that URL off for the session and the
   next candidate starts; a pool with nothing playable left falls through `FALLBACK`
   to `bg-music` rather than standing in silence.
