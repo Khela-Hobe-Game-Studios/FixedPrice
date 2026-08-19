@@ -147,7 +147,13 @@ function start(key) {
 
   // Autoplay refused. Stay quiet and wait to be armed again rather than burning
   // the playlist retrying against a policy that will not change until a click.
-  howl.once('playerror', () => {
+  /* `on`, not `once`. Howler removes a `once` handler after it fires (howler.js:
+   * `if (events[i].once) self.off(...)`), so a second refusal would land on nothing:
+   * `blocked` would stay false over a live `current`, `armMusic` would return early
+   * at the `current` guard, and the board would be silent for the rest of the night
+   * with no click able to fix it — the exact failure this latch exists to end, and
+   * reachable in one extra click on the browser it was written for. */
+  howl.on('playerror', () => {
     if (mine !== gen) return;
     armed = false;
     blocked = true; // keep `current`: the next gesture retries this loaded Howl
