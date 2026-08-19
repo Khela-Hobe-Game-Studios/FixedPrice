@@ -28,12 +28,26 @@ const VALID_CATEGORIES = [
 const MAX_QUESTION_LEN = 95;
 const TIE_PRONE_MAX = 5;
 
+// Above this share of the bank naming the same year, the deck ages as one block.
+const ANCHOR_PILEUP_SHARE = 0.25;
+
 // A question whose answer moves over time is only fair if it says *when*.
 // Without an anchor a 2024-sourced answer is scored against 2026 knowledge.
 // Word boundaries matter: an unanchored "fee" matches "feet", which flagged
 // "Length of the Hardinge Bridge in feet" as a time-sensitive price question.
 const TIME_SENSITIVE = /\b(price|prices|cost|costs|salary|salaries|fare|fares|fee|fees|worth|revenue|population|rank|ranking|current|currently|today|subscribers|subscription|inflation)\b|\bas of\b|\bper (year|month)\b|\bmarket cap\b|\bGDP\b|\bexchange rate\b|\bnumber of (users|subscribers|employees|factories|universities|hospitals|branches)\b/i;
 const YEAR_ANCHOR = /\b(1[89]\d{2}|20[0-3]\d)\b/;
+
+// A record is a fact with an expiry date nobody wrote down. TIME_SENSITIVE catches
+// the things that drift — prices, populations — but not the things that BREAK:
+// "Most wickets taken in ODI cricket career" was true when it was written and is
+// simply wrong the season after someone passes it, with nothing to warn you.
+// A year turns it from a wrong answer into a trivia question that stays right.
+const BREAKABLE_RECORD = /\b(most|fewest|highest|lowest|fastest|best[- ]selling|top[- ]selling|world record|record for|all[- ]time)\b|\b(career|total) (goals|runs|wickets|centuries|titles|awards|trophies|wins)\b|\bnumber of (goals|titles|awards|trophies|ballon|grand slams?|world cups?)\b/i;
+
+// …except where the superlative is about the physical world, which is not going to
+// be beaten by anyone this decade. "Highest peak in Bangladesh" needs no year.
+const SETTLED_SUPERLATIVE = /\b(mountain|peak|ocean|sea|river|desert|planet|moon|star|volcano|island|lake|waterfall|tree|animal|insect|species|element|bone|muscle|organ|continent|glacier)\b/i;
 
 // Units that silently rescale the answer. Mixing "lakh BDT" with "BDT" turns a
 // round into a reading-comprehension test — a misread is a 100,000x miss.
@@ -136,6 +150,13 @@ function lint(rows) {
     if (TIME_SENSITIVE.test(q.question) && !YEAR_ANCHOR.test(q.question)) {
       add('ERROR', 'missing-year-anchor', q,
         'time-sensitive but states no year — players cannot know what basis to estimate on');
+    } else if (BREAKABLE_RECORD.test(q.question)
+               && !SETTLED_SUPERLATIVE.test(q.question)
+               && !YEAR_ANCHOR.test(q.question)) {
+      // WARN, not ERROR: unlike a price, the answer is still right until the day it
+      // isn't, and there is no way to tell from here which day that is.
+      add('WARN', 'breakable-record', q,
+        'a record with no year on it — correct until someone breaks it, then silently wrong');
     }
 
     if (SCALE_UNIT.test(q.unit)) {
@@ -155,6 +176,36 @@ function lint(rows) {
       add('ERROR', 'unit-contradiction', q,
         `question asks for days but unit is "${q.unit}"`);
     }
+  }
+
+  /* Bank shape, not row quality: how concentrated the anchor years are.
+   *
+   * Anchoring a question to a year is what stops it going wrong, so the fix for
+   * staleness pushes every new row towards naming one. The failure mode that
+   * creates is a bank written in one sitting and stamped with one year — 349 of
+   * these 1042 rows say 2024 — which does not go WRONG, it goes uniformly old.
+   * Every third question opening "in 2024…" reads as a history quiz rather than
+   * a guessing game, and because they all age together there is no gradual
+   * signal, just a night where the whole deck suddenly feels dated.
+   *
+   * The cure is spread rather than removal: a bank anchored across 1995-2026 is
+   * permanently correct AND permanently current-feeling, and past-anchored prices
+   * ("a Nokia 1100 in 2005") are the better question anyway — everyone can
+   * estimate one, where nobody can estimate this month's streaming tier. */
+  const anchors = {};
+  for (const q of valid) {
+    const m = q.question.match(YEAR_ANCHOR);
+    if (m) anchors[m[0]] = (anchors[m[0]] || 0) + 1;
+  }
+  const [topYear, topCount] = Object.entries(anchors).sort((a, b) => b[1] - a[1])[0] ?? [];
+  if (topCount && topCount / valid.length > ANCHOR_PILEUP_SHARE) {
+    findings.push({
+      level: 'WARN',
+      rule: 'anchor-year-pileup',
+      row: '—',
+      question: `${topCount} questions are anchored to ${topYear}`,
+      detail: `${((topCount / valid.length) * 100).toFixed(0)}% of the bank names one year, so it ages as a block — spread new rows across other years`,
+    });
   }
 
   // Near-duplicates: same answer plus heavy token overlap.
