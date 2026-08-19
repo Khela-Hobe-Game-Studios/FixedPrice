@@ -248,7 +248,7 @@ avatar, connectionState, seatHoldUntil, eliminated }`.
 
 ```
 LOBBY
-  └─ INTRO (3s) → QUESTION (0/20/30/45s) → [BETTING (20s)] → REVEAL (~4.6s) → SCOREBOARD (5s)
+  └─ INTRO (3s) → QUESTION (0/20/30/45s) → [BETTING (20s)] → REVEAL (6.7-9.5s) → SCOREBOARD (5s)
        ↑                                                                            │
        └────────────────────── advanceRound() ──────────────────────────────────────┘
                                      │ (rounds exhausted)

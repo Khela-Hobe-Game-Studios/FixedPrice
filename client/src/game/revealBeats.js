@@ -4,9 +4,15 @@ import { elapsedMs } from './clock';
 /**
  * The reveal's choreography clock.
  *
- * Seven beats, ~4.6s: blackout, the target flicking up digit by digit, the wildest
- * guesses first in red, the chase accelerating as the deltas narrow, one frame of
- * dimming, the winner inverting, and the point posting.
+ * Seven beats, 6.7-9.5s depending on the size of the room: blackout, the target
+ * flicking up digit by digit, a hold on the answer alone, the wildest guesses first
+ * in red, the chase accelerating as the deltas narrow, one frame of dimming, the
+ * winner inverting, and the point posting.
+ *
+ * The server sets every offset (`revealSchedule`), and the two that matter most are
+ * the ones that used to be missing: the target holds alone before the rows arrive,
+ * and the winner holds after the points post. A reveal nobody can read is the round
+ * happening off-screen.
  *
  * Two rules from the design carry the implementation:
  *

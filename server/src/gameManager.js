@@ -15,7 +15,10 @@ const BETTING_TIME = 20000;
 const INTRO_TIME = 3000;
 
 // How long the reveal holds after its last beat. See revealSchedule().
-const PAYOFF_HOLD = 2000;
+const PAYOFF_HOLD = 2600;
+// How long the correct answer stands alone after its last digit lands, before the
+// board fills with everybody else's numbers.
+const ANSWER_HOLD = 1300;
 
 function questionTime(room) {
   const s = room.settings.secondsPerQuestion;
@@ -33,30 +36,47 @@ function questionTime(room) {
  *
  * Offsets in ms from the start of the reveal.
  */
-function revealSchedule(rowCount) {
-  const rowStep = rowCount > 8 ? 60 : 100;
-  const rows = 1100;
-  // The room needs a beat to read the board after the chase and before the winner —
-  // that hold is most of what makes the inversion land.
-  const hold = rowCount > 8 ? 1660 : 900;
+function revealSchedule(rowCount, targetChars) {
+  /* 60ms a row was a number nobody could read. The chase is meant to be followed —
+   * a name and a five-figure guess at fifteen rows a second is a texture, not
+   * information, and the bigger the room the worse it got, which is the opposite of
+   * what a bigger room needs. */
+  const rowStep = rowCount > 8 ? 115 : 150;
+
+  const target = 400;
+  const digitStep = 90;
+
+  /* The rows used to open at a flat 1100ms while the target was still flapping: a
+   * nine-character answer lands at 400 + 9*90 = 1210, so the headline of the whole
+   * round was on screen alone for *less than nothing* before fifteen other numbers
+   * arrived to compete with it. The rows now wait for the last digit and then for
+   * the room to read it. This is the beat the reveal exists for. */
+  const rows = target + targetChars * digitStep + ANSWER_HOLD;
+
+  // A beat to read the board after the chase and before the winner — that hold is
+  // most of what makes the inversion land.
+  const hold = rowCount > 8 ? 1800 : 1200;
   const dim = rows + rowCount * rowStep + hold;
 
   const schedule = {
     blackout: 0,     // every lit pixel except the sponsor bands goes off
-    target: 400,     // the correct answer flicks up digit by digit
-    digitStep: 90,
+    target,          // the correct answer flicks up digit by digit
+    digitStep,
     rows,            // wildest first, in red, bottom-up
     rowStep,
     dim,             // one frame of dimming: all rows drop to 32% output
-    winner: dim + 100,
-    points: dim + 500,
+    // The winner and their points were 400ms apart and then gone. Who won, what they
+    // guessed and how far off they were is the second thing the room wants after the
+    // answer itself, and it was the shortest-lived thing on the board.
+    winner: dim + 250,
+    points: dim + 900,
   };
   // The payoff needs to be readable, not merely reached. The phase used to end 500ms
   // after the points landed, so the winner's name, their guess, their points and the
   // fun fact all appeared and were gone inside half a second — worst in a small room,
   // where the row chase is short and the floor was the only thing holding the screen
   // up at all. The hold after the last beat is now the longest part of the reveal.
-  schedule.total = Math.min(Math.max(schedule.points + PAYOFF_HOLD, 4600), 13000);
+  schedule.total = Math.min(Math.max(schedule.points + PAYOFF_HOLD, 5200), 16000);
   return schedule;
 }
 
@@ -500,7 +520,10 @@ function revealAnswers(io, room, rawRanked, bets = {}) {
   const scale = Math.max(Math.abs(correctAnswer), 1);
   const allWild = scored.length > 0 && scored.every(r => r.distance / scale > WILD_MISS_SHARE);
 
-  const schedule = revealSchedule(Math.max(scored.length - winners.length, 1));
+  // The flap is one step per *character* of the formatted answer, commas included —
+  // the same string the board renders, so the hold cannot drift from the animation.
+  const targetChars = Number(correctAnswer).toLocaleString('en-US').length;
+  const schedule = revealSchedule(Math.max(scored.length - winners.length, 1), targetChars);
 
   room._lastRevealData = {
     ranked,
