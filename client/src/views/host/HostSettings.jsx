@@ -8,6 +8,7 @@ const DEFAULTS = {
   secondsPerQuestion: 30,
   bettingFrequency: 'never',
   categories: [],
+  flavour: 'mixed',
   finale: 'auto',
 };
 
@@ -98,6 +99,20 @@ export default function HostSettings({ settings, board, onBoard, onSave, onClose
               testid="seconds"
             />
           </Group>
+
+          <Group label="QUESTION FLAVOUR">
+            <Seg
+              options={[['deshi', 'DESHI'], ['mixed', 'MIXED'], ['global', 'GLOBAL']]}
+              value={draft.flavour}
+              onChange={(flavour) => set({ flavour })}
+              testid="flavour"
+            />
+          </Group>
+
+          <p className="bd-mono bd-mono--wrap hs-set__note hs-set__note--tight">
+            DESHI FILLS THREE ROUNDS IN FOUR WITH BANGLADESHI QUESTIONS — TAKA PRICES, DESH,
+            LOCAL CRICKET. WEIRD AND SPORTS ARE GLOBAL EITHER WAY.
+          </p>
 
           <Group label="BETTING ROUND">
             <Seg

@@ -155,7 +155,34 @@ function handleGameEvent(io, room, event, payload = {}) {
 const TIE_PRONE_MAX_ANSWER = 5;
 const TIE_PRONE_SHARE = 0.2;
 
-function pickQuestions(count, categories = []) {
+/* How much of the deck should be Bangladeshi (see server/src/locality.js). A target,
+ * not a filter: whichever side runs short, the other one fills the game rather than
+ * shortening it. MIXED is roughly the bank's own natural ratio, so it is what the
+ * game has always played like. */
+const FLAVOUR_SHARE = { deshi: 0.75, mixed: 0.4, global: 0.1 };
+const DEFAULT_FLAVOUR = 'mixed';
+
+/**
+ * Draw up to `n` from the front of a shuffled pool, consuming what it takes.
+ *
+ * The tie-prone budget is shared across both flavour pools by being passed in:
+ * counting it per pool would let a deshi deck spend the whole allowance on its
+ * local three-quarters and then hand the global quarter a second one.
+ */
+function drawFrom(pool, n, budget) {
+  const out = [];
+  while (out.length < n && pool.length) {
+    const i = pool.shift();
+    if (Math.abs(questions[i].answer) <= TIE_PRONE_MAX_ANSWER) {
+      if (budget.left <= 0) { budget.skipped.push(i); continue; }
+      budget.left--;
+    }
+    out.push(i);
+  }
+  return out;
+}
+
+function pickQuestions(count, categories = [], flavour = DEFAULT_FLAVOUR) {
   // An empty filter is the whole deck. A filter that starves the deck is ignored
   // rather than obeyed — a host who unticks five of six categories should get a
   // short game, not a broken one.
@@ -166,31 +193,30 @@ function pickQuestions(count, categories = []) {
     else if (filtered.length > 0) pool = [...filtered, ...pool.filter(i => !filtered.includes(i))];
   }
 
-  const order = shuffle(pool);
-  const tieBudget = Math.max(1, Math.round(count * TIE_PRONE_SHARE));
+  // A ceiling, not a quota: questions with a tiny answer are only skipped once the
+  // budget for them is spent, and the ones passed over come back if the bank is
+  // small or skewed enough that the deck would otherwise be short.
+  const budget = { left: Math.max(1, Math.round(count * TIE_PRONE_SHARE)), skipped: [] };
 
-  // A ceiling, not a quota: take the natural shuffled order and only start
-  // skipping tie-prone questions once the budget for them is spent.
-  const picked = [];
-  const skipped = [];
-  let tieUsed = 0;
-  for (const i of order) {
-    if (picked.length >= count) break;
-    if (Math.abs(questions[i].answer) <= TIE_PRONE_MAX_ANSWER) {
-      if (tieUsed >= tieBudget) { skipped.push(i); continue; }
-      tieUsed++;
-    }
-    picked.push(i);
-  }
-  // Small or skewed bank — fall back to the ones we passed over.
-  if (picked.length < count) picked.push(...skipped.slice(0, count - picked.length));
-  return picked;
+  const share = FLAVOUR_SHARE[flavour] ?? FLAVOUR_SHARE[DEFAULT_FLAVOUR];
+  const local = shuffle(pool.filter(i => questions[i].local));
+  const rest  = shuffle(pool.filter(i => !questions[i].local));
+
+  const picked = drawFrom(local, Math.round(count * share), budget);
+  picked.push(...drawFrom(rest, count - picked.length, budget));
+  // Whichever pool ran out, the other one finishes the deck: DESHI on a bank with
+  // forty local questions is still a full game, just a less local one than asked.
+  if (picked.length < count) picked.push(...drawFrom(local, count - picked.length, budget));
+  if (picked.length < count) picked.push(...budget.skipped.slice(0, count - picked.length));
+
+  // Both pools were drawn in order, so without this the local block would play first.
+  return shuffle(picked);
 }
 
 function startGame(io, room) {
   if (room.state !== 'LOBBY') return;
   const count = Math.min(room.settings.rounds, questions.length);
-  room.questionIndices = pickQuestions(count, room.settings.categories);
+  room.questionIndices = pickQuestions(count, room.settings.categories, room.settings.flavour);
   room.currentRound = 0;
   startIntro(io, room);
 }
@@ -677,7 +703,7 @@ function startFinale(io, room) {
 /** Sudden death needs one more question than we planned for, every time it loops. */
 function extendDeck(room, n) {
   const used = new Set(room.questionIndices);
-  const spare = pickQuestions(room.questionIndices.length + n, room.settings.categories)
+  const spare = pickQuestions(room.questionIndices.length + n, room.settings.categories, room.settings.flavour)
     .filter(i => !used.has(i));
   room.questionIndices.push(...spare.slice(0, n));
   // A tiny bank can run dry; replaying a question is better than ending mid-duel.

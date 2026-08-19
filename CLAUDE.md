@@ -303,6 +303,7 @@ server/src/
   roomManager.js    Rooms Map, player CRUD, colour assignment, settings, code bank
   sanitize.js       The one sanitizePlayers() — it used to be two copies
   categories.js     Category matching for the deck filter (mirrors the client's)
+  locality.js       Is a question Bangladeshi? — derived, overridable per row
   questionsLoader.js  Google Sheet CSV or questions.json fallback
 
 client/src/
@@ -413,7 +414,7 @@ unconditionally and hidden with opacity (iOS will not decode a frame into a
 
 **Room codes** are 4-letter Bangla-transliterated words (AMMU, CHAI, DAAL…) from a 48-word bank in `roomManager.js`, not random strings.
 
-**Questions source:** `QUESTIONS_FILE` (a local JSON bank, path relative to the repo root) beats `QUESTIONS_SHEET_URL` (a Google Sheet "Publish to web → CSV") beats `questions/questions.json`. Column order: `question | answer | unit | category | funFact`. Every source goes through the same validation — a non-finite answer is dropped with the row named, and a bank under 20 usable questions is refused rather than starting a server that cannot run a round. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool. `/health` reports which deck is loaded.
+**Questions source:** `QUESTIONS_FILE` (a local JSON bank, path relative to the repo root) beats `QUESTIONS_SHEET_URL` (a Google Sheet "Publish to web → CSV") beats `questions/questions.json`. Column order: `question | answer | unit | category | funFact | local?`. Every source goes through the same validation — a non-finite answer is dropped with the row named, and a bank under 20 usable questions is refused rather than starting a server that cannot run a round. Cached in memory after first load; the finale tops the deck up a round at a time from the same pool. `/health` reports which deck is loaded.
 
 **Test against the mock bank, not the real one.** `npm run dev:mock` points the server at `questions/questions.mock.json` — 61 invented questions across all six category bands, answers spread 1 → 12.5M. Playing a test round against the real bank spends it; you cannot un-know an answer. `npm run dev:restart` puts the real one back. It restarts rather than starts because the deck is read once at boot.
 
@@ -433,7 +434,21 @@ which still accepts the pre-v2 `questionCount` / `bettingRounds` shape.
 | `secondsPerQuestion` | 30 | 20 / 30 / 45, or OFF — no clock, the host advances |
 | `bettingFrequency` | `never` | `every3` / `every5` / `never` |
 | `categories` | `[]` (all) | Which categories are in the deck; empty means all |
+| `flavour` | `mixed` | How Bangladeshi the deck is: `deshi` (75%) / `mixed` (40%) / `global` (10%) |
 | `finale` | `auto` | Sudden death: `off` / `auto` (8+ players) / `on` |
+
+**Flavour is a bias, not a filter, and it cuts across the categories rather than
+along them.** More than half the price band is denominated in US dollars, so a room
+full of Bangladeshis ticking DAAM got a coin flip between Padma Bridge and a Big Mac —
+and there is no box to tick that fixes it, because locality is orthogonal to the six
+bands. `pickQuestions()` therefore draws a share of the deck from the local pool and
+the rest from the global one. Whichever pool runs short, the other finishes the deck:
+DESHI with only WEIRD ticked is a full game of global questions, not a short one. The
+per-question `local` flag is derived at load in `server/src/locality.js` — category
+`Desh`, a taka-denominated unit, or a place/name match — and an optional `local`
+column on the bank overrides it, so a row the derivation gets wrong is a Sheet edit
+rather than a deploy. DESHI stops at 75% on purpose: WEIRD and SPORTS have almost no
+local rows, and a dial that reached 100% would quietly delete two categories.
 
 **The finale.** After the last normal round the top few qualify — 3 under 10 players,
 5 at 10+, plus everyone level with the last qualifying score. They then play

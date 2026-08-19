@@ -38,11 +38,19 @@ const SECONDS_OPTIONS = [0, 20, 30, 45]; // 0 = no clock; the host advances the 
 const BETTING_FREQUENCIES = ['never', 'every3', 'every5'];
 const FINALE_MODES = ['off', 'auto', 'on'];
 
+/* Locality cuts across the six categories rather than along them — more than half
+ * the price band is denominated in US dollars — so a crowd that wants a Bangladeshi
+ * night cannot get one by ticking boxes. This is that lever, and it is deliberately
+ * a bias and not a filter: DESHI still leaves a quarter of the deck global, because
+ * a category the local bank barely covers (WEIRD, SPORTS) should still turn up. */
+const FLAVOURS = ['deshi', 'mixed', 'global'];
+
 const DEFAULT_SETTINGS = {
   rounds: 10,
   secondsPerQuestion: 30,
   bettingFrequency: 'never',
   categories: [], // empty = the whole deck
+  flavour: 'mixed',
   finale: 'auto',
 };
 
@@ -76,6 +84,7 @@ function normalizeSettings(raw = {}, base = DEFAULT_SETTINGS) {
     categories: Array.isArray(raw.categories)
       ? raw.categories.filter((c) => typeof c === 'string').slice(0, 12)
       : base.categories,
+    flavour: FLAVOURS.includes(raw.flavour) ? raw.flavour : base.flavour,
     finale: FINALE_MODES.includes(raw.finale) ? raw.finale : base.finale,
   };
 }

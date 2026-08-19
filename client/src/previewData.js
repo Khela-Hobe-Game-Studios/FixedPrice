@@ -32,6 +32,7 @@ export const settings = {
   rounds: 15,
   secondsPerQuestion: 30,
   bettingFrequency: 'every3',
+  flavour: 'mixed',
   categories: [],
   finale: 'auto',
 };

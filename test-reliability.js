@@ -297,11 +297,17 @@ async function testIdentityAndSettings() {
 
   // Settings are the host's until the game starts.
   const settingsSeen = once(a, 'room:settings', 5000);
-  host.emit('host:update_settings', { rounds: 20, bettingFrequency: 'never' });
+  host.emit('host:update_settings', { rounds: 20, bettingFrequency: 'never', flavour: 'deshi' });
   const { settings } = await settingsSeen;
   check('settings changes reach the players',
-        settings.rounds === 20 && settings.bettingFrequency === 'never',
+        settings.rounds === 20 && settings.bettingFrequency === 'never' && settings.flavour === 'deshi',
         `(got ${JSON.stringify(settings)})`);
+
+  // An unknown flavour must not silently re-deal the deck the host already chose.
+  const badFlavour = once(a, 'room:settings', 5000);
+  host.emit('host:update_settings', { rounds: 20, flavour: 'martian' });
+  check('an unknown flavour leaves the deck alone',
+        (await badFlavour).settings.flavour === 'deshi');
 
   // The clock the whole board counts down from.
   const t0 = Date.now();

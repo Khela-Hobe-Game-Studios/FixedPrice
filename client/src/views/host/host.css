@@ -808,6 +808,13 @@
   margin-top: auto;
 }
 
+/* A note that belongs to the group above it rather than to the foot of the column.
+ * Two `margin-top: auto` children split the spare height between them, which would
+ * float this one halfway down the column, away from the setting it explains. */
+.hs-set__note--tight {
+  margin-top: 0;
+}
+
 /* ── Pause overlay ─────────────────────────────────────────────────────────── */
 
 /* The colour and the face are set here and not inherited, because this is outside

@@ -9,7 +9,11 @@
  *   (neither)            questions/questions.json
  *
  * Sheet column order (row 1 = headers, ignored):
- *   question | answer | unit | category | funFact
+ *   question | answer | unit | category | funFact | local?
+ *
+ * `local` is optional and rarely needed: locality is derived (see locality.js) and
+ * the column only exists to settle the rows the derivation gets wrong, without a
+ * deploy. TRUE/FALSE; anything else means "not stated, derive it".
  *
  * Every source goes through the same validation on the way in. It used to be only
  * the CSV: a JSON file was `require`d and handed straight to the game, so one bad
@@ -19,6 +23,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { isLocal } = require('./locality');
 
 let cachedQuestions = null;
 let source = null;
@@ -46,6 +51,7 @@ function validate(rows, label) {
       unit: String(r.unit ?? '').trim(),
       category: String(r.category ?? 'Global').trim(),
       funFact: (r.funFact ? String(r.funFact).trim() : '') || null,
+      local: isLocal(r),
     };
   }).filter(Boolean);
 
@@ -85,6 +91,7 @@ function parseCSV(text) {
       unit:     (cols[2] || '').trim(),
       category: (cols[3] || 'Global').trim(),
       funFact:  (cols[4] || '').trim() || null,
+      local:    isLocal({ question: cols[0], unit: cols[2], category: cols[3], funFact: cols[4], local: cols[5] }),
     };
   }).filter(Boolean);
 
