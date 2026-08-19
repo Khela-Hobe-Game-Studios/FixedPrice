@@ -52,7 +52,7 @@ export default function App() {
   const { state, dispatch, forget } = useGameSocket({ notify, dismiss });
   const {
     role, screen, room, me, phase, timing, intro, round, answerCount, betting,
-    betCount, reveal, scoreboard, final, finale, mySubmission, myBet, connState, paused, pending,
+    betCount, reveal, scoreboard, final, finale, mySubmission, myBet, betPlaced, connState, paused, pending,
   } = state;
 
   /* Which side of the game this device is.
@@ -160,8 +160,12 @@ export default function App() {
   };
 
   const placeBet = () => {
-    if (!myBet) return;
+    if (!myBet || betPlaced) return;
     buzz('bet');
+    // Mark it here, the same way submitAnswer does. Emitting and saying nothing
+    // left the phone showing a live PLACE BET over a bet the server had already
+    // taken, which reads as the button being broken.
+    dispatch({ type: 'placed' });
     socket.emit('player:submit_bet', { targetId: myBet });
   };
 
@@ -319,6 +323,7 @@ export default function App() {
         timing={timing}
         me={me}
         myBet={myBet}
+        placed={betPlaced}
         onBet={(id) => dispatch({ type: 'bet', payload: id })}
         onPlace={placeBet}
       />

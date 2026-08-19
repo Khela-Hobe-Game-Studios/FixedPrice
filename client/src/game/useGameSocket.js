@@ -56,7 +56,8 @@ const initialState = {
   final: null,
 
   mySubmission: null,
-  myBet: null,
+  myBet: null,          // the option the phone has *selected*
+  betPlaced: false,     // …and whether it has been sent. Never the same thing.
 
   connState: 'connecting', // connecting | online | reconnecting
   pending: null,           // 'create' | 'join'
@@ -73,6 +74,7 @@ function clearRound(state) {
     scoreboard: null,
     mySubmission: null,
     myBet: null,
+    betPlaced: false,
     answerCount: { count: 0, total: 0, answered: [] },
     betCount: { count: 0, total: 0 },
   };
@@ -181,6 +183,10 @@ function reducer(state, action) {
         timing: payload,
         betting: payload,
         myBet: payload.myBet ?? state.myBet,
+        /* Only the sync re-emit carries `alreadySubmitted`; the fresh one has no
+         * such key, so this is false at the top of every betting phase and true for
+         * a phone that rejoins having already bet. Same shape as `round:start`. */
+        betPlaced: !!payload.alreadySubmitted,
         screen: 'game',
       };
 
@@ -204,6 +210,9 @@ function reducer(state, action) {
 
     case 'bet':
       return { ...state, myBet: payload };
+
+    case 'placed':
+      return { ...state, betPlaced: true };
 
     case 'forget':
       // initialState is a module-load snapshot of the restored session, so every

@@ -327,6 +327,10 @@ export const PREVIEWS = {
     group: 'Phone', viewport: 'phone', note: 'One of six, with the numbers to argue about',
     render: () => <PlayerBetting betting={fx.betting} timing={fx.betting} me={fx.me} myBet="p3" onBet={noop} onPlace={noop} />,
   },
+  'ph-betting-placed': {
+    group: 'Phone', viewport: 'phone', note: 'Bet is in — the CTA is dead, the odds stay up',
+    render: () => <PlayerBetting betting={fx.betting} timing={fx.betting} me={fx.me} myBet="p3" placed onBet={noop} onPlace={noop} />,
+  },
   'ph-reveal': {
     group: 'Phone', viewport: 'phone', note: 'Only your outcome — the board is on the TV',
     render: () => <PlayerReveal reveal={fx.reveal15} round={fx.round15} me={fx.me} />,
