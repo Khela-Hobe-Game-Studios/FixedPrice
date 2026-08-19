@@ -33,7 +33,9 @@ export const PLAYLISTS = {
     fadeIn: 1600,
     delay: 0,
     tracks: [
-      // TODO: fill in from fixed-price-sounds/startup-music/
+      'ekdaam.mp3',
+      'ke_hobe_raja.mp3',
+      'shesh_baji.mp3',
     ],
   },
 
@@ -56,7 +58,8 @@ export const PLAYLISTS = {
     fadeIn: 900,
     delay: 1400,
     tracks: [
-      // TODO: fill in from fixed-price-sounds/celebration-music/
+      'ek_daam.mp3',
+      'winner_price.mp3',
     ],
   },
 };
