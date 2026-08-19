@@ -4,7 +4,7 @@ import { BETTING_CATEGORY } from '../../categories';
 import { useCountdown } from '../../game/clock';
 
 /** Back somebody's guess. The numbers are here because the argument is the round. */
-export default function PlayerBetting({ betting, timing, me, myBet, onBet, onPlace }) {
+export default function PlayerBetting({ betting, timing, me, myBet, placed, onBet, onPlace }) {
   const left = useCountdown(timing);
   const options = (betting?.options ?? []).filter((p) => p.id !== me?.id);
 
@@ -23,7 +23,7 @@ export default function PlayerBetting({ betting, timing, me, myBet, onBet, onPla
             Who is closest?
           </h2>
           <span className="bd-mono" style={{ fontSize: 15 }}>
-            STAKE 2 PTS · PICK ONE
+            {placed ? 'BET IN · WAITING ON THE ROOM' : 'STAKE 2 PTS · PICK ONE'}
           </span>
         </div>
 
@@ -35,6 +35,7 @@ export default function PlayerBetting({ betting, timing, me, myBet, onBet, onPla
               className="ps-bet"
               aria-pressed={myBet === p.id}
               onClick={() => onBet(p.id)}
+              disabled={placed}
               data-testid="bet-option"
             >
               <span className="ps-bet__name">{p.name}</span>
@@ -56,8 +57,17 @@ export default function PlayerBetting({ betting, timing, me, myBet, onBet, onPla
       </div>
 
       <div className="ps-cta">
-        <Btn block cta pulse onClick={onPlace} disabled={!myBet} data-testid="place-bet">
-          PLACE BET
+        {/* Dead once it is in. The bet is already with the server by then, and a
+            live CTA over a placed bet is the phone telling them it did nothing. */}
+        <Btn
+          block
+          cta
+          pulse={!placed}
+          onClick={onPlace}
+          disabled={!myBet || placed}
+          data-testid="place-bet"
+        >
+          {placed ? 'BET PLACED' : 'PLACE BET'}
         </Btn>
       </div>
 

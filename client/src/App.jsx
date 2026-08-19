@@ -52,7 +52,7 @@ export default function App() {
   const { state, dispatch, forget } = useGameSocket({ notify, dismiss });
   const {
     role, screen, room, me, phase, timing, intro, round, answerCount, betting,
-    betCount, reveal, scoreboard, final, finale, mySubmission, myBet, connState, paused, pending,
+    betCount, reveal, scoreboard, final, finale, mySubmission, myBet, betPlaced, connState, paused, pending,
   } = state;
 
   /* Which side of the game this device is.
@@ -105,17 +105,27 @@ export default function App() {
 
   /* Autoplay needs a gesture, and these listeners stay up for the whole session
    * rather than firing once: a browser that refuses a `play()` mid-game (Safari
-   * after an interruption) is recoverable only on the next click. Same reasoning
-   * as the cue engine's own arming, one layer up. */
+   * after an interruption) is recoverable only on the next click.
+   *
+   * Deliberately ungated. Gating on `musicOn` lost the one gesture that matters
+   * most: on a window under 900px the app opens on the player side with `musicOn`
+   * false and no listener, and the click on RUNNING THE BOARD INSTEAD is what makes
+   * it true — so the effect attached the listener one render *after* the click that
+   * should have armed it, and the board arrived silent until something else was
+   * clicked. `armMusic` is a boolean latch when the engine is disabled, so arming
+   * from a phone costs nothing and is discarded with the rest of the module.
+   *
+   * The cue engine keeps its own gate on purpose: `unlockAudio()` constructs an
+   * AudioContext, which is not free on a phone that will never play a cue, and no
+   * cue is due for many clicks after the switch. Music is due immediately. */
   useEffect(() => {
-    if (!musicOn) return undefined;
     window.addEventListener('pointerdown', armMusic);
     window.addEventListener('keydown', armMusic);
     return () => {
       window.removeEventListener('pointerdown', armMusic);
       window.removeEventListener('keydown', armMusic);
     };
-  }, [musicOn]);
+  }, []);
 
   /* The twelve cues. Host device only, gated on the same SOUND toggle as the music
    * — but deliberately NOT on MOTION: REDUCED, which is a separate accessibility
@@ -150,8 +160,12 @@ export default function App() {
   };
 
   const placeBet = () => {
-    if (!myBet) return;
+    if (!myBet || betPlaced) return;
     buzz('bet');
+    // Mark it here, the same way submitAnswer does. Emitting and saying nothing
+    // left the phone showing a live PLACE BET over a bet the server had already
+    // taken, which reads as the button being broken.
+    dispatch({ type: 'placed' });
     socket.emit('player:submit_bet', { targetId: myBet });
   };
 
@@ -309,6 +323,7 @@ export default function App() {
         timing={timing}
         me={me}
         myBet={myBet}
+        placed={betPlaced}
         onBet={(id) => dispatch({ type: 'bet', payload: id })}
         onPlace={placeBet}
       />

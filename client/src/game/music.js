@@ -47,6 +47,22 @@ let current = null;       // { key, url, pool, howl, base }
 let startTimer = null;
 let pendingKey = null;    // the playlist `startTimer` is waiting to bring up
 
+/* A track that loaded fine and was then refused permission to play.
+ *
+ * Howler defers the real `node.play()` to the load event whenever the sound is not
+ * loaded yet (howler.js: `if (self._state !== 'loaded') self._queue.push(...)`), and
+ * in html5 mode a 3.5MB track is never loaded on the first click. So the play that
+ * matters happens hundreds of ms after the gesture that authorised it, outside the
+ * gesture stack — which Safari refuses and Chrome allows. Rebuilding the Howl on the
+ * next click just repeats the miss: a fresh Howl is unloaded again.
+ *
+ * Holding the loaded Howl instead makes the retry synchronous — `_state` is
+ * 'loaded', so `play()` reaches the element inside the gesture, which is the thing
+ * the policy is actually asking for. This also means a host who fixes the setting
+ * themselves (Safari's per-site "Stop Media with Sound") gets music on their very
+ * next click rather than on the next phase change. */
+let blocked = false;
+
 /** The last track each pool handed out, so a rematch is a different one. */
 const lastPlayed = new Map();
 /** URLs that failed to load. Forgiven at the next playlist change — see `setMusic`. */
@@ -88,6 +104,7 @@ function stopCurrent(fadeMs = FADE_OUT_MS) {
 
   const c = current;
   current = null;
+  blocked = false;
   if (!c) return;
 
   // Anything still loading for this track is now answering a question nobody asked.
@@ -112,7 +129,6 @@ function start(key) {
 
   const mine = (gen += 1);
   const base = list.volume;
-  const target = ducked ? base * DUCK : base;
 
   // html5 so the track streams rather than decoding a whole 4MB buffer up front,
   // and Howler rather than `new Audio()` so Windows does not raise its OS media
@@ -131,16 +147,23 @@ function start(key) {
 
   // Autoplay refused. Stay quiet and wait to be armed again rather than burning
   // the playlist retrying against a policy that will not change until a click.
-  howl.once('playerror', () => {
+  /* `on`, not `once`. Howler removes a `once` handler after it fires (howler.js:
+   * `if (events[i].once) self.off(...)`), so a second refusal would land on nothing:
+   * `blocked` would stay false over a live `current`, `armMusic` would return early
+   * at the `current` guard, and the board would be silent for the rest of the night
+   * with no click able to fix it — the exact failure this latch exists to end, and
+   * reachable in one extra click on the browser it was written for. */
+  howl.on('playerror', () => {
     if (mine !== gen) return;
     armed = false;
-    current = null;
-    howl.unload();
+    blocked = true; // keep `current`: the next gesture retries this loaded Howl
   });
 
   howl.once('play', () => {
     if (mine !== gen) { howl.unload(); return; }
-    howl.fade(0, target, list.fadeIn);
+    // Read `ducked` here rather than at start(): a track refused on the landing and
+    // retried later may be arriving into a reveal that is already running.
+    howl.fade(0, ducked ? base * DUCK : base, list.fadeIn);
   });
 
   howl.play();
@@ -209,7 +232,18 @@ export function setMusic(key) {
  */
 export function armMusic() {
   armed = true;
-  if (!enabled || !want || current || startTimer) return;
+  if (!enabled || !want) return;
+
+  /* The retry has to happen here, synchronously, because *here* is inside the
+   * gesture. Anything that defers it — a phase change, a setTimeout, a load — is
+   * the bug this is fixing. */
+  if (blocked && current) {
+    blocked = false;
+    current.howl.play();
+    return;
+  }
+
+  if (current || startTimer) return;
   begin(want);
 }
 
@@ -239,6 +273,7 @@ export function musicState() {
     armed,
     want,
     ducked,
+    blocked,
     playing: current?.key ?? null,
     pool: current?.pool ?? null,
     track: current?.url.split('/').slice(-2).join('/') ?? null,

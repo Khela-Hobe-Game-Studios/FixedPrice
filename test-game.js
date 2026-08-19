@@ -78,7 +78,7 @@ async function runHost(context, resolveCode) {
 
   // Betting cadence is a real setting now, so the test states which game it wants
   // rather than toggling whatever control happens to sit second on the screen.
-  await page.getByTestId(BETTING ? 'betting-every' : 'betting-never').click();
+  await page.getByTestId(BETTING ? 'betting-every3' : 'betting-never').click();
   await page.getByTestId('rounds-10').click();
   await page.getByTestId('save-settings').click();
   log('HOST', `settings saved (betting=${BETTING})`);
@@ -178,7 +178,13 @@ async function checkEndgameMusic(page) {
 
 // ─── PLAYER ──────────────────────────────────────────────────────────────────
 
-async function runPlayer(context, name, code) {
+/* One player is held back a beat at the betting step so that the other is
+ * unambiguously first. The first better is the interesting one: they place a bet
+ * and then sit there waiting on somebody else, which is the only state in which a
+ * phone that fails to acknowledge the bet is visible. When both bet inside the same
+ * tick they are both carried into the reveal and the gap hides itself — which is
+ * exactly how it shipped. */
+async function runPlayer(context, name, code, { betsFirst = false } = {}) {
   const page = await context.newPage();
   // The QR deep link is the path fourteen of fifteen guests actually take.
   await page.goto(`${URL}/?join=${code}`);
@@ -219,7 +225,22 @@ async function runPlayer(context, name, code) {
     );
     if (next === 'a') {
       await page.getByTestId('bet-option').first().click();
+      if (!betsFirst) await page.waitForTimeout(1500);
       await page.getByTestId('place-bet').click();
+
+      /* The phone has to acknowledge the bet. The first better is still waiting on
+       * the other player, so the button must go dead in front of them — otherwise
+       * they are looking at a live PLACE BET they have already pressed, and the
+       * only available reading is that it did not work. The second better is
+       * carried into the reveal instead, which is its own acknowledgement. */
+      if (betsFirst) {
+        await page
+          .locator('[data-testid="place-bet"]:disabled')
+          .waitFor({ state: 'visible', timeout: 8000 })
+          .catch(() => {
+            throw new Error(`${name}: bet placed but PLACE BET stayed live`);
+          });
+      }
       log(name, `r${round} bet placed`);
       await page.getByTestId('actual-price').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
     }
@@ -258,7 +279,7 @@ async function runPlayer(context, name, code) {
     const code = await codePromise;
     const [hostPage] = await Promise.all([
       hostRun,
-      runPlayer(phones[0], 'Alice', code),
+      runPlayer(phones[0], 'Alice', code, { betsFirst: true }),
       runPlayer(phones[1], 'Bob', code),
     ]);
     log('DONE', `${ROUNDS_TO_PLAY} rounds complete (betting=${BETTING})`);
