@@ -399,13 +399,6 @@
     "funFact": "An outright majority of the whole Pakistani assembly, which was never allowed to sit."
   },
   {
-    "question": "Year the Chittagong Hill Tracts Peace Accord was signed",
-    "answer": 1997,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It ended a two-decade insurgency and won Sheikh Hasina a UNESCO peace prize."
-  },
-  {
     "question": "Number of ethnic minority groups listed in Bangladesh's 2019 gazette",
     "answer": 50,
     "unit": "groups",
@@ -434,13 +427,6 @@
     "funFact": "The crew had no lab in Dhaka — the negatives went to Lahore to be developed."
   },
   {
-    "question": "Year Bangladesh Television first began broadcasting from Dhaka",
-    "answer": 1964,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It went on air as Pakistan Television's Dhaka station, seven years before independence."
-  },
-  {
     "question": "Year BTV began broadcasting in colour",
     "answer": 1980,
     "unit": "year",
@@ -467,41 +453,6 @@
     "unit": "year",
     "category": "Desh",
     "funFact": "Dhaka got a capital out of it for six years, then lost it again when the split was reversed."
-  },
-  {
-    "question": "Year the Partition of Bengal was annulled and Dhaka lost capital status",
-    "answer": 1911,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "The consolation prize was Dhaka University, promised as compensation and opened in 1921."
-  },
-  {
-    "question": "Year the Great Bengal Famine began under British rule",
-    "answer": 1943,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Rice was still being exported from Bengal while it happened."
-  },
-  {
-    "question": "Year BUET took its present name as an engineering university",
-    "answer": 1962,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It began in 1876 as a survey school teaching men to draw accurate maps of the delta."
-  },
-  {
-    "question": "Year hilsa (ilish) received Geographical Indication status for Bangladesh",
-    "answer": 2017,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Bangladesh lands roughly seventy percent of the world's hilsa, so the claim was easy to argue."
-  },
-  {
-    "question": "Year Jamdani weaving was granted Geographical Indication status",
-    "answer": 2016,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It was Bangladesh's very first GI registration — the muslin trade's last surviving descendant."
   },
   {
     "question": "Year the rock band Miles was formed in Dhaka",
@@ -539,13 +490,6 @@
     "funFact": "He lost his voice and memory to illness at 43 and never wrote again, living another 34 years."
   },
   {
-    "question": "Year Kazi Nazrul Islam was brought from India to Dhaka as national poet",
-    "answer": 1972,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "He arrived unable to speak, and the new country gave him citizenship anyway."
-  },
-  {
     "question": "Year Muhammad Yunus won the Nobel Peace Prize",
     "answer": 2006,
     "unit": "year",
@@ -553,67 +497,11 @@
     "funFact": "Shared with Grameen Bank itself — the prize went to an institution and its founder together."
   },
   {
-    "question": "Year the Bangabandhu-1 satellite was launched",
-    "answer": 2018,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It went up on a SpaceX Falcon 9, on the rocket's very first flight of that model."
-  },
-  {
-    "question": "Year construction began on the Rooppur nuclear power plant",
-    "answer": 2017,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "The site was picked back in 1961 — it waited fifty-six years for a first concrete pour."
-  },
-  {
-    "question": "Year Bangladesh held its first parliamentary election as an independent country",
-    "answer": 1973,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Turnout was 55 percent, in a country that had been at war fourteen months earlier."
-  },
-  {
-    "question": "Year Bangladesh joined the United Nations",
-    "answer": 1974,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Sheikh Mujib addressed the General Assembly in Bangla — the first leader ever to do so."
-  },
-  {
     "question": "Year Musa Ibrahim became the first Bangladeshi to summit Everest",
     "answer": 2010,
     "unit": "year",
     "category": "Desh",
     "funFact": "He carried the flag up and a national argument about the claim followed him back down."
-  },
-  {
-    "question": "Year the taka replaced the rupee as Bangladesh's currency",
-    "answer": 1972,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "The first notes were printed abroad and flown in — there was no security press yet."
-  },
-  {
-    "question": "Year Bangladesh Bank was established as the central bank",
-    "answer": 1972,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It inherited the Dhaka branch of the State Bank of Pakistan, safe and all."
-  },
-  {
-    "question": "Year the first railway line in what is now Bangladesh opened",
-    "answer": 1862,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Darshana to Jagati — built to move jute to Kolkata rather than to move people."
-  },
-  {
-    "question": "Year Biman Bangladesh Airlines was founded",
-    "answer": 1972,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It started with a single DC-3 donated by India, flying domestic routes only."
   },
   {
     "question": "Number of city corporations in Bangladesh",
@@ -665,67 +553,11 @@
     "funFact": "It ran for nearly half a century, then lost to buses in under a decade."
   },
   {
-    "question": "Year the Baitul Mukarram national mosque was completed in Dhaka",
-    "answer": 1968,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Its cube shape is a deliberate nod to the Kaaba, unusual for the subcontinent."
-  },
-  {
-    "question": "Year Sheikh Mujibur Rahman returned to Dhaka from prison in Pakistan",
-    "answer": 1972,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "He landed on 10 January, a fortnight after a war he spent entirely in a cell."
-  },
-  {
     "question": "Year Bangladesh's first female Prime Minister took office",
     "answer": 1991,
     "unit": "year",
     "category": "Desh",
     "funFact": "Khaleda Zia took office in 1991, and every PM since bar one caretaker has also been a woman."
-  },
-  {
-    "question": "Year the Ramna Batamul Pahela Baishakh celebration was first held by Chhayanaut",
-    "answer": 1967,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It began as quiet defiance — Bengali new year was discouraged by the Pakistani state."
-  },
-  {
-    "question": "Year Bangladesh's Mangal Shobhajatra parade was added to UNESCO's heritage list",
-    "answer": 2016,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It started in 1989 as an art students' protest march and became an intangible heritage of humanity."
-  },
-  {
-    "question": "Year the Sundarbans was declared a Ramsar wetland of international importance",
-    "answer": 1992,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "Ramsar status came fifteen years before the mangroves' worst cyclone, Sidr."
-  },
-  {
-    "question": "Year Cyclone Gorky struck the Chattogram coast",
-    "answer": 1991,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It drove a six-metre surge inland and reshaped how the country builds cyclone shelters."
-  },
-  {
-    "question": "Number of cyclone shelters built along Bangladesh's coast (2024)",
-    "answer": 4900,
-    "unit": "shelters",
-    "category": "Desh",
-    "funFact": "Most double as schools the rest of the year, which is why they are on stilts."
-  },
-  {
-    "question": "Year the Shaheed Minar in Dhaka was rebuilt in its present form",
-    "answer": 1963,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "The original was put up overnight by students in 1952 and demolished by police in days."
   },
   {
     "question": "Year Citycell switched on Bangladesh's first mobile phone network",
@@ -747,13 +579,6 @@
     "unit": "year",
     "category": "Desh",
     "funFact": "Bangladesh had turned down an earlier free connection in 1992 over security worries."
-  },
-  {
-    "question": "Year the Dhaka Stock Exchange was founded",
-    "answer": 1954,
-    "unit": "year",
-    "category": "Desh",
-    "funFact": "It sat idle from 1971 to 1976, with no trading at all through the early independence years."
   },
   {
     "question": "Year Bangladesh's garment export industry began with the Desh Garments deal",
@@ -1748,5 +1573,180 @@
     "unit": "year",
     "category": "Sports",
     "funFact": "Thirty-nine years and 2,962 matches had passed without anyone managing it."
+  },
+  {
+    "question": "Number of bones in a single hilsa fish",
+    "answer": 300,
+    "unit": "bones",
+    "category": "Desh",
+    "funFact": "Which is why eating one properly counts as a skill rather than a meal."
+  },
+  {
+    "question": "Threads per inch in the finest historic Dhaka muslin",
+    "answer": 1200,
+    "unit": "threads",
+    "category": "Desh",
+    "funFact": "The best cotton made anywhere today manages about 500, and the technique was lost for a century."
+  },
+  {
+    "question": "Years Bangladesh waited between its first ODI and its first ODI win",
+    "answer": 12,
+    "unit": "years",
+    "category": "Desh",
+    "funFact": "Twenty-two matches of losing, from 1986 to 1998, and then they beat Kenya."
+  },
+  {
+    "question": "Mobile SIM connections per 100 people in Bangladesh in 2024",
+    "answer": 110,
+    "unit": "SIMs",
+    "category": "Desh",
+    "funFact": "More SIMs than people — the second one is for whichever network works at your nani's house."
+  },
+  {
+    "question": "Number of books Humayun Ahmed published in his lifetime",
+    "answer": 200,
+    "unit": "books",
+    "category": "Desh",
+    "funFact": "Roughly a book every two months for thirty years, and he directed films on the side."
+  },
+  {
+    "question": "Number of government public holidays in Bangladesh in 2024",
+    "answer": 22,
+    "unit": "holidays",
+    "category": "Desh",
+    "funFact": "Among the most generous counts in the world, and still nobody thinks it is enough."
+  },
+  {
+    "question": "Number of bird species recorded in Bangladesh",
+    "answer": 700,
+    "unit": "species",
+    "category": "Desh",
+    "funFact": "In a country the size of England and Wales, half of which is underwater by August."
+  },
+  {
+    "question": "Number of passengers a single Dhaka Metro Rail train is built to carry",
+    "answer": 2308,
+    "unit": "passengers",
+    "category": "Desh",
+    "funFact": "Only 306 of those get a seat, which explains the sprint when the doors open."
+  },
+  {
+    "question": "Years the Dhaka Metro spent under construction before its first passenger",
+    "answer": 10,
+    "unit": "years",
+    "category": "Desh",
+    "funFact": "Ground broken in 2012, first ticket sold in 2022, and the traffic below is unchanged."
+  },
+  {
+    "question": "Age Mohammad Ashraful was when he scored a century on Test debut",
+    "answer": 17,
+    "unit": "years old",
+    "category": "Desh",
+    "funFact": "Still the youngest player ever to score a Test hundred, and he did it against Sri Lanka."
+  },
+  {
+    "question": "Number of floors in City Centre Dhaka, the country's tallest building",
+    "answer": 37,
+    "unit": "floors",
+    "category": "Desh",
+    "funFact": "Dhaka has twenty million people and its tallest building would be unremarkable in Chicago."
+  },
+  {
+    "question": "Number of hours a cockroach can survive without its head",
+    "answer": 168,
+    "unit": "hours",
+    "category": "Weird Facts",
+    "funFact": "It breathes through its body and dies of thirst, not of the missing head."
+  },
+  {
+    "question": "Number of hours Randy Gardner stayed awake in his 1964 record attempt",
+    "answer": 264,
+    "unit": "hours",
+    "category": "Weird Facts",
+    "funFact": "Eleven days. By the end he could not say the alphabet, and Guinness later retired the category."
+  },
+  {
+    "question": "Litres of methane a single cow belches out in a day",
+    "answer": 500,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "It comes out of the front end, not the back, which ruins the joke everyone makes."
+  },
+  {
+    "question": "Number of hours a sloth takes to digest one leaf",
+    "answer": 720,
+    "unit": "hours",
+    "category": "Weird Facts",
+    "funFact": "A month per leaf, and it climbs all the way down to the ground once a week to relieve itself."
+  },
+  {
+    "question": "Number of bacteria on a typical phone screen, per square centimetre",
+    "answer": 4000,
+    "unit": "bacteria",
+    "category": "Weird Facts",
+    "funFact": "Comfortably more than the average toilet seat, and you hold it against your face."
+  },
+  {
+    "question": "Decibels of the loudest burp ever recorded",
+    "answer": 112,
+    "unit": "decibels",
+    "category": "Weird Facts",
+    "funFact": "Louder than a chainsaw, and the record holder trained for it deliberately."
+  },
+  {
+    "question": "Number of hot dogs eaten in ten minutes to set the 2021 Nathan's record",
+    "answer": 76,
+    "unit": "hot dogs",
+    "category": "Weird Facts",
+    "funFact": "Buns included. The winner has held the title for most of two decades."
+  },
+  {
+    "question": "Number of moves in the longest competitive chess game ever played",
+    "answer": 269,
+    "unit": "moves",
+    "category": "Weird Facts",
+    "funFact": "It took over twenty hours in 1989 and ended, inevitably, in a draw."
+  },
+  {
+    "question": "Number of years Charles Osborne hiccupped without stopping",
+    "answer": 68,
+    "unit": "years",
+    "category": "Weird Facts",
+    "funFact": "They started in 1922 and stopped on their own in 1990. He died the following year."
+  },
+  {
+    "question": "Number of times lightning struck park ranger Roy Sullivan",
+    "answer": 7,
+    "unit": "times",
+    "category": "Weird Facts",
+    "funFact": "He survived every one of them, and his hat caught fire more than once."
+  },
+  {
+    "question": "Number of eggs a single housefly lays in its lifetime",
+    "answer": 500,
+    "unit": "eggs",
+    "category": "Weird Facts",
+    "funFact": "It manages this inside about four weeks, which is the entire life of a housefly."
+  },
+  {
+    "question": "Number of drops that have fallen in the Pitch Drop Experiment since 1927",
+    "answer": 9,
+    "unit": "drops",
+    "category": "Weird Facts",
+    "funFact": "Nobody witnessed the first eight. The professor who watched it for decades died in 1979."
+  },
+  {
+    "question": "Number of Big Macs Don Gorske had eaten by 2023",
+    "answer": 34000,
+    "unit": "Big Macs",
+    "category": "Global",
+    "funFact": "He kept every receipt, and his cholesterol is reportedly fine."
+  },
+  {
+    "question": "Number of hours the longest recorded game of Monopoly lasted",
+    "answer": 1680,
+    "unit": "hours",
+    "category": "Global",
+    "funFact": "Seventy days. The game was designed to teach people that landlords are bad."
   }
 ]

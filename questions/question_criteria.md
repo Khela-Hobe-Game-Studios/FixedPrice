@@ -6,6 +6,31 @@ The game's core mechanic relies on players trying to guess an exact integer valu
 
 ---
 
+## 😄 Tone — read this before the mechanics
+
+**This is a party game played out loud on a television with fifteen people in the
+room, and the reveal is supposed to get a reaction.** Slightly funny, weird, random
+or sarcastic beats accurate-but-dry every single time. Write for the fun fact as
+much as for the number.
+
+The questions that land have a joke inside them: the Sixty Dome Mosque that
+actually has 77 domes, the war that lasted 38 minutes, the Hundred Years' War that
+ran 116, two pizzas bought for 10,000 bitcoin, the Lego tower that crushes itself
+at 375,000 bricks, the Segway that was hyped as bigger than the internet.
+
+Two failure modes, both of which sail through every mechanical check because
+nothing can lint for boring:
+
+* **Heavy history.** Famines, massacres, cyclones, war casualties. A round should
+  not go quiet. A few for texture is fine; a run of them kills the night.
+* **Civic admin.** The year an institution was founded, a treaty was signed, a
+  ministry was reorganised. Accurate, guessable, and nobody laughs.
+
+If a question has no angle beyond the number, it is not finished. Give it one or
+cut it.
+
+---
+
 ## 🧠 Core Gameplay & Answer Mechanics
 
 1. **Strictly Integers Only:** Every single answer **must** be a whole number (positive integer). 
