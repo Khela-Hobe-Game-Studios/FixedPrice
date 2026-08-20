@@ -163,7 +163,11 @@ const FLAVOUR_SHARE = { deshi: 0.75, mixed: 0.4, global: 0.1 };
 const DEFAULT_FLAVOUR = 'mixed';
 
 /**
- * Draw up to `n` from the front of a shuffled pool, consuming what it takes.
+ * Draw up to `n` from a shuffled pool, consuming what it takes.
+ *
+ * Pops from the end rather than shifting from the front. The pool is already
+ * shuffled, so the two are identical in distribution, but `shift()` re-indexes
+ * the entire array on every single call.
  *
  * The tie-prone budget is shared across both flavour pools by being passed in:
  * counting it per pool would let a deshi deck spend the whole allowance on its
@@ -172,7 +176,7 @@ const DEFAULT_FLAVOUR = 'mixed';
 function drawFrom(pool, n, budget) {
   const out = [];
   while (out.length < n && pool.length) {
-    const i = pool.shift();
+    const i = pool.pop();
     if (Math.abs(questions[i].answer) <= TIE_PRONE_MAX_ANSWER) {
       if (budget.left <= 0) { budget.skipped.push(i); continue; }
       budget.left--;
@@ -199,10 +203,11 @@ function pickQuestions(count, categories = [], flavour = DEFAULT_FLAVOUR) {
   let pool = all;
   let mandatory = [];
   if (categories.length > 0) {
-    const inFilter = new Set(all.filter(i => categories.some(c => matchesCategory(questions[i].category, c))));
-    if (inFilter.size >= count) pool = all.filter(i => inFilter.has(i));
-    else if (inFilter.size > 0) {
-      mandatory = all.filter(i => inFilter.has(i));
+    const ticked = all.filter(i => categories.some(c => matchesCategory(questions[i].category, c)));
+    if (ticked.length >= count) pool = ticked;
+    else if (ticked.length > 0) {
+      const inFilter = new Set(ticked);
+      mandatory = ticked;
       pool = all.filter(i => !inFilter.has(i));
     }
   }
@@ -215,8 +220,12 @@ function pickQuestions(count, categories = [], flavour = DEFAULT_FLAVOUR) {
   const picked = drawFrom(shuffle(mandatory), count, budget);
 
   const want = Math.round((count - picked.length) * (FLAVOUR_SHARE[flavour] ?? FLAVOUR_SHARE[DEFAULT_FLAVOUR]));
-  const local = shuffle(pool.filter(i => questions[i].local));
-  const rest  = shuffle(pool.filter(i => !questions[i].local));
+  // One partition pass rather than two filters over the same pool. Note shuffle()
+  // returns a copy rather than sorting in place, so its result has to be kept.
+  const localRows = [], restRows = [];
+  for (const i of pool) (questions[i].local ? localRows : restRows).push(i);
+  const local = shuffle(localRows);
+  const rest = shuffle(restRows);
 
   picked.push(...drawFrom(local, want, budget));
   picked.push(...drawFrom(rest, count - picked.length, budget));
