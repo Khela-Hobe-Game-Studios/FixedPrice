@@ -348,5 +348,1405 @@
     "unit": "time zones",
     "category": "Global",
     "funFact": "France edges it worldwide once overseas territories are counted."
+  },
+  {
+    "question": "Number of letters in the modern Bengali alphabet",
+    "answer": 50,
+    "unit": "letters",
+    "category": "Desh",
+    "funFact": "Eleven vowels and thirty-nine consonants — the seventh most spoken script on earth."
+  },
+  {
+    "question": "Year the Kantajew Temple in Dinajpur was completed",
+    "answer": 1752,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Every inch of its outer wall is terracotta tile — an earthquake took its nine spires in 1897."
+  },
+  {
+    "question": "International dialling code for Bangladesh",
+    "answer": 880,
+    "unit": "code",
+    "category": "Desh",
+    "funFact": "Assigned in 1972 — India got 91 and Pakistan 92, so the region reads almost alphabetically."
+  },
+  {
+    "question": "Number of domes on the Shat Gambuj Mosque in Bagerhat",
+    "answer": 77,
+    "unit": "domes",
+    "category": "Desh",
+    "funFact": "Its name means Sixty Dome Mosque, which it has never had — nobody agrees how the count got lost."
+  },
+  {
+    "question": "Number of monastic cells at the Somapura Mahavihara ruins in Paharpur",
+    "answer": 177,
+    "unit": "cells",
+    "category": "Desh",
+    "funFact": "Built in the 8th century, it was the largest Buddhist monastery south of the Himalayas."
+  },
+  {
+    "question": "Year Emperor Akbar introduced the Bangla calendar (Bangabda)",
+    "answer": 1584,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It was a tax calendar — the harvest had to line up with when the collectors turned up."
+  },
+  {
+    "question": "Seats the Awami League won in East Pakistan in the 1970 general election",
+    "answer": 167,
+    "unit": "seats",
+    "category": "Desh",
+    "funFact": "An outright majority of the whole Pakistani assembly, which was never allowed to sit."
+  },
+  {
+    "question": "Year the Chittagong Hill Tracts Peace Accord was signed",
+    "answer": 1997,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It ended a two-decade insurgency and won Sheikh Hasina a UNESCO peace prize."
+  },
+  {
+    "question": "Number of ethnic minority groups listed in Bangladesh's 2019 gazette",
+    "answer": 50,
+    "unit": "groups",
+    "category": "Desh",
+    "funFact": "The Chakma are the largest; several on the list number only a few hundred people."
+  },
+  {
+    "question": "Number of tea gardens in Bangladesh",
+    "answer": 167,
+    "unit": "gardens",
+    "category": "Desh",
+    "funFact": "Most cluster around Sylhet and Moulvibazar, where the hills catch the monsoon."
+  },
+  {
+    "question": "Year the first tea garden was planted at Malnicherra in Sylhet",
+    "answer": 1854,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It is still producing, making it older than the Indian Rebellion by three years."
+  },
+  {
+    "question": "Year the first Bengali-language film from Dhaka, 'Mukh O Mukhosh', was released",
+    "answer": 1956,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The crew had no lab in Dhaka — the negatives went to Lahore to be developed."
+  },
+  {
+    "question": "Year Bangladesh Television first began broadcasting from Dhaka",
+    "answer": 1964,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It went on air as Pakistan Television's Dhaka station, seven years before independence."
+  },
+  {
+    "question": "Year BTV began broadcasting in colour",
+    "answer": 1980,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "For most households the first colour thing on screen was a cricket match."
+  },
+  {
+    "question": "Runs Aminul Islam scored in Bangladesh's first ever Test innings in 2000",
+    "answer": 145,
+    "unit": "runs",
+    "category": "Desh",
+    "funFact": "A century on debut for a whole country — only the third player in history to manage it."
+  },
+  {
+    "question": "Area of St Martin's Island in square kilometres",
+    "answer": 8,
+    "unit": "sq km",
+    "category": "Desh",
+    "funFact": "Bangladesh's only coral island, and you can walk from one end to the other before lunch."
+  },
+  {
+    "question": "Year Lord Curzon partitioned Bengal, splitting Dhaka from Kolkata",
+    "answer": 1905,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Dhaka got a capital out of it for six years, then lost it again when the split was reversed."
+  },
+  {
+    "question": "Year the Partition of Bengal was annulled and Dhaka lost capital status",
+    "answer": 1911,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The consolation prize was Dhaka University, promised as compensation and opened in 1921."
+  },
+  {
+    "question": "Year the Great Bengal Famine began under British rule",
+    "answer": 1943,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Rice was still being exported from Bengal while it happened."
+  },
+  {
+    "question": "Year BUET took its present name as an engineering university",
+    "answer": 1962,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It began in 1876 as a survey school teaching men to draw accurate maps of the delta."
+  },
+  {
+    "question": "Year hilsa (ilish) received Geographical Indication status for Bangladesh",
+    "answer": 2017,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Bangladesh lands roughly seventy percent of the world's hilsa, so the claim was easy to argue."
+  },
+  {
+    "question": "Year Jamdani weaving was granted Geographical Indication status",
+    "answer": 2016,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It was Bangladesh's very first GI registration — the muslin trade's last surviving descendant."
+  },
+  {
+    "question": "Year the rock band Miles was formed in Dhaka",
+    "answer": 1979,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "They started out playing covers in hotel lobbies for tourists who wanted something familiar."
+  },
+  {
+    "question": "Number of Rabindra Sangeet songs Tagore is credited with writing",
+    "answer": 2232,
+    "unit": "songs",
+    "category": "Desh",
+    "funFact": "He wrote the national anthems of two countries and the tune of a third."
+  },
+  {
+    "question": "Year Rabindranath Tagore won the Nobel Prize in Literature",
+    "answer": 1913,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The first non-European to win it, for a book of poems he had translated himself."
+  },
+  {
+    "question": "Year Tagore wrote 'Amar Sonar Bangla', now the national anthem",
+    "answer": 1905,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It was a protest song against the partition of Bengal — only the first ten lines are sung."
+  },
+  {
+    "question": "Number of Nazrul Geeti songs Kazi Nazrul Islam is credited with",
+    "answer": 4000,
+    "unit": "songs",
+    "category": "Desh",
+    "funFact": "He lost his voice and memory to illness at 43 and never wrote again, living another 34 years."
+  },
+  {
+    "question": "Year Kazi Nazrul Islam was brought from India to Dhaka as national poet",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "He arrived unable to speak, and the new country gave him citizenship anyway."
+  },
+  {
+    "question": "Year Muhammad Yunus won the Nobel Peace Prize",
+    "answer": 2006,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Shared with Grameen Bank itself — the prize went to an institution and its founder together."
+  },
+  {
+    "question": "Year the Bangabandhu-1 satellite was launched",
+    "answer": 2018,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It went up on a SpaceX Falcon 9, on the rocket's very first flight of that model."
+  },
+  {
+    "question": "Year construction began on the Rooppur nuclear power plant",
+    "answer": 2017,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The site was picked back in 1961 — it waited fifty-six years for a first concrete pour."
+  },
+  {
+    "question": "Year Bangladesh held its first parliamentary election as an independent country",
+    "answer": 1973,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Turnout was 55 percent, in a country that had been at war fourteen months earlier."
+  },
+  {
+    "question": "Year Bangladesh joined the United Nations",
+    "answer": 1974,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Sheikh Mujib addressed the General Assembly in Bangla — the first leader ever to do so."
+  },
+  {
+    "question": "Year Musa Ibrahim became the first Bangladeshi to summit Everest",
+    "answer": 2010,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "He carried the flag up and a national argument about the claim followed him back down."
+  },
+  {
+    "question": "Year the taka replaced the rupee as Bangladesh's currency",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The first notes were printed abroad and flown in — there was no security press yet."
+  },
+  {
+    "question": "Year Bangladesh Bank was established as the central bank",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It inherited the Dhaka branch of the State Bank of Pakistan, safe and all."
+  },
+  {
+    "question": "Year the first railway line in what is now Bangladesh opened",
+    "answer": 1862,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Darshana to Jagati — built to move jute to Kolkata rather than to move people."
+  },
+  {
+    "question": "Year Biman Bangladesh Airlines was founded",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It started with a single DC-3 donated by India, flying domestic routes only."
+  },
+  {
+    "question": "Number of city corporations in Bangladesh",
+    "answer": 12,
+    "unit": "corporations",
+    "category": "Desh",
+    "funFact": "Dhaka counts as two of them — it was split into north and south in 2011."
+  },
+  {
+    "question": "Year Dhaka's city corporation was split into north and south",
+    "answer": 2011,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "One city, two mayors, and an argument about which side owns the bits in the middle."
+  },
+  {
+    "question": "Number of players on each side in a kho kho match",
+    "answer": 9,
+    "unit": "players",
+    "category": "Desh",
+    "funFact": "Kabaddi is the national sport, but kho kho is the one every school field actually plays."
+  },
+  {
+    "question": "Year Jabbarer Boli Khela, Chattogram's wrestling festival, was first held",
+    "answer": 1909,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "A trader started it to keep local men fighting fit against the British."
+  },
+  {
+    "question": "Diameter of the red disc on the Bangladesh flag, as a percent of the flag's length",
+    "answer": 40,
+    "unit": "percent",
+    "category": "Desh",
+    "funFact": "Its radius is one fifth of the flag's length, and it sits left of centre so it looks centred when flying."
+  },
+  {
+    "question": "Year the Bangladesh national flag took its present form without the map",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The 1971 version had a gold map of the country inside the red circle — impossible to draw twice the same."
+  },
+  {
+    "question": "Year Dhaka's first tram service was withdrawn from the streets",
+    "answer": 1952,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It ran for nearly half a century, then lost to buses in under a decade."
+  },
+  {
+    "question": "Year the Baitul Mukarram national mosque was completed in Dhaka",
+    "answer": 1968,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Its cube shape is a deliberate nod to the Kaaba, unusual for the subcontinent."
+  },
+  {
+    "question": "Year Sheikh Mujibur Rahman returned to Dhaka from prison in Pakistan",
+    "answer": 1972,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "He landed on 10 January, a fortnight after a war he spent entirely in a cell."
+  },
+  {
+    "question": "Year Bangladesh's first female Prime Minister took office",
+    "answer": 1991,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Khaleda Zia took office in 1991, and every PM since bar one caretaker has also been a woman."
+  },
+  {
+    "question": "Year the Ramna Batamul Pahela Baishakh celebration was first held by Chhayanaut",
+    "answer": 1967,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It began as quiet defiance — Bengali new year was discouraged by the Pakistani state."
+  },
+  {
+    "question": "Year Bangladesh's Mangal Shobhajatra parade was added to UNESCO's heritage list",
+    "answer": 2016,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It started in 1989 as an art students' protest march and became an intangible heritage of humanity."
+  },
+  {
+    "question": "Year the Sundarbans was declared a Ramsar wetland of international importance",
+    "answer": 1992,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Ramsar status came fifteen years before the mangroves' worst cyclone, Sidr."
+  },
+  {
+    "question": "Year Cyclone Gorky struck the Chattogram coast",
+    "answer": 1991,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It drove a six-metre surge inland and reshaped how the country builds cyclone shelters."
+  },
+  {
+    "question": "Number of cyclone shelters built along Bangladesh's coast (2024)",
+    "answer": 4900,
+    "unit": "shelters",
+    "category": "Desh",
+    "funFact": "Most double as schools the rest of the year, which is why they are on stilts."
+  },
+  {
+    "question": "Year the Shaheed Minar in Dhaka was rebuilt in its present form",
+    "answer": 1963,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "The original was put up overnight by students in 1952 and demolished by police in days."
+  },
+  {
+    "question": "Year Citycell switched on Bangladesh's first mobile phone network",
+    "answer": 1993,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "A handset then cost more than a motorcycle, and incoming calls were billed too."
+  },
+  {
+    "question": "Year Grameenphone began operating in Bangladesh",
+    "answer": 1997,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Its village phone programme handed one handset per village to a woman who rented out calls."
+  },
+  {
+    "question": "Year Bangladesh connected to its first submarine internet cable, SEA-ME-WE 4",
+    "answer": 2006,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "Bangladesh had turned down an earlier free connection in 1992 over security worries."
+  },
+  {
+    "question": "Year the Dhaka Stock Exchange was founded",
+    "answer": 1954,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "It sat idle from 1971 to 1976, with no trading at all through the early independence years."
+  },
+  {
+    "question": "Year Bangladesh's garment export industry began with the Desh Garments deal",
+    "answer": 1978,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "130 workers trained in South Korea came home and seeded an industry worth billions."
+  },
+  {
+    "question": "Number of workers Desh Garments sent to South Korea for training in 1979",
+    "answer": 130,
+    "unit": "workers",
+    "category": "Desh",
+    "funFact": "Almost all of them later left to start their own factories — the training escaped the company."
+  },
+  {
+    "question": "Sum the Dutch reportedly paid for Manhattan in 1626, in guilders",
+    "answer": 60,
+    "unit": "guilders",
+    "category": "Price",
+    "funFact": "The only source is one sentence in one letter, and it never says who was paid."
+  },
+  {
+    "question": "What the USA paid for the Louisiana Purchase in 1803, in millions of dollars",
+    "answer": 15,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "About four cents an acre, for land that eventually became fifteen states."
+  },
+  {
+    "question": "What the USA paid Russia for Alaska in 1867, in millions of dollars",
+    "answer": 7,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Mocked as Seward's Folly until gold turned up thirty years later."
+  },
+  {
+    "question": "Cost of building the Empire State Building in 1931, in millions of dollars",
+    "answer": 41,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "It came in under budget because the Depression had collapsed the price of labour."
+  },
+  {
+    "question": "What the Panama Canal had cost the USA by 1914, in millions of dollars",
+    "answer": 375,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "The French tried first, spent more, and gave up after losing over 20,000 workers."
+  },
+  {
+    "question": "Cost of building the Titanic, completed in 1912, in millions of dollars",
+    "answer": 7,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Her sister ship Olympic sailed for 24 years without incident and nobody remembers her."
+  },
+  {
+    "question": "Final cost of the Sydney Opera House in 1973, in millions of Australian dollars",
+    "answer": 102,
+    "unit": "million AUD",
+    "category": "Price",
+    "funFact": "The original estimate was seven million, so it landed about fourteen times over budget."
+  },
+  {
+    "question": "Cost of the Channel Tunnel when it opened in 1994, in millions of pounds",
+    "answer": 4650,
+    "unit": "million GBP",
+    "category": "Price",
+    "funFact": "Eighty percent over budget, and the operating company restructured its debt twice."
+  },
+  {
+    "question": "Cost of the Apollo programme through 1973, in billions of dollars",
+    "answer": 25,
+    "unit": "billion USD",
+    "category": "Price",
+    "funFact": "At its peak NASA was taking more than four percent of the entire federal budget."
+  },
+  {
+    "question": "Cost of the Manhattan Project by 1945, in millions of dollars",
+    "answer": 2000,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Most of it went on enriching uranium rather than on designing the bomb itself."
+  },
+  {
+    "question": "Cost of the James Webb Space Telescope by its 2021 launch, in millions of dollars",
+    "answer": 10000,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Budgeted at 500 million for a 2007 launch, so it arrived fourteen years and twentyfold late."
+  },
+  {
+    "question": "Cost of the Burj Khalifa when it opened in 2010, in millions of dollars",
+    "answer": 1500,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Dubai ran out of money mid-build and Abu Dhabi bailed it out, which is why the name changed."
+  },
+  {
+    "question": "Admission to Disneyland on its opening day in 1955, in cents",
+    "answer": 100,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "Rides were ticketed separately, and the E-ticket ones were the good ones."
+  },
+  {
+    "question": "What a three-day ticket to Woodstock cost in 1969, in dollars",
+    "answer": 18,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "So many turned up without one that the organisers gave up and declared it free."
+  },
+  {
+    "question": "Face value of a ticket to Super Bowl I in 1967, in dollars",
+    "answer": 12,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "The stadium still had 30,000 empty seats."
+  },
+  {
+    "question": "Cost of a 30-second advert during Super Bowl I in 1967, in dollars",
+    "answer": 42000,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Neither of the two networks that aired it kept a complete tape of the broadcast."
+  },
+  {
+    "question": "What a McDonald's hamburger cost in 1955, in cents",
+    "answer": 15,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "The whole menu had nine items, and fries were a dime."
+  },
+  {
+    "question": "What the first McDonald's Happy Meal cost in 1979, in cents",
+    "answer": 110,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "The original box was circus-themed and the toy was usually a stencil or an eraser."
+  },
+  {
+    "question": "Average US cinema admission in 1970, in cents",
+    "answer": 155,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "Adjusted for inflation that is close to today's — cinema pricing has barely moved in real terms."
+  },
+  {
+    "question": "Average US petrol pump price in 1970, in cents per gallon",
+    "answer": 36,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "The 1973 oil embargo roughly doubled it inside a year, and rationing followed."
+  },
+  {
+    "question": "US federal minimum wage in 1980, in cents per hour",
+    "answer": 310,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "It stayed frozen at 3.35 for the whole of the following nine years."
+  },
+  {
+    "question": "Average price of a new car in the USA in 1970, in dollars",
+    "answer": 3900,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "That was roughly forty percent of the median household's entire annual income."
+  },
+  {
+    "question": "Median price of a US home in 1970, in thousands of dollars",
+    "answer": 23,
+    "unit": "thousand USD",
+    "category": "Price",
+    "funFact": "The same house in the same street is now past four hundred thousand."
+  },
+  {
+    "question": "Postage on a US first-class letter in 1980, in cents",
+    "answer": 15,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "The Forever stamp arrived in 2007 precisely so nobody had to track this any more."
+  },
+  {
+    "question": "Peak price of an ounce of gold in January 1980, in dollars",
+    "answer": 850,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It took twenty-eight years to reach that number again in nominal terms."
+  },
+  {
+    "question": "Dollar value of the two pizzas famously bought for 10,000 bitcoin in 2010",
+    "answer": 41,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Bitcoin Pizza Day is marked every 22 May, mostly by people who did not do this."
+  },
+  {
+    "question": "What Salvator Mundi sold for at auction in 2017, in millions of dollars",
+    "answer": 450,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Nobody has publicly seen it since, and experts still argue how much is really Leonardo."
+  },
+  {
+    "question": "Share price at which Amazon floated in 1997, in dollars",
+    "answer": 18,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It sold books only, and the prospectus warned it might never turn a profit."
+  },
+  {
+    "question": "Price per share in Google's stock market debut in 2004, in dollars",
+    "answer": 85,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "They used a Dutch auction so ordinary buyers could get in, and Wall Street hated it."
+  },
+  {
+    "question": "Opening share price of the Facebook flotation in 2012, in dollars",
+    "answer": 38,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It fell below that within days and took more than a year to climb back."
+  },
+  {
+    "question": "Share price at which Apple first went public in 1980, in dollars",
+    "answer": 22,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It made roughly 300 people at the company millionaires in a single afternoon."
+  },
+  {
+    "question": "Sticker price of the Apple Lisa in 1983, in dollars",
+    "answer": 9995,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It flopped so badly that around 2,700 unsold units were buried in a Utah landfill."
+  },
+  {
+    "question": "What a Commodore 64 cost at its 1982 debut, in dollars",
+    "answer": 595,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It is still the best-selling single computer model ever made."
+  },
+  {
+    "question": "What the Motorola DynaTAC 8000X mobile phone sold for in 1983, in dollars",
+    "answer": 3995,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Ten hours of charging bought you thirty minutes of talking."
+  },
+  {
+    "question": "What a Ford Model T cost in 1925, in dollars",
+    "answer": 260,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It got cheaper almost every year of its life, which no car has managed since."
+  },
+  {
+    "question": "What a Sinclair ZX Spectrum 16K cost in Britain in 1982, in pounds",
+    "answer": 125,
+    "unit": "GBP",
+    "category": "Price",
+    "funFact": "Its rubber keyboard felt like typing on a dead frog, a phrase reviewers used constantly."
+  },
+  {
+    "question": "What Sony's first Betamax television-recorder combo cost in 1975, in dollars",
+    "answer": 2295,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "That bought the TV with the recorder inside it — you could not buy the deck alone."
+  },
+  {
+    "question": "Debut price of the Sony Discman D-50 CD player in 1984, in dollars",
+    "answer": 350,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Sony priced it below cost on purpose, to get people buying compact discs at all."
+  },
+  {
+    "question": "What the Apple Newton MessagePad sold for in 1993, in dollars",
+    "answer": 699,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Its handwriting recognition was mocked in Doonesbury and never recovered."
+  },
+  {
+    "question": "What a Palm Pilot 1000 sold for in 1996, in dollars",
+    "answer": 299,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "You had to learn its own alphabet, Graffiti, before you could write anything."
+  },
+  {
+    "question": "Debut price of the Segway in 2002, in dollars",
+    "answer": 4950,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "It was hyped as bigger than the internet before anyone outside the company had seen it."
+  },
+  {
+    "question": "Base price of the first Tesla Roadster at its 2008 launch, in thousands of dollars",
+    "answer": 99,
+    "unit": "thousand USD",
+    "category": "Price",
+    "funFact": "Only about 2,450 were built, and one of them is now orbiting the sun."
+  },
+  {
+    "question": "Monthly charge for America Online unlimited dial-up in 1996, in cents",
+    "answer": 1995,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "The switch to unlimited jammed their network so badly that customers sued over busy signals."
+  },
+  {
+    "question": "Monthly charge for Netflix unlimited DVD-by-post in 2000, in cents",
+    "answer": 1995,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "Blockbuster turned down the chance to buy the entire company for 50 million dollars."
+  },
+  {
+    "question": "Return airfare on Concorde from London to New York in 1997, in pounds",
+    "answer": 6636,
+    "unit": "GBP",
+    "category": "Price",
+    "funFact": "Surveys found passengers guessed a higher number, so British Airways raised it and sold more."
+  },
+  {
+    "question": "Temperature of a lightning bolt in degrees Celsius",
+    "answer": 30000,
+    "unit": "degrees C",
+    "category": "Weird Facts",
+    "funFact": "Roughly five times the surface of the sun, which is why the air explodes into thunder."
+  },
+  {
+    "question": "Number of lightning strikes hitting the Earth every second",
+    "answer": 100,
+    "unit": "strikes",
+    "category": "Weird Facts",
+    "funFact": "About 8 million a day, and roughly a quarter of them touch the ground."
+  },
+  {
+    "question": "Speed of sound through water in metres per second",
+    "answer": 1480,
+    "unit": "m/s",
+    "category": "Weird Facts",
+    "funFact": "Over four times its speed in air, which is why whale song carries for hundreds of kilometres."
+  },
+  {
+    "question": "Surface temperature of the Sun in degrees Celsius",
+    "answer": 5500,
+    "unit": "degrees C",
+    "category": "Weird Facts",
+    "funFact": "The corona above it is 200 times hotter, and nobody fully agrees why."
+  },
+  {
+    "question": "Number of Earth days in a single day on Venus",
+    "answer": 243,
+    "unit": "days",
+    "category": "Weird Facts",
+    "funFact": "Longer than its year — Venus goes round the sun faster than it turns once on its axis."
+  },
+  {
+    "question": "Height of Olympus Mons on Mars in kilometres",
+    "answer": 22,
+    "unit": "kilometres",
+    "category": "Weird Facts",
+    "funFact": "So wide and gentle that standing on it you could not tell you were on a mountain."
+  },
+  {
+    "question": "Length of the DNA in one human cell, uncoiled, in centimetres",
+    "answer": 200,
+    "unit": "centimetres",
+    "category": "Weird Facts",
+    "funFact": "Do it for every cell in your body and it reaches the sun and back dozens of times."
+  },
+  {
+    "question": "Number of separate muscles in a caterpillar's body",
+    "answer": 4000,
+    "unit": "muscles",
+    "category": "Weird Facts",
+    "funFact": "Humans manage about 600, and the caterpillar dissolves all of its own to become a moth."
+  },
+  {
+    "question": "Litres of blood the human heart pumps in a single day",
+    "answer": 7500,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "Enough to fill a small swimming pool every fortnight."
+  },
+  {
+    "question": "Number of frets on a standard electric guitar neck",
+    "answer": 22,
+    "unit": "frets",
+    "category": "Weird Facts",
+    "funFact": "Twenty-four gives you exactly two octaves per string, which is why shredders insist on them."
+  },
+  {
+    "question": "Number of bones in the human foot",
+    "answer": 26,
+    "unit": "bones",
+    "category": "Weird Facts",
+    "funFact": "A quarter of all your bones are below your ankles."
+  },
+  {
+    "question": "Number of eyes a box jellyfish has",
+    "answer": 24,
+    "unit": "eyes",
+    "category": "Weird Facts",
+    "funFact": "Some of them form proper images, despite the animal having no brain to look at them with."
+  },
+  {
+    "question": "Number of muscles in an elephant's trunk",
+    "answer": 40000,
+    "unit": "muscles",
+    "category": "Weird Facts",
+    "funFact": "It can lift a log or pick up a single grain of rice with the same appendage."
+  },
+  {
+    "question": "Number of quills on an adult porcupine",
+    "answer": 30000,
+    "unit": "quills",
+    "category": "Weird Facts",
+    "funFact": "They cannot shoot them, whatever cartoons taught you — the quills simply detach on contact."
+  },
+  {
+    "question": "Number of wingbeats per second of a hummingbird in normal flight",
+    "answer": 80,
+    "unit": "beats per second",
+    "category": "Weird Facts",
+    "funFact": "Its heart runs at over 1,200 beats a minute to keep that up."
+  },
+  {
+    "question": "Number of times a woodpecker strikes a tree in a single day",
+    "answer": 12000,
+    "unit": "pecks",
+    "category": "Weird Facts",
+    "funFact": "Its skull takes around 1,200 g each time and it walks away with no concussion."
+  },
+  {
+    "question": "Depth in metres a sperm whale can dive when hunting squid",
+    "answer": 2000,
+    "unit": "metres",
+    "category": "Weird Facts",
+    "funFact": "It holds its breath for around 90 minutes down there in total darkness."
+  },
+  {
+    "question": "Number of eyes a scallop can have around the rim of its shell",
+    "answer": 200,
+    "unit": "eyes",
+    "category": "Weird Facts",
+    "funFact": "Each one has a mirror behind it instead of a lens, like a tiny telescope."
+  },
+  {
+    "question": "Number of chicken eggs equal in volume to one ostrich egg",
+    "answer": 24,
+    "unit": "eggs",
+    "category": "Weird Facts",
+    "funFact": "It takes about 90 minutes to soft-boil, by which point it is nobody's idea of breakfast."
+  },
+  {
+    "question": "Number of legs on the leggiest millipede, found in Australia in 2021",
+    "answer": 1306,
+    "unit": "legs",
+    "category": "Weird Facts",
+    "funFact": "The name millipede promises a thousand, and for two centuries none had ever delivered."
+  },
+  {
+    "question": "Number of days a camel can go without drinking water",
+    "answer": 15,
+    "unit": "days",
+    "category": "Weird Facts",
+    "funFact": "The hump stores fat, not water — the trick is in the kidneys and the blood cells."
+  },
+  {
+    "question": "Number of panels stitched into a traditional football",
+    "answer": 32,
+    "unit": "panels",
+    "category": "Weird Facts",
+    "funFact": "Twenty hexagons and twelve pentagons — the same shape as a carbon-60 molecule."
+  },
+  {
+    "question": "Number of stitches on a regulation baseball",
+    "answer": 108,
+    "unit": "stitches",
+    "category": "Weird Facts",
+    "funFact": "Every one is still sewn by hand, because no machine has matched the tension."
+  },
+  {
+    "question": "Number of ridges around the edge of a US quarter",
+    "answer": 119,
+    "unit": "ridges",
+    "category": "Weird Facts",
+    "funFact": "Ridges began as anti-counterfeiting when coins were actually worth their metal."
+  },
+  {
+    "question": "Number of squares on a Scrabble board",
+    "answer": 225,
+    "unit": "squares",
+    "category": "Weird Facts",
+    "funFact": "The inventor worked out letter frequencies by counting them on the front page of a newspaper."
+  },
+  {
+    "question": "Number of letter tiles in a standard English Scrabble set",
+    "answer": 100,
+    "unit": "tiles",
+    "category": "Weird Facts",
+    "funFact": "There are twelve Es and exactly one each of Q, Z, J, K and X."
+  },
+  {
+    "question": "Number of squares of every size that can be found on a chessboard",
+    "answer": 204,
+    "unit": "squares",
+    "category": "Weird Facts",
+    "funFact": "Sixty-four singles, plus every 2x2, 3x3 and so on up to the board itself."
+  },
+  {
+    "question": "Number of small cubes visible on the outside of a standard Rubik's Cube",
+    "answer": 26,
+    "unit": "cubes",
+    "category": "Weird Facts",
+    "funFact": "The centre of the cube is not a cube at all, but the spindle that holds it together."
+  },
+  {
+    "question": "Number of strings on a standard concert harp",
+    "answer": 47,
+    "unit": "strings",
+    "category": "Weird Facts",
+    "funFact": "Seven pedals let one instrument play in every key without retuning a thing."
+  },
+  {
+    "question": "Scoville heat units of a typical jalapeno pepper",
+    "answer": 5000,
+    "unit": "SHU",
+    "category": "Weird Facts",
+    "funFact": "The scale began as a taste test — sugar water was added until the burn disappeared."
+  },
+  {
+    "question": "Scoville heat of the Carolina Reaper chilli, in thousands of units",
+    "answer": 2200,
+    "unit": "thousand SHU",
+    "category": "Weird Facts",
+    "funFact": "Police-grade pepper spray sits in the same range, which tells you everything."
+  },
+  {
+    "question": "Number of grapes it takes to make one standard bottle of wine",
+    "answer": 600,
+    "unit": "grapes",
+    "category": "Weird Facts",
+    "funFact": "Roughly one vine's entire annual output goes into two or three bottles."
+  },
+  {
+    "question": "Number of cocoa beans needed to make one kilogram of chocolate",
+    "answer": 400,
+    "unit": "beans",
+    "category": "Weird Facts",
+    "funFact": "One tree gives about a kilo of finished chocolate per year, after a decade of growing."
+  },
+  {
+    "question": "Number of seeds on the outside of an average strawberry",
+    "answer": 200,
+    "unit": "seeds",
+    "category": "Weird Facts",
+    "funFact": "Botanically each seed is the actual fruit, and the red part is swollen stem tissue."
+  },
+  {
+    "question": "Number of times a sheet of paper has been folded in half, as a verified record",
+    "answer": 12,
+    "unit": "folds",
+    "category": "Weird Facts",
+    "funFact": "A schoolgirl did it in 2002 with 1,200 metres of toilet paper and a maths proof."
+  },
+  {
+    "question": "Number of Earths that would fit inside the Sun, in thousands",
+    "answer": 1300,
+    "unit": "thousand Earths",
+    "category": "Weird Facts",
+    "funFact": "The Sun is still 99.86 percent of all the mass in the solar system."
+  },
+  {
+    "question": "Weight of an average cumulus cloud in tonnes",
+    "answer": 500,
+    "unit": "tonnes",
+    "category": "Weird Facts",
+    "funFact": "It floats because the air underneath it is denser, not because the cloud is light."
+  },
+  {
+    "question": "Number of bacteria species living in the average human mouth",
+    "answer": 700,
+    "unit": "species",
+    "category": "Weird Facts",
+    "funFact": "Two people sharing a household still have mouths as different as their fingerprints."
+  },
+  {
+    "question": "Number of nerve endings in a single human fingertip",
+    "answer": 3000,
+    "unit": "nerve endings",
+    "category": "Weird Facts",
+    "funFact": "Fingertips can feel a bump 13 nanometres high — a molecule-scale defect on a smooth surface."
+  },
+  {
+    "question": "Number of litres of air an adult breathes in a day",
+    "answer": 11000,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "About 22,000 breaths, and you consciously notice roughly none of them."
+  },
+  {
+    "question": "Number of scent receptor genes a dog has",
+    "answer": 800,
+    "unit": "genes",
+    "category": "Weird Facts",
+    "funFact": "Humans have about 400, which is more than most people assume."
+  },
+  {
+    "question": "Number of species of ants described by science",
+    "answer": 14000,
+    "unit": "species",
+    "category": "Weird Facts",
+    "funFact": "Their combined weight is estimated to rival that of all wild birds and mammals together."
+  },
+  {
+    "question": "Number of individual lenses in a dragonfly's compound eye",
+    "answer": 30000,
+    "unit": "lenses",
+    "category": "Weird Facts",
+    "funFact": "Nearly all of its brain is wired to vision, and it catches 95 percent of what it chases."
+  },
+  {
+    "question": "Distance in kilometres an Arctic tern migrates in a year",
+    "answer": 70000,
+    "unit": "kilometres",
+    "category": "Weird Facts",
+    "funFact": "Over a lifetime that is roughly three return trips to the moon."
+  },
+  {
+    "question": "Number of teeth a great white shark grows through in its lifetime",
+    "answer": 30000,
+    "unit": "teeth",
+    "category": "Weird Facts",
+    "funFact": "They sit in rows on a conveyor, and a lost front tooth is replaced within days."
+  },
+  {
+    "question": "Number of small islands Venice is built on",
+    "answer": 118,
+    "unit": "islands",
+    "category": "Global",
+    "funFact": "Its buildings stand on millions of wooden piles driven into the mud, still holding after 1,500 years."
+  },
+  {
+    "question": "Number of stations on the London Underground",
+    "answer": 272,
+    "unit": "stations",
+    "category": "Global",
+    "funFact": "Only about 45 percent of the network is actually in a tunnel."
+  },
+  {
+    "question": "Number of steps from the ground to the top of the Eiffel Tower",
+    "answer": 1665,
+    "unit": "steps",
+    "category": "Global",
+    "funFact": "The public can only walk as far as the second floor — the rest is a lift and a staff staircase."
+  },
+  {
+    "question": "Number of islands in the Indonesian archipelago",
+    "answer": 17000,
+    "unit": "islands",
+    "category": "Global",
+    "funFact": "Only about 6,000 are inhabited, and thousands still have no official name."
+  },
+  {
+    "question": "Number of lakes in Finland",
+    "answer": 188000,
+    "unit": "lakes",
+    "category": "Global",
+    "funFact": "That is roughly one lake for every thirty people in the country."
+  },
+  {
+    "question": "Number of countries sharing a land border with Brazil",
+    "answer": 10,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "Only Chile and Ecuador escape it — Brazil touches every other country in South America."
+  },
+  {
+    "question": "Number of languages spoken in Papua New Guinea",
+    "answer": 840,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "More than a tenth of all the languages on earth, in a country of ten million people."
+  },
+  {
+    "question": "Number of tiles in a standard mahjong set",
+    "answer": 144,
+    "unit": "tiles",
+    "category": "Global",
+    "funFact": "Sets often include spare blank tiles, because losing one ends the game permanently."
+  },
+  {
+    "question": "Number of ancient pyramids in Sudan",
+    "answer": 200,
+    "unit": "pyramids",
+    "category": "Global",
+    "funFact": "Sudan has roughly twice as many pyramids as Egypt, and a fraction of the visitors."
+  },
+  {
+    "question": "Number of times the International Space Station orbits Earth in a day",
+    "answer": 16,
+    "unit": "orbits",
+    "category": "Global",
+    "funFact": "The crew sees sixteen sunrises a day and sleeps on a schedule that ignores all of them."
+  },
+  {
+    "question": "Speed of the International Space Station in kilometres per hour",
+    "answer": 27600,
+    "unit": "km/h",
+    "category": "Global",
+    "funFact": "At that speed you would cross Bangladesh in under a minute."
+  },
+  {
+    "question": "Number of years the Hundred Years' War actually lasted",
+    "answer": 116,
+    "unit": "years",
+    "category": "Global",
+    "funFact": "It was also not one war but a run of separate ones, with decades of peace in between."
+  },
+  {
+    "question": "Number of terracotta warriors estimated to be buried at Xi'an",
+    "answer": 8000,
+    "unit": "warriors",
+    "category": "Global",
+    "funFact": "A farmer digging a well found them in 1974, and no two faces are alike."
+  },
+  {
+    "question": "Number of rooms in Buckingham Palace",
+    "answer": 775,
+    "unit": "rooms",
+    "category": "Global",
+    "funFact": "Seventy-eight of them are bathrooms, which is a lot of plumbing for one address."
+  },
+  {
+    "question": "Number of steps inside the Statue of Liberty from the base to the crown",
+    "answer": 354,
+    "unit": "steps",
+    "category": "Global",
+    "funFact": "The crown has 25 windows and room for about a dozen people at a time."
+  },
+  {
+    "question": "Number of countries where traffic drives on the left",
+    "answer": 76,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "Mostly former British territories — Bangladesh, India and Japan all kept the habit."
+  },
+  {
+    "question": "Number of commercial flights in the air worldwide on a busy day",
+    "answer": 100000,
+    "unit": "flights",
+    "category": "Global",
+    "funFact": "About 10,000 aircraft are airborne at any given moment during daylight peaks."
+  },
+  {
+    "question": "Length of the shortest war in history, the Anglo-Zanzibar War, in minutes",
+    "answer": 38,
+    "unit": "minutes",
+    "category": "Global",
+    "funFact": "The losing side's palace was shelled before the ultimatum's ink was properly dry."
+  },
+  {
+    "question": "Character limit of a Twitter post before the 2017 change",
+    "answer": 140,
+    "unit": "characters",
+    "category": "Global",
+    "funFact": "It came from SMS, which allowed 160, leaving 20 characters for the username."
+  },
+  {
+    "question": "Number of Lego bricks that can be stacked before the bottom one is crushed",
+    "answer": 375000,
+    "unit": "bricks",
+    "category": "Global",
+    "funFact": "That tower would be over two and a half kilometres tall."
+  },
+  {
+    "question": "Length of the Trans-Siberian Railway in kilometres",
+    "answer": 9289,
+    "unit": "kilometres",
+    "category": "Global",
+    "funFact": "Seven days end to end, crossing eight time zones without changing train."
+  },
+  {
+    "question": "Year the world's first website went live",
+    "answer": 1991,
+    "unit": "year",
+    "category": "Global",
+    "funFact": "It explained what the World Wide Web was, to an audience that had no way to find it."
+  },
+  {
+    "question": "Year Wikipedia was launched",
+    "answer": 2001,
+    "unit": "year",
+    "category": "Global",
+    "funFact": "It began as a throwaway side project to feed a slower, expert-written encyclopaedia."
+  },
+  {
+    "question": "Number of Academy Awards won by Titanic in 1998",
+    "answer": 11,
+    "unit": "awards",
+    "category": "Global",
+    "funFact": "It tied Ben-Hur's record, and Cameron quoted his own film accepting the last one."
+  },
+  {
+    "question": "Budget of the original Star Wars in 1977, in millions of dollars",
+    "answer": 11,
+    "unit": "million USD",
+    "category": "Global",
+    "funFact": "Fox thought so little of it that they let Lucas keep the sequel and merchandising rights."
+  },
+  {
+    "question": "Number of takes Kubrick shot of one staircase scene in The Shining",
+    "answer": 127,
+    "unit": "takes",
+    "category": "Global",
+    "funFact": "It holds the record for most takes of a single scene with dialogue."
+  },
+  {
+    "question": "Number of stars on the flag of the European Union",
+    "answer": 12,
+    "unit": "stars",
+    "category": "Global",
+    "funFact": "The number has never changed with membership — twelve was chosen as a symbol of completeness."
+  },
+  {
+    "question": "Number of Academy Awards won by Walt Disney in his lifetime",
+    "answer": 22,
+    "unit": "awards",
+    "category": "Global",
+    "funFact": "He was nominated 59 times, which is still the record sixty years after his death."
+  },
+  {
+    "question": "Number of confirmed moons of Saturn as of 2023",
+    "answer": 146,
+    "unit": "moons",
+    "category": "Global",
+    "funFact": "It overtook Jupiter that year, after 62 new ones were confirmed at once."
+  },
+  {
+    "question": "Number of official languages recognised by the Indian constitution",
+    "answer": 22,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "Bengali is one of them, and is the second most spoken language in India."
+  },
+  {
+    "question": "Length of a marathon in metres",
+    "answer": 42195,
+    "unit": "metres",
+    "category": "Sports",
+    "funFact": "The odd 195 metres exists so the 1908 race could finish in front of the royal box."
+  },
+  {
+    "question": "Number of nations that competed at the 1896 Athens Olympics",
+    "answer": 14,
+    "unit": "nations",
+    "category": "Sports",
+    "funFact": "Some competitors were tourists who happened to be in Athens and simply entered."
+  },
+  {
+    "question": "Year the Olympic marathon was first run over 42.195 kilometres",
+    "answer": 1908,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "London stretched the course to finish in front of the royal box, and the odd number stuck."
+  },
+  {
+    "question": "Height of a men's volleyball net in centimetres",
+    "answer": 243,
+    "unit": "centimetres",
+    "category": "Sports",
+    "funFact": "The women's net is 224, and both numbers come from a 1947 committee that never explained them."
+  },
+  {
+    "question": "Weight of a men's cricket ball in grams",
+    "answer": 156,
+    "unit": "grams",
+    "category": "Sports",
+    "funFact": "The permitted range is only about eight grams wide, and umpires carry scales."
+  },
+  {
+    "question": "Points Wilt Chamberlain scored in a single NBA game in 1962",
+    "answer": 100,
+    "unit": "points",
+    "category": "Sports",
+    "funFact": "No photographs of the game exist and no broadcast survives — 4,124 people saw it."
+  },
+  {
+    "question": "Year the first Formula One World Championship season was run",
+    "answer": 1950,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "The opening race was at Silverstone, on a circuit made from a wartime bomber airfield."
+  },
+  {
+    "question": "Number of laps in the Indianapolis 500",
+    "answer": 200,
+    "unit": "laps",
+    "category": "Sports",
+    "funFact": "The winner drinks milk, a tradition started by a driver who simply fancied buttermilk."
+  },
+  {
+    "question": "Balls in an over in Australian domestic cricket until 1979",
+    "answer": 8,
+    "unit": "balls",
+    "category": "Sports",
+    "funFact": "England, Australia and South Africa all experimented before six became universal."
+  },
+  {
+    "question": "Runs Brian Lara scored in his unbeaten Test innings in 2004",
+    "answer": 400,
+    "unit": "runs",
+    "category": "Sports",
+    "funFact": "He had already held the record, lost it, and took it back within six months."
+  },
+  {
+    "question": "Runs Mushfiqur Rahim scored in his double century against Zimbabwe in 2018",
+    "answer": 219,
+    "unit": "runs",
+    "category": "Sports",
+    "funFact": "The first Bangladeshi to score two Test double hundreds, and he kept wicket as well."
+  },
+  {
+    "question": "Balls Shahid Afridi took to reach his ODI century in 1996",
+    "answer": 37,
+    "unit": "balls",
+    "category": "Sports",
+    "funFact": "He was seventeen, batting with a bat borrowed from Sachin Tendulkar."
+  },
+  {
+    "question": "Year the Miracle on Ice ice hockey upset took place",
+    "answer": 1980,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "American college students beat a Soviet side that had won every Olympic gold since 1964."
+  },
+  {
+    "question": "Year Bangladesh first reached a Cricket World Cup quarter-final",
+    "answer": 2015,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "Mahmudullah scored back-to-back hundreds, the first Bangladeshi ever to do it at a World Cup."
+  },
+  {
+    "question": "Year Bangladesh beat Australia in the Cardiff ODI upset",
+    "answer": 2005,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "Mohammad Ashraful's hundred beat the world champions, who had lost twice in two years."
+  },
+  {
+    "question": "Year Roger Bannister ran the first sub-four-minute mile",
+    "answer": 1954,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "His record lasted 46 days, and over 1,700 people have since done it."
+  },
+  {
+    "question": "Usain Bolt's 100 metres world record from 2009, in hundredths of a second",
+    "answer": 958,
+    "unit": "hundredths",
+    "category": "Sports",
+    "funFact": "He was still slowing down and celebrating in the last ten metres of the 2008 version."
+  },
+  {
+    "question": "Number of gold medals Michael Phelps won at the 2008 Beijing Olympics",
+    "answer": 8,
+    "unit": "gold medals",
+    "category": "Sports",
+    "funFact": "One of them was decided by a hundredth of a second, on a fingertip."
+  },
+  {
+    "question": "Year the first Tour de France was held",
+    "answer": 1903,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "A newspaper invented it to sell copies, and it worked — circulation went up sixfold."
+  },
+  {
+    "question": "Year Sachin Tendulkar scored the first double century in ODI cricket",
+    "answer": 2010,
+    "unit": "year",
+    "category": "Sports",
+    "funFact": "Thirty-nine years and 2,962 matches had passed without anyone managing it."
   }
 ]

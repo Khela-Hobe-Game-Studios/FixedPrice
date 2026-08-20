@@ -1,160 +1,58 @@
-## dropped (44)
-row 22 [zero-answer]: Number of steps to the top of the National Parliament Building's main hall
-row 81 [zero-answer]: How many bones are in a shark's body?
-row 461 [zero-answer]: Number of ICC trophies Bangladesh men's team has won in their senior level
-row 647 [zero-answer]: Number of countries with worse air pollution than Bangladesh in 2024 IQAir rankings
-row 650 [zero-answer]: Number of countries with higher population density than Bangladesh (over 10 million population)
-row 664 [zero-answer]: Number of Olympic medals Bangladesh has won (all-time, summer)
-row 665 [zero-answer]: Number of times Bangladesh has qualified for the men's FIFA World Cup
-row 802 [zero-answer]: Number of countries that fit inside Bangladesh by area but with more people than Bangladesh
-row 811 [zero-answer]: Number of times Bangladesh has won an ICC senior trophy in men's cricket history
-row 812 [zero-answer]: Number of Olympic medals won by Bangladesh in its entire history
-row 813 [zero-answer]: Number of times the Bangladesh men's national football team has qualified for FIFA World Cup
-row 944 [zero-answer]: Number of countries with no time zones (operate on a non-standard zone)
-row 756 [near-duplicate of row 909]: Number of times the average person passes gas per day
-row 475 [near-duplicate of row 1001]: Cost of a single Starbucks Pumpkin Spice Latte (Grande) in US (2024)
-row 729 [near-duplicate of row 889]: Number of days the Suez Canal was blocked by the Ever Given
-row 292 [near-duplicate of row 930]: Number of years a tardigrade can survive without water
-row 835 [near-duplicate of row 678]: Bangladesh's rank globally in remittance receipts annually
-row 792 [near-duplicate of row 642]: Average vehicle speed on Dhaka roads as of 2022 (BUET study), in km/h
-row 953 [near-duplicate of row 491]: Maximum recorded age of a domestic cat (in years)
-row 777 [near-duplicate of row 920]: Number of years it would take to spend 1 billion dollars at 1 dollar per second
-row 814 [near-duplicate of row 638]: Bangladesh's FIFA world ranking (men's football, 2024)
-row 235 [near-duplicate of row 973]: Monthly cost of ChatGPT Plus in USD as of 2024
-row 196 [near-duplicate of row 847]: Number of people killed in the Rana Plaza collapse (rounded)
-row 981 [near-duplicate of row 216]: Cost of Apple Vision Pro at launch (USD, 2024)
-row 297 [near-duplicate of row 955]: Maximum recorded age of a Greenland shark
-row 820 [near-duplicate of row 451]: Percent of all Bangladesh exports that are garments (RMG)
-row 453 [near-duplicate of row 845]: Amount stolen in the Bangladesh Bank heist in millions USD
-row 972 [near-duplicate of row 598]: Cost of one Erewhon Hailey Bieber strawberry smoothie in LA (USD)
-row 826 [near-duplicate of row 632]: Length of YouTube's first ever video in seconds (uploaded by Bangladeshi-American Jawed Karim)
-row 948 [near-duplicate of row 753]: Number of children Genghis Khan reportedly fathered (commonly cited estimate)
-row 640 [near-duplicate of row 789]: Bangladesh's score out of 100 in the 2024 Corruption Perceptions Index
-row 643 [near-duplicate of row 795]: Annual hours wasted per Dhaka commuter in traffic according to CPD 2023
-row 796 [near-duplicate of row 644]: Time (minutes) the average Dhaka commuter spends in traffic per every 2 hours
-row 794 [near-duplicate of row 645]: Total spent on Dhaka traffic megaprojects in past decade (thousand crore BDT)
-row 801 [near-duplicate of row 649]: Number of people per square kilometer in Bangladesh (population density)
-row 833 [near-duplicate of row 683]: Number of mosques in Dhaka (commonly cited 'City of Mosques' figure)
-addition skipped [duplicates row 444]: Length of the Bangabandhu (Jamuna) Bridge in metres
-addition skipped [duplicates row 107]: Claimed length of Cox's Bazar sea beach in kilometres
-addition skipped [duplicates row 153]: Length of the Dhaka Metro Rail MRT Line-6 in kilometres
-addition skipped [duplicates row 152]: Number of stations on Dhaka Metro Rail MRT Line-6
-addition skipped [duplicates row 36]: Price of a 1kg packet of Fortune refined sugar in a Dhaka grocery (2024)
-addition skipped [duplicates row 181]: Seating capacity of the Sher-e-Bangla National Cricket Stadium in Mirpur
-addition skipped [duplicates row 488]: Number of times a human heart beats in an average day
-addition skipped [duplicates row 513]: Number of countries that share a land border with China
+## dropped (48)
+addition skipped [duplicates row 1002]: Number of administrative districts (zila) in Bangladesh
+addition skipped [duplicates row 438]: Length of the Bangabandhu (Jamuna) Bridge in metres
+addition skipped [duplicates row 1003]: Total number of seats in the Jatiya Sangsad, including reserved seats
+addition skipped [duplicates row 105]: Claimed length of Cox's Bazar sea beach in kilometres
+addition skipped [duplicates row 1004]: Year the Ekushey Boi Mela book fair was first held at Bangla Academy
+addition skipped [duplicates row 1005]: Height of the Jatiyo Sriti Shoudho (National Martyrs' Memorial) in metres
+addition skipped [duplicates row 1006]: Number of stairs on the main approach of Ahsan Manzil in Old Dhaka
+addition skipped [duplicates row 1007]: Number of rooms in the Ahsan Manzil museum open to visitors
+addition skipped [duplicates row 151]: Length of the Dhaka Metro Rail MRT Line-6 in kilometres
+addition skipped [duplicates row 150]: Number of stations on Dhaka Metro Rail MRT Line-6
+addition skipped [duplicates row 1008]: Number of players fielded by each side in a kabaddi match, Bangladesh's national sport
+addition skipped [duplicates row 1009]: Number of stanzas of 'Amar Sonar Bangla' officially used as the national anthem
+addition skipped [duplicates row 1010]: Number of Bangladeshi taka to one US dollar in 2015
+addition skipped [duplicates row 35]: Price of a 1kg packet of Fortune refined sugar in a Dhaka grocery (2024)
+addition skipped [duplicates row 1011]: Monthly minimum wage for a Bangladesh garment worker set in December 2023
+addition skipped [duplicates row 1012]: Cost of a single-journey Dhaka Metro ticket from Uttara North to Motijheel (2024)
+addition skipped [duplicates row 1013]: Price of a plate of kacchi biryani at a mid-range Dhaka restaurant (2024)
+addition skipped [duplicates row 1014]: Cost of a 1kg packet of Igloo or Polar vanilla ice cream in Dhaka (2024)
+addition skipped [duplicates row 1015]: Price of a monthly student bus pass on a Dhaka University shuttle route (2024)
+addition skipped [duplicates row 1016]: Cost of a haircut at an ordinary neighbourhood barber in Dhaka (2024)
+addition skipped [duplicates row 1017]: Price of one kilogram of Kalijira rice in a Dhaka retail market (2024)
+addition skipped [duplicates row 1018]: Cost of one Shingara at a roadside tea stall in Dhaka (2024)
+addition skipped [duplicates row 1019]: Number of goals Cristiano Ronaldo scored for Real Madrid in all competitions
+addition skipped [duplicates row 1020]: Length of an Olympic swimming pool in metres
+addition skipped [duplicates row 1021]: Number of holes played in a standard round of golf
+addition skipped [duplicates row 1022]: Distance of a marathon in kilometres, rounded to the nearest whole number
+addition skipped [duplicates row 1023]: Number of countries that competed at the Tokyo 2020 Olympic Games
+addition skipped [duplicates row 1024]: Height of a basketball hoop above the floor in centimetres
+addition skipped [duplicates row 1025]: Number of Grand Slam singles titles won by Serena Williams
+addition skipped [duplicates row 179]: Seating capacity of the Sher-e-Bangla National Cricket Stadium in Mirpur
+addition skipped [duplicates row 1026]: Number of bones in the adult human body
+addition skipped [duplicates row 1027]: Number of keys on a standard full-size piano
+addition skipped [duplicates row 1028]: Time in minutes for sunlight to travel from the Sun to Earth
+addition skipped [duplicates row 1029]: Boiling point of water at sea level in degrees Fahrenheit
+addition skipped [duplicates row 1030]: Number of muscles it takes to smile, by the common estimate
+addition skipped [duplicates row 1031]: Number of chambers in a cow's stomach
+addition skipped [duplicates row 1033]: Depth of the Mariana Trench at its deepest point, in metres
+addition skipped [duplicates row 479]: Number of times a human heart beats in an average day
+addition skipped [duplicates row 1034]: Percentage of the Earth's surface covered by water
+addition skipped [duplicates row 1035]: Number of member states in the United Nations
+addition skipped [duplicates row 1036]: Height of the Burj Khalifa in metres
+addition skipped [duplicates row 504]: Number of countries that share a land border with China
+addition skipped [duplicates row 1037]: Length of the Great Wall of China in kilometres, by the official survey
+addition skipped [duplicates row 1039]: Number of keys in a standard octave on a piano, black and white combined
+addition skipped [duplicates row 1040]: Population of Tokyo's greater metropolitan area in millions (2024)
+addition skipped [duplicates row 1041]: Number of official working languages of the United Nations
+addition skipped [duplicates row 1042]: Distance of the Earth from the Sun in millions of kilometres
+addition skipped [duplicates row 1043]: Number of time zones spanned by Russia
 
-## anchored (105)
-row 24: Cost of a single 15kg LP gas cylinder from a private distributor (2024)
-row 26: Retail price of a 500g packet of Danish brand condensed milk (2024)
-row 27: Cost of a standard Rickshaw fare from Dhanmondi 32 to Science Lab (2024)
-row 28: Price of a 'Mini' plate of Fuchka at a roadside stall in Dhanmondi (2024)
-row 30: Price of a 10-pack of Gold Leaf cigarettes in a local shop (2024)
-row 31: Cost of a 1kg packet of Pusty Flour (Ata) in a grocery store (2024)
-row 32: Price of a 250ml glass of 'Special Lassi' at Beauty Lassi (Old Dhaka) (2024)
-row 33: Cost of a single adult entry ticket to the 3D Cineplex at SKS Tower (2024)
-row 35: Cost of a 1kg tub of Pran Mango Pickle in a supermarket (2024)
-row 36: Price of a 1kg packet of Fortune brand refined sugar (2024)
-row 37: Average cost of a 'Double' cabin on a Barishal-bound launch (private) (2024)
-row 38: Price of a single 100g bar of Lux soap (Soft Touch) (2024)
-row 40: Cost of a standard 40W energy-saving LED bulb (Transtec/Philips) (2024)
-row 41: Price of a 1kg pack of local salt (crude) in a rural market (2024)
-row 42: Cost of a single trip in a CNG from Uttara to Motijheel (negotiated) (2024)
-row 43: Price of 1kg of Ruhi fish at a local wet market (medium size) (2024)
-row 44: Cost of a single 150g packet of Bombay Sweets Potato Crackers (2024)
-row 45: Price of 1kg of local 'Goru' (Beef) meat with bones at Karwan Bazar (2024)
-row 46: Cost of a 1-liter bottle of local brand dishwashing liquid (Vixol/Savlon) (2024)
-row 47: Price of a 2kg packet of Surf Excel washing powder in Dhaka (2024)
-row 48: Cost of a single movie ticket at Balaka Cinema Hall (standard) (2024)
-row 49: Price of a 1kg box of standard sweets (Misti) at Rossomoy, Dhaka (2024)
-row 50: Cost of a non-AC bus ticket from Dhaka to Rajshahi (standard) (2024)
-row 51: Price of a 500ml bottle of Coca-Cola in a local shop (2024)
-row 54: Price of a 12-pack of 12oz Coca-Cola cans in a US grocery store (2024)
-row 55: Cost of a single adult movie ticket in New York City (average) (2024)
-row 56: Retail price of a 4-pack of Energizer AA batteries in the US (2024)
-row 57: Cost of a single 'In-N-Out' Double-Double burger in California (2024)
-row 59: Cost of a standard 1-day ticket to Disneyland Park (lowest tier) (2024)
-row 61: Price of a 1kg tub of Nutella in a standard US supermarket (2024)
-row 62: Retail price of a 1-gallon jug of whole milk in the USA (average) (2024)
-row 63: Cost of a 10-piece Chicken McNuggets at McDonald's USA (average) (2024)
-row 65: Cost of a 1-month subscription to Disney+ (No Ads) in the US (2024)
-row 66: Price of a 1kg bag of Starbucks Pike Place coffee beans in the US (2024)
-row 67: Cost of a standard pair of Levi's 501 jeans in a US retail store (2024)
-row 69: Annual membership fee for a standard Costco Gold Star plan (2024)
-row 92: Cost of a single 'Fuchka' plate at a premium Dhaka restaurant (2024)
-row 93: Price of a 2-liter bottle of 7UP at a grocery store (2024)
-row 94: Cost of a 'Mini' burger at a local street stall in Dhaka (2024)
-row 95: Price of a 1kg packet of Ispahani Mirzapore Tea (2024)
-row 96: Cost of a single AC train ticket from Dhaka to Chittagong (Snigdha) (2024)
-row 97: Price of a 100g bar of Cadbury Dairy Milk in a Dhaka shop (2024)
-row 98: Cost of a standard 500ml bottle of Savlon Handwash (2024)
-row 99: Price of 1kg of high-quality 'Chinigura' rice in a packet (2024)
-row 100: Cost of a single ride on a local 'Laguna' in Dhaka (max distance) (2024)
-row 101: Price of a 1kg tub of Horlicks in a Dhaka pharmacy (2024)
-row 127: Winning auction price of the most expensive baseball card in millions (2024)
-row 132: Price of 1kg of high grade Saffron in USD approximately (2024)
-row 150: Construction cost of the Padma Bridge in thousand crore BDT (rounded) (2024)
-row 154: Minimum fare for the Dhaka Metro Rail in BDT (2024)
-row 155: Maximum end-to-end fare on the Dhaka Metro Rail in BDT (2024)
-row 236: Monthly cost of GitHub Copilot for individuals in USD (2024)
-row 237: Monthly cost of a New York Times All Access digital subscription (2024)
-row 242: Cost of a single Krispy Kreme original glazed donut in the US (average) (2024)
-row 260: Cost of a single visa fee for Bangladesh on-arrival (US passport) in USD (2024)
-row 324: Number of bananas the average American eats per year (2024)
-row 378: Cost of Elon Musk's Twitter acquisition in billions USD (rounded) (2024)
-row 398: Highest ICC ranking points ever achieved by a Test batsman (2024)
-row 426: Seating capacity of the Maracana stadium in Rio de Janeiro (current) (2024)
-row 481: Launch price of the Microsoft HoloLens (developer edition) in USD (2024)
-row 552: Cost of registering a new private car in Bangladesh BRTA (under 1500cc, thousand BDT) (2024)
-row 649: Number of people Bangladesh's population density places per square kilometer (approx) (2024)
-row 697: Year MrBeast (Jimmy Donaldson) crossed 100 million YouTube subscribers (2024)
-row 722: Year Neymar transferred to PSG for a world-record fee (2024)
-row 763: Number of pieces of paper an average office worker uses per year (in the US) (2024)
-row 771: Number of meatballs IKEA serves globally per year (millions) (2024)
-row 800: Bangladesh's rank among countries with population over 10 million for population density (2024)
-row 803: Bangladesh's rank in world population (most populous countries) (2024)
-row 806: Number of cigarettes worth of air the average Dhaka resident inhales daily (equivalent) (2024)
-row 816: Global average per capita rice consumption per year, in kg (2024)
-row 817: Bangladesh's rank globally in per-capita rice consumption (2024)
-row 819: Bangladesh's global rank in garment exports (RMG industry) (2024)
-row 822: Bangladesh's global rank in jute production (2024)
-row 823: Bangladesh's global rank in hilsa fish catch (2024)
-row 824: Bangladesh's global rank in mango production (2024)
-row 841: Number of mangoes the average Bangladeshi eats per year (kg estimate) (2024)
-row 887: Number of Twitter blue check users who paid the $8 fee after Elon's verification rollout (2024)
-row 892: Number of US dollars OpenAI's ChatGPT pays per query in compute costs (commonly cited) (2024)
-row 895: Average annual cost of insulin for a US diabetic without insurance (USD) (2024)
-row 897: Average cost of childbirth in the United States without insurance (USD) (2024)
-row 900: Average cost of a single Tylenol pill at a US hospital (in USD) (2024)
-row 907: Average pieces of mail an American receives per year (USPS data) (2024)
-row 928: Number of pictures the average smartphone user takes per year (2024)
-row 960: Number of pages of Terms of Service the average internet user agrees to per year (2024)
-row 966: Average percentage of Spotify revenue that goes to artists (commonly cited) (2024)
-row 968: Cost of a single golf membership at Augusta National Golf Club (USD) (2024)
-row 969: Cost of a Hermès Birkin handbag with crocodile leather (USD, top tier) (2024)
-row 971: Cost of a single ticket on Virgin Galactic spaceflight (USD) (2024)
-row 973: Cost of a single ChatGPT Plus monthly subscription (USD) (2024)
-row 977: Cost of an ambulance ride in the US without insurance (average, USD) (2024)
-row 978: Cost of a single stitch at a US emergency room (average, USD) (2024)
-row 984: Cost of the Cybertruck stainless steel single-piece body part replacement (USD) (2024)
-row 987: Cost of a single FA Cup Final ticket at face value (GBP) (2024)
-row 989: Cost of a Bangladeshi wedding in Dhaka (premium tier, USD equivalent) (2024)
-row 990: Cost of the typical Indian wedding videographer in NYC for South Asian diaspora (USD) (2024)
-row 992: Cost of a hand-pulled rickshaw ride 1 km in Dhaka (BDT) (2024)
-row 996: Cost of cheapest functioning smartphone in Bangladesh (BDT, Symphony brand) (2024)
-row 997: Cost of a 1lb bag of Bangladeshi 'kalo jira' (nigella seeds) at NYC desi grocery (USD) (2024)
-row 1003: Cost of paying off a single US college loan in monthly minimum payments to finish (years) (2024)
-row 1006: Number of IKEA Allen wrenches discarded per year globally (millions) (2024)
-row 1007: Cost of one Tesla Cybertruck after dealer markup at launch (USD) (2024)
-row 1024: Number of plastic surgery procedures performed in South Korea per year (millions, estimate) (2024)
-row 1028: Number of times Eid prayers occur per year in Bangladesh (Eid-ul-Fitr + Eid-ul-Adha) (2024)
-row 1036: Percent of all the world's chocolate consumed by Switzerland (per capita rank) (2024)
-row 1037: Percent of Bangladesh's GDP lost annually to traffic congestion (commonly cited) (2024)
+## anchored (0)
+
 
 ## recategorised (0)
 
 
-## fixed (3)
-row 670: "Number of days Sheikh Hasina ruled Bangladesh continuously before the July 2024 ouster (rounded years)" -> "Number of years Sheikh Hasina ruled Bangladesh continuously before the July 2024 ouster"
-row 774: "Number of times in a typical lifetime an average person blinks" -> "Number of times in a typical lifetime an average person blinks (in millions)"
-row 893: "Number of professionals OpenAI was offering up to in compensation to retain talent during 2024 Google poaching" -> "Number of professionals OpenAI was offering up to in compensation to retain talent during 2024 Google poaching (in millions)"
+## fixed (0)
+
