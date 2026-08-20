@@ -1748,5 +1748,572 @@
     "unit": "hours",
     "category": "Global",
     "funFact": "Seventy days. The game was designed to teach people that landlords are bad."
+  },
+  {
+    "question": "Olympic Games Bangladesh has competed in without winning a medal, through 2024",
+    "answer": 11,
+    "unit": "games",
+    "category": "Desh",
+    "funFact": "The largest country in the world never to have won one, which is a record of a kind."
+  },
+  {
+    "question": "Number of stripes on a Royal Bengal Tiger",
+    "answer": 100,
+    "unit": "stripes",
+    "category": "Desh",
+    "funFact": "No two tigers share a pattern, and the stripes are on the skin as well as the fur."
+  },
+  {
+    "question": "Number of islands making up the Sundarbans",
+    "answer": 102,
+    "unit": "islands",
+    "category": "Desh",
+    "funFact": "Fifty-four of them have no people on them at all, which is how the tigers prefer it."
+  },
+  {
+    "question": "Number of digits in a Bangladeshi mobile phone number",
+    "answer": 11,
+    "unit": "digits",
+    "category": "Desh",
+    "funFact": "Everyone can recite their own and nobody can recite anyone else's any more."
+  },
+  {
+    "question": "Number of lines in Tagore's full 'Amar Sonar Bangla' poem",
+    "answer": 25,
+    "unit": "lines",
+    "category": "Desh",
+    "funFact": "Only the first ten are the national anthem, so most Bangladeshis have never heard the ending."
+  },
+  {
+    "question": "Year Dhaka's rickshaw art joined UNESCO's intangible heritage list",
+    "answer": 2023,
+    "unit": "year",
+    "category": "Desh",
+    "funFact": "A century of painting film stars and tigers onto the back of a bicycle, formally recognised."
+  },
+  {
+    "question": "Road distance from Dhaka to Cox's Bazar in kilometres",
+    "answer": 400,
+    "unit": "kilometres",
+    "category": "Desh",
+    "funFact": "Ten hours by bus, or forty minutes by air, and everyone still argues about which is better."
+  },
+  {
+    "question": "Number of kilograms in one Bangladeshi mon",
+    "answer": 40,
+    "unit": "kilograms",
+    "category": "Desh",
+    "funFact": "Rice, jute and mangoes are all still sold by the mon, and nobody under thirty can convert it."
+  },
+  {
+    "question": "Number of seasons in the traditional Bengali calendar",
+    "answer": 6,
+    "unit": "seasons",
+    "category": "Desh",
+    "funFact": "Six, against everyone else's four — including one entire season for the monsoon."
+  },
+  {
+    "question": "Number of years Dhaka's tram service ran before it was scrapped",
+    "answer": 63,
+    "unit": "years",
+    "category": "Desh",
+    "funFact": "Opened under the British in 1889 and beaten by buses by the early fifties."
+  },
+  {
+    "question": "Number of vocal sounds a cat can make, against a dog's ten",
+    "answer": 100,
+    "unit": "sounds",
+    "category": "Weird Facts",
+    "funFact": "Adult cats essentially only meow at humans. Between themselves they do not bother."
+  },
+  {
+    "question": "Number of toes on a normal cat",
+    "answer": 18,
+    "unit": "toes",
+    "category": "Weird Facts",
+    "funFact": "Five in front, four behind. Hemingway's cats had extras and the house is still full of them."
+  },
+  {
+    "question": "Number of whiskers on a typical cat",
+    "answer": 24,
+    "unit": "whiskers",
+    "category": "Weird Facts",
+    "funFact": "Twelve a side, and they are roughly as wide as the cat — a built-in width gauge."
+  },
+  {
+    "question": "Number of bones in a cat's body",
+    "answer": 230,
+    "unit": "bones",
+    "category": "Weird Facts",
+    "funFact": "About thirty more than a human, and a good number of them are in the tail."
+  },
+  {
+    "question": "Number of colour receptors in a mantis shrimp's eye",
+    "answer": 16,
+    "unit": "receptors",
+    "category": "Weird Facts",
+    "funFact": "Humans have three. Testing suggests it is somehow worse at telling colours apart than we are."
+  },
+  {
+    "question": "Number of teeth on a garden snail's tongue",
+    "answer": 14000,
+    "unit": "teeth",
+    "category": "Weird Facts",
+    "funFact": "Arranged in rows on a ribbon it scrapes food with, and it grows replacements constantly."
+  },
+  {
+    "question": "Number of Bangladeshi districts that share a land border with India",
+    "answer": 30,
+    "unit": "districts",
+    "category": "Desh",
+    "funFact": "Thirty of the sixty-four. The border runs for over four thousand kilometres."
+  },
+  {
+    "question": "Number of union parishads, the lowest tier of local government in Bangladesh",
+    "answer": 4554,
+    "unit": "unions",
+    "category": "Desh",
+    "funFact": "Every one of them elects a chairman, which is a great many elections."
+  },
+  {
+    "question": "Number of minutes a giraffe sleeps in a 24-hour day",
+    "answer": 300,
+    "unit": "minutes",
+    "category": "Weird Facts",
+    "funFact": "Taken in five-minute naps, mostly standing up, because lying down is a commitment."
+  },
+  {
+    "question": "Litres of water an adult elephant drinks in a day",
+    "answer": 200,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "It can smell water from several kilometres away and dig for it when there is none."
+  },
+  {
+    "question": "Weight of a newborn giant panda in grams",
+    "answer": 100,
+    "unit": "grams",
+    "category": "Weird Facts",
+    "funFact": "About the size of a stick of butter, born to a mother nine hundred times heavier."
+  },
+  {
+    "question": "Number of hours a giant panda spends eating each day",
+    "answer": 14,
+    "unit": "hours",
+    "category": "Weird Facts",
+    "funFact": "Bamboo is so poor in nutrition that a panda's schedule has no room for anything else."
+  },
+  {
+    "question": "Number of wingbeats per second of a mosquito",
+    "answer": 600,
+    "unit": "beats per second",
+    "category": "Weird Facts",
+    "funFact": "That whine in the dark is the wingbeat, and it is how they find each other to mate."
+  },
+  {
+    "question": "Number of flowers a honeybee colony visits to make one teaspoon of honey",
+    "answer": 2000,
+    "unit": "flowers",
+    "category": "Weird Facts",
+    "funFact": "One bee makes about a twelfth of a teaspoon in its entire working life."
+  },
+  {
+    "question": "Number of minutes the average person spends dreaming each night",
+    "answer": 120,
+    "unit": "minutes",
+    "category": "Weird Facts",
+    "funFact": "Two hours a night, and you will forget almost all of it within five minutes of waking."
+  },
+  {
+    "question": "Number of decisions the average person makes about food each day",
+    "answer": 227,
+    "unit": "decisions",
+    "category": "Weird Facts",
+    "funFact": "A Cornell study found people guessed about fifteen, then were shown the tally."
+  },
+  {
+    "question": "Number of words the average person speaks in a day",
+    "answer": 16000,
+    "unit": "words",
+    "category": "Weird Facts",
+    "funFact": "Men and women came out within a few hundred of each other, ending a long argument."
+  },
+  {
+    "question": "Number of licks it took a machine to reach a Tootsie Pop's centre",
+    "answer": 364,
+    "unit": "licks",
+    "category": "Weird Facts",
+    "funFact": "Students have been re-running this experiment since 1970 and no two get the same number."
+  },
+  {
+    "question": "Number of ways to make change for one US dollar",
+    "answer": 293,
+    "unit": "ways",
+    "category": "Weird Facts",
+    "funFact": "A standard puzzle for teaching recursion, and the answer surprises nearly everyone."
+  },
+  {
+    "question": "Number of times the human body rebuilds its entire skeleton in a lifetime",
+    "answer": 10,
+    "unit": "times",
+    "category": "Weird Facts",
+    "funFact": "Roughly one full replacement per decade, bone by bone, without telling you."
+  },
+  {
+    "question": "Number of litres of saliva a person produces in a lifetime",
+    "answer": 25000,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "Enough to fill two swimming pools, which is not a thought anyone needed."
+  },
+  {
+    "question": "Number of muscles in the human tongue",
+    "answer": 8,
+    "unit": "muscles",
+    "category": "Weird Facts",
+    "funFact": "It is not the strongest muscle in the body either, whatever you were told at school."
+  },
+  {
+    "question": "Number of times a dog's sense of smell beats a human's",
+    "answer": 10000,
+    "unit": "times",
+    "category": "Weird Facts",
+    "funFact": "It can also smell in stereo, using each nostril separately to work out direction."
+  },
+  {
+    "question": "Minute Zinedine Zidane was sent off in the 2006 World Cup final",
+    "answer": 110,
+    "unit": "minute",
+    "category": "Sports",
+    "funFact": "His last act as a professional footballer was a headbutt to the chest, on live television."
+  },
+  {
+    "question": "Goals Australia scored against American Samoa in their 2001 World Cup qualifier",
+    "answer": 31,
+    "unit": "goals",
+    "category": "Sports",
+    "funFact": "American Samoa's goalkeeper was fifteen, and most of the squad had never played together."
+  },
+  {
+    "question": "Length of the Isner-Mahut Wimbledon match in minutes, in 2010",
+    "answer": 665,
+    "unit": "minutes",
+    "category": "Sports",
+    "funFact": "Eleven hours over three days. The scoreboard broke because it could not display the score."
+  },
+  {
+    "question": "Number of aces John Isner served in that 2010 Wimbledon marathon",
+    "answer": 113,
+    "unit": "aces",
+    "category": "Sports",
+    "funFact": "More aces than most players hit in a whole tournament, and he lost in the next round."
+  },
+  {
+    "question": "US launch price of the Apple I in 1976, in dollars",
+    "answer": 666,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Wozniak picked 666.66 because he liked repeating digits, then spent years explaining it."
+  },
+  {
+    "question": "What the first item ever sold on eBay went for in 1995, in cents",
+    "answer": 1483,
+    "unit": "cents",
+    "category": "Price",
+    "funFact": "A broken laser pointer. The seller checked the buyer knew it was broken. He did — he collected them."
+  },
+  {
+    "question": "What Yahoo offered to buy Google for in 2002, in millions of dollars",
+    "answer": 3000,
+    "unit": "million USD",
+    "category": "Price",
+    "funFact": "Google wanted five billion, Yahoo walked away, and the price was later somewhat higher."
+  },
+  {
+    "question": "What the Wright brothers spent building the 1903 Flyer, in dollars",
+    "answer": 1000,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "Funded out of a bicycle shop, while a government-backed rival spent fifty times as much and crashed."
+  },
+  {
+    "question": "Price per kilogram of kopi luwak coffee in 2024, in dollars",
+    "answer": 700,
+    "unit": "USD",
+    "category": "Price",
+    "funFact": "The beans are eaten and passed by a civet first. People pay a premium for this."
+  },
+  {
+    "question": "Number of years the Eiffel Tower was originally meant to stand",
+    "answer": 20,
+    "unit": "years",
+    "category": "Global",
+    "funFact": "It was saved by being useful as a radio mast, not by anyone deciding they liked it."
+  },
+  {
+    "question": "Number of bags of human waste left behind on the Moon",
+    "answer": 96,
+    "unit": "bags",
+    "category": "Global",
+    "funFact": "Mass had to be saved for the rocks coming back, so something else had to stay."
+  },
+  {
+    "question": "Number of people who have been to space, through 2024",
+    "answer": 700,
+    "unit": "people",
+    "category": "Global",
+    "funFact": "Fewer than fill a decent-sized cinema, and a growing share of them bought a ticket."
+  },
+  {
+    "question": "Number of trackable pieces of space junk orbiting Earth in 2024",
+    "answer": 36000,
+    "unit": "objects",
+    "category": "Global",
+    "funFact": "Anything above ten centimetres. Below that there are tens of millions nobody can see."
+  },
+  {
+    "question": "Number of stars visible to the naked eye from Earth on a clear night",
+    "answer": 9000,
+    "unit": "stars",
+    "category": "Global",
+    "funFact": "Across the whole sky and both hemispheres — from one spot you get about half."
+  },
+  {
+    "question": "Number of emoji in the Unicode standard as of 2024",
+    "answer": 3782,
+    "unit": "emoji",
+    "category": "Global",
+    "funFact": "A committee meets to approve each one, and rejected proposals include a rock."
+  },
+  {
+    "question": "Number of letters in the Hawaiian alphabet",
+    "answer": 13,
+    "unit": "letters",
+    "category": "Global",
+    "funFact": "Missionaries pared it down in 1826 and threw away half the consonants."
+  },
+  {
+    "question": "Number of official languages of the European Union",
+    "answer": 24,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "Every document gets translated into all of them, which employs several thousand people."
+  },
+  {
+    "question": "Number of time zones France spans, counting its overseas territories",
+    "answer": 12,
+    "unit": "time zones",
+    "category": "Global",
+    "funFact": "More than any other country, Russia included, thanks to islands in three oceans."
+  },
+  {
+    "question": "Number of countries Britain has invaded at some point in history",
+    "answer": 171,
+    "unit": "countries",
+    "category": "Global",
+    "funFact": "Out of roughly 193. The short list of ones it missed includes Luxembourg and Bolivia."
+  },
+  {
+    "question": "Number of letters in the longest word in a major English dictionary",
+    "answer": 45,
+    "unit": "letters",
+    "category": "Global",
+    "funFact": "A lung disease named in 1935 by a puzzle enthusiast specifically to be the longest word."
+  },
+  {
+    "question": "Number of works of art Vincent van Gogh produced in his lifetime",
+    "answer": 2100,
+    "unit": "works",
+    "category": "Global",
+    "funFact": "Most of them in his last two years, and he reliably sold almost none of them."
+  },
+  {
+    "question": "Seconds the average visitor spends looking at the Mona Lisa",
+    "answer": 15,
+    "unit": "seconds",
+    "category": "Global",
+    "funFact": "Most of that through a phone screen held above the head of the person in front."
+  },
+  {
+    "question": "Number of steps from the bottom to the top of the Empire State Building",
+    "answer": 1576,
+    "unit": "steps",
+    "category": "Global",
+    "funFact": "There is an annual race up them. The record is under ten minutes."
+  },
+  {
+    "question": "Number of windows in the Empire State Building",
+    "answer": 6514,
+    "unit": "windows",
+    "category": "Global",
+    "funFact": "A full clean takes months, at which point it is time to start again."
+  },
+  {
+    "question": "Number of floors in the Burj Khalifa",
+    "answer": 163,
+    "unit": "floors",
+    "category": "Global",
+    "funFact": "The top thirty or so are unoccupied spire — the useful building stops well below the summit."
+  },
+  {
+    "question": "Centimetres the Eiffel Tower grows on a hot summer day",
+    "answer": 15,
+    "unit": "centimetres",
+    "category": "Global",
+    "funFact": "The iron expands, and it also leans slightly away from the sun as one side warms."
+  },
+  {
+    "question": "Number of years it took to finish building the Leaning Tower of Pisa",
+    "answer": 199,
+    "unit": "years",
+    "category": "Global",
+    "funFact": "It started leaning after five, and the long pauses for war are why it never fell over."
+  },
+  {
+    "question": "Number of words in the original US Constitution, excluding amendments",
+    "answer": 4543,
+    "unit": "words",
+    "category": "Global",
+    "funFact": "One of the shortest national constitutions in the world, and the oldest still in use."
+  },
+  {
+    "question": "Number of languages Google Translate supported in 2024",
+    "answer": 243,
+    "unit": "languages",
+    "category": "Global",
+    "funFact": "It added 110 in a single 2024 update, including several with under a million speakers."
+  },
+  {
+    "question": "Number of pieces in a standard chess set",
+    "answer": 32,
+    "unit": "pieces",
+    "category": "Global",
+    "funFact": "The queen was the weakest piece for centuries before becoming the strongest around 1500."
+  },
+  {
+    "question": "Number of chambers in a cockroach's heart",
+    "answer": 13,
+    "unit": "chambers",
+    "category": "Weird Facts",
+    "funFact": "It can keep pumping with several of them out of action, which is part of the problem."
+  },
+  {
+    "question": "Number of suckers on a single octopus arm",
+    "answer": 200,
+    "unit": "suckers",
+    "category": "Weird Facts",
+    "funFact": "Each one can taste what it touches, so an octopus tastes everything it picks up."
+  },
+  {
+    "question": "Number of feathers on an adult chicken",
+    "answer": 8000,
+    "unit": "feathers",
+    "category": "Weird Facts",
+    "funFact": "Someone counted. Several someones, in fact, and they broadly agree."
+  },
+  {
+    "question": "Number of eggs a good laying hen produces in a year",
+    "answer": 300,
+    "unit": "eggs",
+    "category": "Weird Facts",
+    "funFact": "Wild jungle fowl, the same species, manage about twelve."
+  },
+  {
+    "question": "Number of times a chicken's heart beats per minute",
+    "answer": 300,
+    "unit": "beats",
+    "category": "Weird Facts",
+    "funFact": "A blue whale's manages about eight, and both animals get roughly the same lifetime total."
+  },
+  {
+    "question": "Number of bones in a swan's neck",
+    "answer": 25,
+    "unit": "bones",
+    "category": "Weird Facts",
+    "funFact": "A giraffe has seven, the same as you — length comes from bigger bones, not more of them."
+  },
+  {
+    "question": "Number of teeth in a dolphin's mouth",
+    "answer": 100,
+    "unit": "teeth",
+    "category": "Weird Facts",
+    "funFact": "It never chews with any of them — everything is swallowed whole and head-first."
+  },
+  {
+    "question": "Number of minutes a newborn foal takes to stand up",
+    "answer": 60,
+    "unit": "minutes",
+    "category": "Weird Facts",
+    "funFact": "Prey animals get no childhood. A human takes about a year to manage the same trick."
+  },
+  {
+    "question": "Number of species of octopus known to science",
+    "answer": 300,
+    "unit": "species",
+    "category": "Weird Facts",
+    "funFact": "One of them, the mimic octopus, impersonates at least fifteen other animals."
+  },
+  {
+    "question": "Number of eggs an ocean sunfish can release at once, in millions",
+    "answer": 300,
+    "unit": "million eggs",
+    "category": "Weird Facts",
+    "funFact": "More than any other vertebrate, and almost none of them survive to adulthood."
+  },
+  {
+    "question": "Litres of slime a hagfish can produce in under a minute",
+    "answer": 20,
+    "unit": "litres",
+    "category": "Weird Facts",
+    "funFact": "It has to sneeze to clear its own airway afterwards, having nearly suffocated itself."
+  },
+  {
+    "question": "Number of times its own body length a flea can jump",
+    "answer": 100,
+    "unit": "times",
+    "category": "Weird Facts",
+    "funFact": "It uses a stored spring of elastic protein — muscle alone could not do it."
+  },
+  {
+    "question": "Number of days a scorpion can survive without eating",
+    "answer": 365,
+    "unit": "days",
+    "category": "Weird Facts",
+    "funFact": "It can also slow its metabolism to a third of the normal rate and simply wait."
+  },
+  {
+    "question": "Number of frames per second a housefly can perceive",
+    "answer": 250,
+    "unit": "frames",
+    "category": "Weird Facts",
+    "funFact": "You move in slow motion to a fly, which is exactly why the newspaper never lands."
+  },
+  {
+    "question": "Number of days a red blood cell survives before being replaced",
+    "answer": 120,
+    "unit": "days",
+    "category": "Weird Facts",
+    "funFact": "It has no nucleus and cannot repair itself, so the body simply builds new ones constantly."
+  },
+  {
+    "question": "Number of different smells a human nose can distinguish, in millions",
+    "answer": 1000,
+    "unit": "million smells",
+    "category": "Weird Facts",
+    "funFact": "The old textbook figure was 10,000, which turned out to be a guess from 1927."
+  },
+  {
+    "question": "Number of bacteria living on one square centimetre of human skin",
+    "answer": 100000,
+    "unit": "bacteria",
+    "category": "Weird Facts",
+    "funFact": "Your forearm hosts more species than a rainforest patch of the same size."
+  },
+  {
+    "question": "Number of hairs in a human eyebrow",
+    "answer": 250,
+    "unit": "hairs",
+    "category": "Weird Facts",
+    "funFact": "Each one lives about four months, which is why a bad eyebrow decision is survivable."
   }
 ]

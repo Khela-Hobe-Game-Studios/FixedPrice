@@ -6,6 +6,7 @@
  *   node questions/clean.js sheet.csv --out questions/questions-clean.csv
  *
  * What it does, and why:
+ *   - drops the rows named in removals.json (an editorial cut, by exact text)
  *   - drops exact/near duplicates, keeping the better-worded of each pair
  *   - drops answer=0 questions (unguessable — you know it or you are wildly off)
  *   - fixes the one question whose text and unit contradict each other
@@ -80,8 +81,8 @@ function csvCell(v) {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-function clean(rows, additions) {
-  const report = { dropped: [], anchored: [], recategorised: [], fixed: [] };
+function clean(rows, additions, removals = []) {
+  const report = { dropped: [], anchored: [], recategorised: [], fixed: [], staleRemovals: [] };
 
   // 1. category normalisation — Price/Sports/Taka/Cricket all need to reach a badge
   for (const q of rows) {
@@ -106,11 +107,26 @@ function clean(rows, additions) {
     }
   }
 
+  /* 3a. the editorial cut, by exact question text (see removals.json). Matched
+   * AFTER the text fixes above, so a row this file names has to be named in the
+   * wording the bank actually carries. Anything left unmatched is reported rather
+   * than ignored — a stale entry here means somebody reworded the row in the Sheet
+   * and the cut silently stopped applying. */
+  const toRemove = new Set(removals);
+  const hit = new Set();
+
   // 3. drop unguessable zero answers
   let kept = rows.filter(q => {
     if (q.answer === 0) { report.dropped.push(`row ${q.row} [zero-answer]: ${q.question}`); return false; }
+    if (toRemove.has(q.question.trim())) {
+      hit.add(q.question.trim());
+      report.dropped.push(`row ${q.row} [removals.json]: ${q.question}`);
+      return false;
+    }
     return true;
   });
+
+  for (const q of toRemove) if (!hit.has(q)) report.staleRemovals.push(q);
 
   // 4. drop near-duplicates, keeping the more specific (longer) wording
   const withTokens = kept.map(q => ({ q, t: tokens(q.question) }));
@@ -194,7 +210,15 @@ async function main() {
 
   const rows = parseCSV(text);
   const additions = JSON.parse(fs.readFileSync(path.join(__dirname, 'additions.json'), 'utf8'));
-  const { kept, report, added } = clean(rows, additions);
+
+  // removals.json is grouped with a note per group; the questions are the payload.
+  const removalFile = path.join(__dirname, 'removals.json');
+  const removals = fs.existsSync(removalFile)
+    ? Object.values(JSON.parse(fs.readFileSync(removalFile, 'utf8')))
+        .flatMap(g => (g && Array.isArray(g.questions) ? g.questions : []))
+    : [];
+
+  const { kept, report, added } = clean(rows, additions, removals);
 
   const csv = ['question,answer,unit,category,funFact']
     .concat(kept.map(q => [q.question, q.answer, q.unit, q.category, q.funFact].map(csvCell).join(',')))
@@ -209,6 +233,11 @@ async function main() {
   log(`  recategorised:  ${report.recategorised.length}`);
   log(`  year-anchored:  ${report.anchored.length}`);
   log(`  text fixes:     ${report.fixed.length}`);
+  log(`  removed by list:${removals.length - report.staleRemovals.length} of ${removals.length}`);
+  if (report.staleRemovals.length) {
+    log(`  ⚠ ${report.staleRemovals.length} removals.json entr(ies) matched nothing — reworded in the Sheet?`);
+    report.staleRemovals.forEach(q => log(`      ${q}`));
+  }
   if (outPath) {
     fs.writeFileSync(path.join(__dirname, 'clean-report.txt'),
       Object.entries(report).map(([k, v]) => `## ${k} (${v.length})\n${v.join('\n')}`).join('\n\n') + '\n');

@@ -1,0 +1,85 @@
+{
+  "_why": [
+    "Rows cut from the bank on editorial grounds, by exact question text. clean.js drops",
+    "these on the way through and names any that no longer match, so a row that gets",
+    "reworded in the Sheet shows up as a stale entry here rather than silently surviving.",
+    "",
+    "The cut is about tone. It is a party game on a television with fifteen people in",
+    "the room, and three groups of questions were reliably killing the mood or the",
+    "interest — see questions/question_criteria.md."
+  ],
+
+  "league_tables": {
+    "_why": "A run of questions telling a Bangladeshi room where their country places on misery indexes. Also all 2024-anchored, so cutting them helps the anchor pileup and the staleness at the same time. Kept the jute one — being top of the world at something is a different question.",
+    "questions": [
+      "Bangladesh's ranking in the Corruption Perceptions Index in 2024 (out of 180 countries)",
+      "Bangladesh's rank from the bottom in the 2024 Corruption Perceptions Index",
+      "Bangladesh's score out of 100 in 2024 Corruption Perceptions Index (where 100 = squeaky clean)",
+      "Score Denmark received in the 2024 Corruption Perceptions Index (vs Bangladesh's 23)",
+      "Bangladesh's rank globally in air pollution among countries as of 2024 (worst air quality)",
+      "Bangladesh's rank in IQAir's annual most-polluted countries report (2023)",
+      "Number of consecutive years Bangladesh has held the worst air quality global ranking by 2024",
+      "Bangladesh's rank in the 2024 World Happiness Report (out of 143 countries)",
+      "Bangladesh's rank in human capital index (World Bank 2020, out of 174)",
+      "Bangladesh's rank among countries with population over 10 million for population density (2024)",
+      "Bangladesh's rank in world population (most populous countries) (2024)",
+      "Bangladesh's rank globally in passport power (Henley Index 2024, visa-free access)",
+      "Rank of Dhaka among slowest cities in the world (2023 NBER study)",
+      "Bangladesh's rank globally in remittance receipts per year (2024)",
+      "Bangladesh's rank globally in per-capita rice consumption (2024)",
+      "Bangladesh's global rank in garment exports (RMG industry) (2024)",
+      "Bangladesh's global rank in hilsa fish catch (2024)",
+      "Bangladesh's global rank in mango production (2024)"
+    ]
+  },
+
+  "repetition": {
+    "_why": "Four questions about rice consumption and six about Bangladeshi macro percentages is the same round twice. Kept per-capita rice consumption, the RMG export share, and the GDP lost to traffic — that last one has a sting to it.",
+    "questions": [
+      "Global average per capita rice consumption per year, in kg (2024)",
+      "Percent of daily calorie intake from rice for the average Bangladeshi",
+      "Percent of all Bangladeshi households that own a smartphone (2024 estimate)",
+      "Average annual income per capita in Bangladesh in 2024 (USD, GDP per capita)",
+      "Percent of Bangladeshi gold imported that allegedly comes via smuggling",
+      "Number of Bangladeshis who hold a passport (percent of population, 2024 estimate)"
+    ]
+  },
+
+  "grim": {
+    "_why": "Nobody wants to guess a death toll on a games night. Kept the vending machine one, which is a joke about risk perception rather than a disaster.",
+    "questions": [
+      "Year the Rana Plaza building collapse occurred in Savar",
+      "Estimated number of Bangladeshis killed in Rana Plaza collapse (rounded)",
+      "Year Cyclone Bhola struck East Pakistan (Bangladesh) killing 300,000+",
+      "Year Cyclone Sidr struck Bangladesh",
+      "Year Princess Diana died in Paris"
+    ]
+  },
+
+  "founding_years": {
+    "_why": "Nine consecutive 'Year X was founded' about tech companies is the monotony this whole pass is against. Two of these are also outright duplicate pairs already in the bank. Kept the Bangladeshi ones and the funny ones — Damn Daniel, the Harlem Shake, Vine being shut down.",
+    "questions": [
+      "Year Grameen Bank was officially established as a bank",
+      "Year FIFA was officially recognized to oversee international football",
+      "Year Spotify was founded in Sweden",
+      "Year Facebook was founded by Mark Zuckerberg",
+      "Year YouTube was founded",
+      "Year Twitter was founded",
+      "Year Tesla was founded (as Tesla Motors)",
+      "Year SpaceX was founded by Elon Musk",
+      "Year Google was founded by Larry Page and Sergey Brin",
+      "Year IKEA was founded (Sweden)",
+      "Year Anthropic was founded (Claude's company)",
+      "Year COVID-19 was declared a global pandemic by WHO",
+      "Year the National Botanical Garden at Mirpur was established",
+      "Year the Bangla Academy was founded in Dhaka",
+      "Year the first internet connection was established in Bangladesh",
+      "Year the first private satellite channel (ATN Bangla) started in BD",
+      "Year Daraz, the e-commerce platform, was launched in Bangladesh",
+      "Year Pathao, a popular ride-sharing app, was founded in Bangladesh",
+      "Year UNESCO included Bangabandhu's March 7 speech in its Memory of the World Register",
+      "Year construction of the Bangabandhu Bridge over Jamuna river began",
+      "Year the country of South Sudan officially became independent"
+    ]
+  }
+}

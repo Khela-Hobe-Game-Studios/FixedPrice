@@ -1,4 +1,54 @@
-## dropped (48)
+## dropped (98)
+row 9 [removals.json]: Year the first internet connection was established in Bangladesh
+row 86 [removals.json]: Year the first private satellite channel (ATN Bangla) started in BD
+row 190 [removals.json]: Year Grameen Bank was officially established as a bank
+row 193 [removals.json]: Year the Rana Plaza building collapse occurred in Savar
+row 195 [removals.json]: Year Pathao, a popular ride-sharing app, was founded in Bangladesh
+row 196 [removals.json]: Year Daraz, the e-commerce platform, was launched in Bangladesh
+row 206 [removals.json]: Year the Bangla Academy was founded in Dhaka
+row 360 [removals.json]: Year Spotify was founded in Sweden
+row 366 [removals.json]: Year Facebook was founded by Mark Zuckerberg
+row 367 [removals.json]: Year YouTube was founded
+row 371 [removals.json]: Year Twitter was founded
+row 373 [removals.json]: Year Tesla was founded (as Tesla Motors)
+row 376 [removals.json]: Year SpaceX was founded by Elon Musk
+row 436 [removals.json]: Year UNESCO included Bangabandhu's March 7 speech in its Memory of the World Register
+row 437 [removals.json]: Year construction of the Bangabandhu Bridge over Jamuna river began
+row 442 [removals.json]: Year Cyclone Bhola struck East Pakistan (Bangladesh) killing 300,000+
+row 443 [removals.json]: Year Cyclone Sidr struck Bangladesh
+row 450 [removals.json]: Year the National Botanical Garden at Mirpur was established
+row 492 [removals.json]: Year Google was founded by Larry Page and Sergey Brin
+row 507 [removals.json]: Year the country of South Sudan officially became independent
+row 508 [removals.json]: Year Princess Diana died in Paris
+row 511 [removals.json]: Year COVID-19 was declared a global pandemic by WHO
+row 521 [removals.json]: Year FIFA was officially recognized to oversee international football
+row 630 [removals.json]: Bangladesh's ranking in the Corruption Perceptions Index in 2024 (out of 180 countries)
+row 631 [removals.json]: Bangladesh's rank from the bottom in the 2024 Corruption Perceptions Index
+row 635 [removals.json]: Bangladesh's rank globally in air pollution among countries as of 2024 (worst air quality)
+row 663 [removals.json]: Bangladesh's rank globally in remittance receipts per year (2024)
+row 727 [removals.json]: Year Anthropic was founded (Claude's company)
+row 752 [removals.json]: Year IKEA was founded (Sweden)
+row 770 [removals.json]: Bangladesh's score out of 100 in 2024 Corruption Perceptions Index (where 100 = squeaky clean)
+row 771 [removals.json]: Score Denmark received in the 2024 Corruption Perceptions Index (vs Bangladesh's 23)
+row 776 [removals.json]: Rank of Dhaka among slowest cities in the world (2023 NBER study)
+row 778 [removals.json]: Bangladesh's rank among countries with population over 10 million for population density (2024)
+row 779 [removals.json]: Bangladesh's rank in world population (most populous countries) (2024)
+row 781 [removals.json]: Bangladesh's rank in IQAir's annual most-polluted countries report (2023)
+row 783 [removals.json]: Number of consecutive years Bangladesh has held the worst air quality global ranking by 2024
+row 788 [removals.json]: Global average per capita rice consumption per year, in kg (2024)
+row 789 [removals.json]: Bangladesh's rank globally in per-capita rice consumption (2024)
+row 790 [removals.json]: Percent of daily calorie intake from rice for the average Bangladeshi
+row 791 [removals.json]: Bangladesh's global rank in garment exports (RMG industry) (2024)
+row 794 [removals.json]: Bangladesh's global rank in hilsa fish catch (2024)
+row 795 [removals.json]: Bangladesh's global rank in mango production (2024)
+row 810 [removals.json]: Percent of all Bangladeshi households that own a smartphone (2024 estimate)
+row 815 [removals.json]: Estimated number of Bangladeshis killed in Rana Plaza collapse (rounded)
+row 816 [removals.json]: Average annual income per capita in Bangladesh in 2024 (USD, GDP per capita)
+row 818 [removals.json]: Bangladesh's rank in the 2024 World Happiness Report (out of 143 countries)
+row 819 [removals.json]: Bangladesh's rank globally in passport power (Henley Index 2024, visa-free access)
+row 821 [removals.json]: Bangladesh's rank in human capital index (World Bank 2020, out of 174)
+row 990 [removals.json]: Percent of Bangladeshi gold imported that allegedly comes via smuggling
+row 1001 [removals.json]: Number of Bangladeshis who hold a passport (percent of population, 2024 estimate)
 addition skipped [duplicates row 1002]: Number of administrative districts (zila) in Bangladesh
 addition skipped [duplicates row 438]: Length of the Bangabandhu (Jamuna) Bridge in metres
 addition skipped [duplicates row 1003]: Total number of seats in the Jatiya Sangsad, including reserved seats
@@ -55,4 +105,7 @@ addition skipped [duplicates row 1043]: Number of time zones spanned by Russia
 
 
 ## fixed (0)
+
+
+## staleRemovals (0)
 
