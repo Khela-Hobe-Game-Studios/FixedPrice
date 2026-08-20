@@ -61,7 +61,7 @@ async function expectMusic(page, playing, note, timeoutMs = 6000) {
 
 // ─── HOST ────────────────────────────────────────────────────────────────────
 
-async function runHost(context, resolveCode) {
+async function runHost(context, resolveCode, playersSeated) {
   const page = await context.newPage();
   await page.goto(URL);
   log('HOST', 'board loaded');
@@ -95,6 +95,14 @@ async function runHost(context, resolveCode) {
     null,
     { timeout: PHASE_TIMEOUT }
   );
+  /* START enables as soon as two players are in the ROOM, and a player joins the
+   * room at the name step — one screen before they are done picking a face. Clicking
+   * here would unmount an avatar screen somebody is still using, and the click that
+   * was already in flight fails with "element was detached from the DOM". That is a
+   * race in the test rather than in the game (the host is allowed to start on a
+   * player who is still choosing; they just get their monogram), so the test waits
+   * for the players to say they are seated instead of trusting the counter. */
+  await playersSeated;
   // Still the same startup track it started on — the settings screen and a lobby
   // filling with players are not scene changes.
   const inLobby = await musicOf(page);
@@ -184,7 +192,7 @@ async function checkEndgameMusic(page) {
  * phone that fails to acknowledge the bet is visible. When both bet inside the same
  * tick they are both carried into the reveal and the gap hides itself — which is
  * exactly how it shipped. */
-async function runPlayer(context, name, code, { betsFirst = false } = {}) {
+async function runPlayer(context, name, code, { betsFirst = false, onSeated = () => {} } = {}) {
   const page = await context.newPage();
   // The QR deep link is the path fourteen of fifteen guests actually take.
   await page.goto(`${URL}/?join=${code}`);
@@ -195,6 +203,7 @@ async function runPlayer(context, name, code, { betsFirst = false } = {}) {
   await page.getByTestId('use-avatar').waitFor({ state: 'visible', timeout: PHASE_TIMEOUT });
   await page.getByTestId('use-avatar').click();
   log(name, `joined ${code}`);
+  onSeated(); // the host may not start the game until every player is past this screen
 
   // A phone never plays music. Fifteen of them would fight the TV, and the one on
   // the slow link is the one everybody hears.
@@ -275,12 +284,13 @@ async function runPlayer(context, name, code, { betsFirst = false } = {}) {
   const codePromise = new Promise((r) => { resolveCode = r; });
 
   try {
-    const hostRun = runHost(tv, resolveCode);
+    const seated = [0, 1].map(() => { let done; const p = new Promise((r) => { done = r; }); return { p, done }; });
+    const hostRun = runHost(tv, resolveCode, Promise.all(seated.map((s) => s.p)));
     const code = await codePromise;
     const [hostPage] = await Promise.all([
       hostRun,
-      runPlayer(phones[0], 'Alice', code, { betsFirst: true }),
-      runPlayer(phones[1], 'Bob', code),
+      runPlayer(phones[0], 'Alice', code, { betsFirst: true, onSeated: seated[0].done }),
+      runPlayer(phones[1], 'Bob', code, { onSeated: seated[1].done }),
     ]);
     log('DONE', `${ROUNDS_TO_PLAY} rounds complete (betting=${BETTING})`);
 
